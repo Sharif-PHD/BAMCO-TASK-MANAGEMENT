@@ -1,93 +1,73 @@
 (function(){
   'use strict';
 
-  /*
-   * 2026-09-07 task-table stabilization + performance patch.
-   * - removes the old Selection column from Kanban and Archive
-   * - gives every task column an intentional width and keeps manual resizing
-   * - keeps long cell text wrapped instead of ellipsized
-   * - right-aligns the ID column
-   * - fixes the lower edge/height of both task tables
-   * - avoids a full table rebuild when a row is selected
-   * - lazily builds filter option lists and renders only the active task view
-   * - loads the three post-login data requests in parallel
-   */
-
   window.BAMCO_FAST_TASK_TABLES=true;
 
   const qs=(s,r=document)=>r.querySelector(s);
   const qsa=(s,r=document)=>[...r.querySelectorAll(s)];
 
-  /* Load the final unified visual layer after older responsive/final overrides. */
+  /* Keep the approved unified visual language, while this module alone owns task-table geometry. */
   setTimeout(()=>{
     if(!document.getElementById('bamcoUnifiedUi')){
       const link=document.createElement('link');
       link.id='bamcoUnifiedUi';
       link.rel='stylesheet';
-      link.href='unified-ui-20260907.css?v=20260907-3';
+      link.href='unified-ui-20260907.css?v=20260907-core1';
       document.head.appendChild(link);
     }
-    if(!document.getElementById('bamcoUnifiedUiPatch')){
+    if(!document.getElementById('bamcoTaskTableCoreStyle')){
       const style=document.createElement('style');
-      style.id='bamcoUnifiedUiPatch';
+      style.id='bamcoTaskTableCoreStyle';
       style.textContent=`
-        #appView .column-filters select{min-width:0!important;width:100%!important;height:32px!important;min-height:32px!important;padding:2px 20px 2px 4px!important;background-position:3px center!important;background-size:12px!important;font-size:14px!important}
-        #appView #kanbanView .column-filters th:first-child select,#appView #archiveView .column-filters th:first-child select{min-width:0!important;width:100%!important;max-width:100%!important;padding-right:2px!important;padding-left:15px!important}
-        #templatesView .desktop-template-shell{padding:0 4px!important;background:transparent!important}
-        #templatesView .desktop-template-fieldset{border:1px solid #b8c8c1!important;border-radius:10px!important;padding:24px!important;margin:18px 0 14px!important;background:#f8faf9!important;box-shadow:none!important}
-        #templatesView .desktop-template-fieldset legend{padding:0 10px!important;background:#eef3f0!important;color:#145741!important;font-weight:700!important}
-
-        /* Task-table geometry: reserve a real bottom edge above the fixed footer. */
-        html body #appView #kanbanView,
-        html body #appView #archiveView{
+        #appView #kanbanView,
+        #appView #archiveView{
           height:calc(100dvh - 58px - var(--footer-h,34px))!important;
           max-height:calc(100dvh - 58px - var(--footer-h,34px))!important;
           overflow:hidden!important;
           box-sizing:border-box!important;
         }
-        html body #appView #kanbanView>.table-panel,
-        html body #appView #archiveView>.table-panel{
+        #appView #kanbanView>.table-panel,
+        #appView #archiveView>.table-panel{
           height:calc(100% - 32px)!important;
           max-height:calc(100% - 32px)!important;
           min-height:0!important;
           display:flex!important;
           flex-direction:column!important;
-          overflow:hidden!important;
           box-sizing:border-box!important;
         }
-        html body #appView #kanbanView .table-panel>.panel-head,
-        html body #appView #archiveView .table-panel>.panel-head,
-        html body #appView #kanbanView .task-toolbar,
-        html body #appView #archiveView .task-toolbar{
-          flex:0 0 auto!important;
-        }
-        html body #appView #kanbanView .table-wrap,
-        html body #appView #archiveView .table-wrap{
+        #appView #kanbanView .table-wrap,
+        #appView #archiveView .table-wrap{
           flex:1 1 auto!important;
           min-height:0!important;
           height:auto!important;
           max-height:none!important;
           overflow:auto!important;
           box-sizing:border-box!important;
-          border-bottom:1px solid #b8c8c1!important;
+          border:1px solid #b8c8c1!important;
+          border-radius:10px!important;
+          background:#fff!important;
         }
-
-        /* No Selection column; the row itself is the selector. */
-        html body #appView #kanbanView .task-select-column,
-        html body #appView #archiveView .task-select-column,
-        html body #appView #kanbanView .task-pick,
-        html body #appView #archiveView .task-pick{display:none!important}
-
-        /* Intentional widths + full wrapped content. */
-        html body #appView #kanbanView table.resizable-task-table,
-        html body #appView #archiveView table.resizable-task-table{
+        #appView #kanbanView table.resizable-task-table,
+        #appView #archiveView table.resizable-task-table{
           width:max-content!important;
           min-width:0!important;
+          max-width:none!important;
           table-layout:fixed!important;
+          border-collapse:collapse!important;
+          border-spacing:0!important;
           direction:rtl!important;
+          background:#fff!important;
         }
-        html body #appView #kanbanView table.resizable-task-table th,
-        html body #appView #archiveView table.resizable-task-table th{
+        #appView #kanbanView table.resizable-task-table thead,
+        #appView #archiveView table.resizable-task-table thead{display:table-header-group!important}
+        #appView #kanbanView table.resizable-task-table thead>tr,
+        #appView #archiveView table.resizable-task-table thead>tr{display:table-row!important;height:auto!important;transform:none!important}
+        #appView #kanbanView table.resizable-task-table thead>tr:not(:first-child):not(.column-filters),
+        #appView #archiveView table.resizable-task-table thead>tr:not(:first-child):not(.column-filters){display:none!important}
+        #appView #kanbanView table.resizable-task-table th,
+        #appView #archiveView table.resizable-task-table th{
+          position:relative!important;
+          top:auto!important;
           min-width:0!important;
           max-width:none!important;
           white-space:nowrap!important;
@@ -95,9 +75,14 @@
           text-overflow:clip!important;
           vertical-align:middle!important;
           box-sizing:border-box!important;
+          font-family:"B Nazanin",BNazanin,"B Nazanin Regular",Tahoma,sans-serif!important;
+          font-size:15px!important;
+          line-height:1.5!important;
+          text-align:center!important;
+          direction:rtl!important;
         }
-        html body #appView #kanbanView table.resizable-task-table td,
-        html body #appView #archiveView table.resizable-task-table td{
+        #appView #kanbanView table.resizable-task-table td,
+        #appView #archiveView table.resizable-task-table td{
           min-width:0!important;
           max-width:none!important;
           white-space:normal!important;
@@ -108,25 +93,66 @@
           line-height:1.75!important;
           vertical-align:top!important;
           box-sizing:border-box!important;
-        }
-        html body #appView #kanbanView table.resizable-task-table th:first-child,
-        html body #appView #kanbanView table.resizable-task-table td:first-child,
-        html body #appView #archiveView table.resizable-task-table th:first-child,
-        html body #appView #archiveView table.resizable-task-table td:first-child{
-          text-align:right!important;
+          font-family:"B Nazanin",BNazanin,"B Nazanin Regular",Tahoma,sans-serif!important;
+          font-size:15px!important;
           direction:rtl!important;
-          white-space:nowrap!important;
-          padding-right:8px!important;
-          padding-left:5px!important;
+          text-align:right!important;
         }
-        html body #appView #kanbanView tbody tr[data-task-id],
-        html body #appView #archiveView tbody tr[data-task-id]{cursor:pointer!important}
+        #appView #kanbanView table.resizable-task-table th:first-child,
+        #appView #archiveView table.resizable-task-table th:first-child{
+          width:auto!important;min-width:0!important;max-width:none!important;
+          padding-right:6px!important;padding-left:6px!important;
+          font-family:"B Nazanin",BNazanin,"B Nazanin Regular",Tahoma,sans-serif!important;
+          font-size:15px!important;font-weight:700!important;text-align:center!important;direction:rtl!important
+        }
+        #appView #kanbanView table.resizable-task-table td:first-child,
+        #appView #archiveView table.resizable-task-table td:first-child{
+          width:auto!important;min-width:0!important;max-width:none!important;
+          padding-right:8px!important;padding-left:5px!important;
+          font-family:"B Nazanin",BNazanin,"B Nazanin Regular",Tahoma,sans-serif!important;
+          font-size:15px!important;text-align:right!important;direction:rtl!important;white-space:nowrap!important
+        }
+        #appView #kanbanView .column-filters>th,
+        #appView #archiveView .column-filters>th{
+          position:static!important;
+          height:46px!important;
+          padding:5px 6px!important;
+          vertical-align:middle!important;
+          background:#eef4f1!important;
+          box-sizing:border-box!important
+        }
+        #appView #kanbanView .column-filters select,
+        #appView #archiveView .column-filters select{
+          display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;
+          height:34px!important;min-height:34px!important;margin:0!important;
+          padding:3px 22px 3px 6px!important;box-sizing:border-box!important;
+          border:1px solid #b8c8c1!important;border-radius:7px!important;background-color:#fff!important;
+          background-position:4px center!important;background-size:12px!important;
+          font-family:"B Nazanin",BNazanin,"B Nazanin Regular",Tahoma,sans-serif!important;
+          font-size:14px!important;direction:rtl!important;text-align:right!important
+        }
+        #appView #kanbanView .column-filters>th:first-child select,
+        #appView #archiveView .column-filters>th:first-child select{padding-right:5px!important;padding-left:18px!important;text-align:center!important}
+        #appView #kanbanView .task-select-column,
+        #appView #archiveView .task-select-column,
+        #appView #kanbanView .task-pick,
+        #appView #archiveView .task-pick{display:none!important}
+        #appView table.resizable-task-table .column-resize-handle{
+          position:absolute!important;top:0!important;bottom:0!important;left:-5px!important;width:10px!important;
+          cursor:col-resize!important;z-index:40!important;touch-action:none!important;user-select:none!important;background:transparent!important
+        }
+        #appView table.resizable-task-table .column-resize-handle::after{
+          content:"";position:absolute;top:7px;bottom:7px;left:4px;width:1px;background:transparent
+        }
+        #appView table.resizable-task-table .column-resize-handle:hover::after,
+        #appView table.resizable-task-table .column-resize-handle.dragging::after{background:#4f8d77!important}
+        #appView #kanbanView tbody tr[data-task-id],
+        #appView #archiveView tbody tr[data-task-id]{cursor:pointer!important}
       `;
       document.head.appendChild(style);
     }
   },0);
 
-  /* Keep the email editor's intentional font chooser functional. */
   document.addEventListener('change',event=>{
     if(event.target?.id!=='dteFont')return;
     const body=qs('#dteBody');
@@ -134,7 +160,7 @@
   });
 
   const WIDTHS={
-    'شناسه':68,
+    'شناسه':82,
     'عنوان فعالیت':220,
     'توضیحات':340,
     'متولی':175,
@@ -151,7 +177,7 @@
     'تعجیل':82
   };
   const MIN_WIDTHS={
-    'شناسه':52,'عنوان فعالیت':150,'توضیحات':190,'متولی':120,'وضعیت':100,'اولویت':72,
+    'شناسه':56,'عنوان فعالیت':150,'توضیحات':190,'متولی':120,'وضعیت':100,'اولویت':72,
     'تاریخ شروع':96,'تاریخ انجام':96,'تاریخ پایان':96,'یادآور':68,'آخرین به‌روزرسانی':125,
     'وضعیت دیرکرد':105,'توضیحات مدیر':170,'تأخیر':64,'تعجیل':64
   };
@@ -159,60 +185,75 @@
   function removeSelectionHeader(scope){
     const table=qs(`#${scope}View table`);if(!table)return;
     const top=qsa('thead>tr:first-child>th',table);
-    const idx=top.findIndex(th=>(th.textContent||'').trim()==='انتخاب');
+    const idx=top.findIndex(th=>(th.childNodes[0]?.textContent||th.textContent||'').trim()==='انتخاب');
     if(idx<0)return;
     top[idx].remove();
     const filter=qs('thead .column-filters',table);
     if(filter?.children[idx])filter.children[idx].remove();
-    qsa('tbody tr',table).forEach(row=>{
-      const cell=row.children[idx];
-      if(cell&&(cell.querySelector('.task-pick')||idx===row.children.length-1))cell.remove();
-    });
+    qsa('tbody tr',table).forEach(row=>{if(row.children[idx])row.children[idx].remove()});
+  }
+
+  function normalizeHeaderRows(table){
+    const thead=table.tHead||qs('thead',table);if(!thead)return;
+    const header=[...thead.rows].find(row=>[...row.cells].some(c=>(c.childNodes[0]?.textContent||c.textContent||'').trim()==='شناسه'))||thead.rows[0];
+    let filters=qs('tr.column-filters',thead);
+    if(!header)return;
+    if(!filters){filters=document.createElement('tr');filters.className='column-filters'}
+    [...thead.rows].forEach(row=>{if(row!==header&&row!==filters)row.remove()});
+    if(thead.rows[0]!==header)thead.insertBefore(header,thead.firstChild);
+    if(filters.parentNode!==thead||thead.rows[1]!==filters)thead.appendChild(filters);
   }
 
   function installResizableTable(scope){
+    const table=qs(`#${scope}View table`);if(!table)return;
+    normalizeHeaderRows(table);
     removeSelectionHeader(scope);
-    const table=qs(`#${scope}View table`),heads=qsa('thead>tr:first-child>th',table||document);
-    if(!table||!heads.length||table.dataset.bamcoResized==='1')return;
-    table.dataset.bamcoResized='1';
+    const heads=qsa('thead>tr:first-child>th',table);
+    if(!heads.length)return;
+
     table.classList.add('resizable-task-table');
     table.style.direction='rtl';
+    table.dataset.bamcoResized='core1';
 
-    const key=`bamco-${scope}-column-widths-v4`;
+    const key=`bamco-${scope}-column-widths-v6`;
     let saved={};
     try{saved=JSON.parse(localStorage.getItem(key)||'{}')||{}}catch{saved={}}
     const widths=heads.map(head=>{
-      const name=(head.textContent||'').trim();
+      const name=(head.childNodes[0]?.textContent||head.textContent||'').trim();
+      if(name==='شناسه')return WIDTHS['شناسه'];
       const stored=Number(saved[name]);
       return Number.isFinite(stored)&&stored>0?stored:(WIDTHS[name]||140);
     });
 
     table.querySelector(':scope > colgroup')?.remove();
     const colgroup=document.createElement('colgroup');
-    const cols=heads.map((head,index)=>{
-      const col=document.createElement('col');
-      colgroup.appendChild(col);
-      return col;
-    });
+    const cols=heads.map(()=>{const col=document.createElement('col');colgroup.appendChild(col);return col});
     table.insertBefore(colgroup,table.firstChild);
+
+    const save=()=>{
+      const next={};
+      heads.forEach((h,i)=>next[(h.childNodes[0]?.textContent||h.textContent||'').trim()]=widths[i]);
+      try{localStorage.setItem(key,JSON.stringify(next))}catch{}
+    };
 
     const apply=()=>{
       let total=0;
       heads.forEach((head,index)=>{
-        const name=(head.textContent||'').trim();
+        const name=(head.childNodes[0]?.textContent||head.textContent||'').trim();
         const min=MIN_WIDTHS[name]||70;
-        widths[index]=Math.max(min,Math.min(560,Number(widths[index])||WIDTHS[name]||140));
-        cols[index].style.width=`${widths[index]}px`;
+        widths[index]=Math.max(min,Math.min(700,Number(widths[index])||WIDTHS[name]||140));
+        cols[index].style.setProperty('width',`${widths[index]}px`,'important');
         total+=widths[index];
       });
       table.style.setProperty('width',`${total}px`,'important');
       table.style.setProperty('min-width',`${total}px`,'important');
+      table.style.setProperty('max-width','none','important');
     };
     apply();
 
     heads.forEach((head,index)=>{
-      head.style.position='sticky';
-      const old=head.querySelector('.column-resize-handle');if(old)old.remove();
+      head.style.setProperty('position','relative','important');
+      head.querySelectorAll('.column-resize-handle').forEach(x=>x.remove());
       const handle=document.createElement('span');
       handle.className='column-resize-handle';
       handle.title='برای تغییر عرض بکشید؛ برای بازنشانی دوبار کلیک کنید';
@@ -220,25 +261,20 @@
       handle.addEventListener('dblclick',event=>{
         event.preventDefault();event.stopPropagation();
         const name=(head.childNodes[0]?.textContent||head.textContent||'').trim();
-        widths[index]=WIDTHS[name]||140;
-        const next={};heads.forEach((h,i)=>next[(h.childNodes[0]?.textContent||h.textContent||'').trim()]=widths[i]);
-        localStorage.setItem(key,JSON.stringify(next));
-        apply();
+        widths[index]=WIDTHS[name]||140;apply();save();
       });
       handle.addEventListener('pointerdown',event=>{
+        if(event.button!==0&&event.pointerType!=='touch')return;
         event.preventDefault();event.stopPropagation();
         const name=(head.childNodes[0]?.textContent||head.textContent||'').trim();
         const min=MIN_WIDTHS[name]||70,startX=event.clientX,startWidth=widths[index];
-        handle.setPointerCapture?.(event.pointerId);
         handle.classList.add('dragging');document.body.classList.add('column-resizing');
-        const move=moveEvent=>{widths[index]=Math.max(min,Math.min(560,startWidth+startX-moveEvent.clientX));apply()};
+        const move=moveEvent=>{widths[index]=Math.max(min,Math.min(700,startWidth+startX-moveEvent.clientX));apply()};
         const up=()=>{
-          handle.classList.remove('dragging');document.body.classList.remove('column-resizing');
-          const next={};heads.forEach((h,i)=>next[(h.childNodes[0]?.textContent||h.textContent||'').trim()]=widths[i]);
-          localStorage.setItem(key,JSON.stringify(next));
-          handle.removeEventListener('pointermove',move);handle.removeEventListener('pointerup',up);handle.removeEventListener('pointercancel',up);
+          handle.classList.remove('dragging');document.body.classList.remove('column-resizing');save();
+          window.removeEventListener('pointermove',move,true);window.removeEventListener('pointerup',up,true);window.removeEventListener('pointercancel',up,true);
         };
-        handle.addEventListener('pointermove',move);handle.addEventListener('pointerup',up);handle.addEventListener('pointercancel',up);
+        window.addEventListener('pointermove',move,true);window.addEventListener('pointerup',up,true);window.addEventListener('pointercancel',up,true);
       });
     });
   }
@@ -248,7 +284,6 @@
   installResizableTable('kanban');
   installResizableTable('archive');
 
-  /* The rest of this patch needs app.js globals; safely no-op on incomplete pages. */
   if(typeof state==='undefined'||typeof tableFilters==='undefined'||typeof renderTasks!=='function')return;
 
   let dataVersion=0;
@@ -265,7 +300,6 @@
     valueCache=new WeakMap();idleToken++;
   }
 
-  /* Cache Persian date formatting because the same values are used in cells and filters repeatedly. */
   if(typeof jalaliText==='function'&&!jalaliText.__bamcoCached){
     const originalJalaliText=jalaliText,cache=new Map();
     jalaliText=function(value){const key=String(value??'');if(cache.has(key))return cache.get(key);const out=originalJalaliText(value);if(cache.size>2048)cache.clear();cache.set(key,out);return out};
@@ -313,8 +347,7 @@
     const work=()=>{
       if(token!==idleToken)return;
       const tr=qs(`#${scope}View .column-filters`);if(!tr)return;
-      /* Low-cardinality columns first: owner, status, priority, reminder and delay-state. */
-      for(const index of [3,4,5,9,11]){
+      for(const index of [0,3,4,5,9,11]){
         const selectEl=tr.children[index]?.querySelector('select');
         if(selectEl)populateFilter(selectEl,scope,index);
       }
@@ -324,6 +357,7 @@
 
   updateColumnFilters=function(scope,rows,archived){
     latestRows[scope]=rows;latestArchived[scope]=archived;
+    const table=qs(`#${scope}View table`);if(table)normalizeHeaderRows(table);
     const tr=qs(`#${scope}View .column-filters`);if(!tr)return;
     const filters=tableFilters[scope],count=archived?15:13;
     while(tr.children.length>count)tr.lastElementChild.remove();
@@ -338,6 +372,7 @@
       }
       selectEl.value=current;
       selectEl.className=languageClass(current);
+      selectEl.disabled=false;
       if(selectEl.dataset.bamcoLazyBound!=='1'){
         selectEl.dataset.bamcoLazyBound='1';
         const warm=()=>populateFilter(selectEl,scope,index);
@@ -372,7 +407,6 @@
     }).join('');
     updateTaskToolbar(scope);rendered[scope]=true;
   };
-  /* Prevent the older post-loader from wrapping renderTasks with full-table MutationObservers. */
   renderTasks.__ascendingWrapped=true;
 
   chooseTask=function(scope,id){
@@ -404,6 +438,7 @@
       state.profiles=profiles;state.tasks=tasks;state.requests=requests;
       dataVersion++;resetRenderCaches();
       renderAll();
+      requestAnimationFrame(()=>{installResizableTable('kanban');installResizableTable('archive')});
     }catch(err){toast(err.message,true);throw err}
   };
 
@@ -413,9 +448,10 @@
     if(view==='kanban'&&!rendered.kanban)requestAnimationFrame(()=>renderTasks(false));
     else if(view==='archive'&&!rendered.archive)requestAnimationFrame(()=>renderTasks(true));
     else if(view==='dashboard'&&!rendered.dashboard)requestAnimationFrame(()=>{window.renderDashboard?.();rendered.dashboard=true});
+    if(view==='kanban'||view==='archive')requestAnimationFrame(()=>installResizableTable(view));
     return out;
   };
 
-  /* If an older renderer already created a Selection cell before this patch, clean it once. */
   removeSelectionHeader('kanban');removeSelectionHeader('archive');
+  requestAnimationFrame(()=>{installResizableTable('kanban');installResizableTable('archive')});
 })();
