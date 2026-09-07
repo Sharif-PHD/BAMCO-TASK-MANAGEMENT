@@ -8,8 +8,8 @@
   <link rel="stylesheet" href="styles.css?v=20260905-4" />
   <link rel="stylesheet" href="manager.css?v=20260906-7" />
   <link rel="stylesheet" href="ui-fixes-20260906.css?v=20260906-2" />
-  <link rel="stylesheet" href="sticker-desktop.css?v=20260906-static1" />
-  <link rel="stylesheet" href="ui-extra-20260906.css?v=20260906-6" />
+  <link rel="stylesheet" href="sticker-desktop.css?v=20260907-core1" />
+  <link rel="stylesheet" href="ui-extra-20260906.css?v=20260907-core1" />
   <link rel="stylesheet" href="stable-layout-20260906.css?v=20260906-1" />
   <link rel="stylesheet" href="ux-polish-20260906.css?v=20260906-login-icon2" />
   <link id="responsiveStyles" rel="stylesheet" href="responsive-20260906.css?v=20260906-4" />
@@ -26,24 +26,11 @@
   </style>
   <style id="finalLayoutFix">
     html,body{width:100%!important;height:100%!important;margin:0!important}
-
-    /* Login must stay inside one viewport: no page/card scrollbar. */
     html body #loginView.login-shell{
-      width:100%!important;
-      height:100dvh!important;
-      min-height:100dvh!important;
-      max-height:100dvh!important;
-      padding:16px!important;
-      overflow:hidden!important;
-      box-sizing:border-box!important;
+      width:100%!important;height:100dvh!important;min-height:100dvh!important;max-height:100dvh!important;
+      padding:16px!important;overflow:hidden!important;box-sizing:border-box!important;
     }
-    html body #loginView .login-card{
-      max-height:calc(100dvh - 32px)!important;
-      overflow:hidden!important;
-      box-sizing:border-box!important;
-    }
-
-    /* Keep the username/password icons visible after typing and browser autofill. */
+    html body #loginView .login-card{max-height:calc(100dvh - 32px)!important;overflow:hidden!important;box-sizing:border-box!important}
     html body #loginView #email,
     html body #loginView #email:hover,
     html body #loginView #email:focus,
@@ -52,10 +39,7 @@
     html body #loginView #email:autofill{
       padding-left:54px!important;
       background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 24 24'%3E%3Cpath fill='%237b8683' d='M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z'/%3E%3C/svg%3E")!important;
-      background-repeat:no-repeat!important;
-      background-position:17px center!important;
-      background-size:26px 26px!important;
-      background-color:#fff!important;
+      background-repeat:no-repeat!important;background-position:17px center!important;background-size:26px 26px!important;background-color:#fff!important;
     }
     html body #loginView #password,
     html body #loginView #password:hover,
@@ -65,39 +49,19 @@
     html body #loginView #password:autofill{
       padding-left:54px!important;
       background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 24 24'%3E%3Cpath fill='%237b8683' d='M17 8h-1V6a4 4 0 0 0-8 0v2H7a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2Zm-7-2a2 2 0 1 1 4 0v2h-4V6Zm3 9.73V18h-2v-2.27a2 2 0 1 1 2 0Z'/%3E%3C/svg%3E")!important;
-      background-repeat:no-repeat!important;
-      background-position:17px center!important;
-      background-size:26px 26px!important;
-      background-color:#fff!important;
+      background-repeat:no-repeat!important;background-position:17px center!important;background-size:26px 26px!important;background-color:#fff!important;
     }
     html body #loginView #email:-webkit-autofill,
     html body #loginView #password:-webkit-autofill{
-      -webkit-box-shadow:0 0 0 1000px #fff inset!important;
-      box-shadow:0 0 0 1000px #fff inset!important;
-      -webkit-text-fill-color:#26352f!important;
-      caret-color:#26352f!important;
+      -webkit-box-shadow:0 0 0 1000px #fff inset!important;box-shadow:0 0 0 1000px #fff inset!important;
+      -webkit-text-fill-color:#26352f!important;caret-color:#26352f!important;
     }
-
-    /* Do not emulate browser zoom after login; keep the application at its true viewport size. */
     html body #appView.app:not(.hidden){
-      width:100%!important;
-      max-width:100%!important;
-      height:100dvh!important;
-      min-height:100dvh!important;
-      zoom:1!important;
-      transform:none!important;
-      overflow:hidden!important;
+      width:100%!important;max-width:100%!important;height:100dvh!important;min-height:100dvh!important;
+      zoom:1!important;transform:none!important;overflow:hidden!important;
     }
     html body:has(#appView.app:not(.hidden)){overflow:hidden!important}
-    @media (min-width:761px){
-      html body #appView .workspace{
-        height:100dvh!important;
-        min-height:100dvh!important;
-        transform:none!important;
-      }
-    }
-
-    /* Compact only vertically on shorter screens, preserving the approved login design. */
+    @media (min-width:761px){html body #appView .workspace{height:100dvh!important;min-height:100dvh!important;transform:none!important}}
     @media (min-width:761px) and (max-height:850px){
       html body #loginView.login-shell{padding:10px 16px!important}
       html body #loginView .login-card{max-height:calc(100dvh - 20px)!important;padding:0 34px 18px!important}
@@ -166,7 +130,7 @@
     <section class="workspace">
       <header>
         <div><h2 id="viewTitle">داشبورد</h2><p id="viewSubtitle"></p></div>
-        <div class="header-actions"><button id="addTaskBtn" class="primary">＋ افزودن تسک</button></div>
+        <div class="header-actions"><button id="addTaskBtn" class="primary">＋ افزودن وظیفه</button></div>
       </header>
 
       <section id="dashboardView" class="view">
@@ -184,7 +148,7 @@
 
       <section id="kanbanView" class="view hidden">
         <div class="panel table-panel">
-          <div class="panel-head"><div><h3>وظایف جاری</h3><small id="kanbanScope"></small></div><input id="kanbanSearch" class="search" placeholder="جست‌وجو در تسک‌ها…" /></div>
+          <div class="panel-head"><div><h3>وظایف جاری</h3><small id="kanbanScope"></small></div><input id="kanbanSearch" class="search" placeholder="جست‌وجو در وظایف…" /></div>
           <input id="importFile" type="file" accept=".xlsx,.xls,.csv" hidden>
           <div class="task-toolbar"><button id="importBtn" class="ghost manager-only">ورود از اکسل</button><button id="kanbanExportBtn" class="ghost">خروجی اکسل</button><button id="kanbanEditBtn" class="ghost" disabled>ویرایش</button><button id="kanbanArchiveBtn" class="ghost" disabled>آرشیو فعالیت</button><button id="kanbanDeleteBtn" class="danger manager-only" disabled>حذف</button></div>
           <div class="table-wrap"><table><thead><tr><th>شناسه</th><th>عنوان فعالیت</th><th>توضیحات</th><th>متولی</th><th>وضعیت</th><th>اولویت</th><th>تاریخ شروع</th><th>تاریخ انجام</th><th>تاریخ پایان</th><th>یادآور</th><th>آخرین به‌روزرسانی</th><th>وضعیت دیرکرد</th><th>توضیحات مدیر</th><th>انتخاب</th></tr><tr class="column-filters"></tr></thead><tbody id="kanbanBody"></tbody></table></div>
@@ -193,21 +157,21 @@
 
       <section id="archiveView" class="view hidden">
         <div class="panel table-panel">
-          <div class="panel-head"><div><h3>وظایف آرشیوشده</h3><small id="archiveScope"></small></div><input id="archiveSearch" class="search" placeholder="جست‌وجو در آرشیو…" /></div>
+          <div class="panel-head"><div><h3>وظایف آرشیو شده</h3><small id="archiveScope"></small></div><input id="archiveSearch" class="search" placeholder="جست‌وجو در آرشیو…" /></div>
           <div class="task-toolbar"><button id="archiveImportBtn" class="ghost manager-only">ورود از اکسل</button><button id="archiveExportBtn" class="ghost">خروجی اکسل</button><button id="archiveEditBtn" class="ghost" disabled>ویرایش</button><button id="archiveRestoreBtn" class="ghost manager-only" disabled>بازگردانی به کانبان</button><button id="archiveDeleteBtn" class="danger manager-only" disabled>حذف</button></div>
           <div class="table-wrap"><table><thead><tr><th>شناسه</th><th>عنوان فعالیت</th><th>توضیحات</th><th>متولی</th><th>وضعیت</th><th>اولویت</th><th>تاریخ شروع</th><th>تاریخ انجام</th><th>تاریخ پایان</th><th>یادآور</th><th>آخرین به‌روزرسانی</th><th>وضعیت دیرکرد</th><th>توضیحات مدیر</th><th>تأخیر</th><th>تعجیل</th><th>انتخاب</th></tr><tr class="column-filters"></tr></thead><tbody id="archiveBody"></tbody></table></div>
         </div>
       </section>
 
       <section id="approvalsView" class="view hidden">
-        <div class="panel table-panel"><div class="panel-head"><h3>درخواست‌های منتظر بررسی</h3></div><div class="table-wrap"><table><thead><tr><th>شماره</th><th>درخواست‌دهنده</th><th>نوع</th><th>عنوان تسک</th><th>زمان</th><th></th></tr></thead><tbody id="approvalBody"></tbody></table></div></div>
+        <div class="panel table-panel"><div class="panel-head"><h3>درخواست‌های منتظر بررسی</h3></div><div class="table-wrap"><table><thead><tr><th>شماره</th><th>درخواست‌دهنده</th><th>نوع</th><th>عنوان وظیفه</th><th>زمان</th><th></th></tr></thead><tbody id="approvalBody"></tbody></table></div></div>
       </section>
     </section>
   </div>
 
   <dialog id="taskDialog" class="modal">
     <form id="taskForm" method="dialog">
-      <div class="modal-head"><div><h3 id="taskDialogTitle">افزودن تسک</h3><p id="taskDialogHint"></p></div><button type="button" data-close="taskDialog">×</button></div>
+      <div class="modal-head"><div><h3 id="taskDialogTitle">افزودن وظیفه</h3><p id="taskDialogHint"></p></div><button type="button" data-close="taskDialog">×</button></div>
       <div class="form-grid">
         <label class="span-2">عنوان کار<input name="title" required /></label>
         <label class="span-2">توضیحات<textarea name="description" rows="3"></textarea></label>
@@ -220,7 +184,7 @@
         <label>تاریخ انجام<div class="date-field"><input name="done_date_j" class="jalali-input" readonly placeholder="۱۴۰۵/۰۱/۰۱" data-iso-target="done_date"/><button type="button" class="calendar-btn" data-date-input="done_date_j">▦</button><input name="done_date" type="hidden"/></div></label>
         <label class="span-2 manager-only">توضیحات مدیر<textarea name="manager_notes" rows="2"></textarea></label>
       </div>
-      <div class="modal-actions"><button type="button" class="ghost" data-close="taskDialog">انصراف</button><button type="submit" class="primary" id="saveTaskBtn">ثبت تسک</button></div>
+      <div class="modal-actions"><button type="button" class="ghost" data-close="taskDialog">انصراف</button><button type="submit" class="primary" id="saveTaskBtn">ثبت وظیفه</button></div>
     </form>
   </dialog>
 
@@ -250,15 +214,15 @@
   <script src="sticker-pack-small-01.js?v=20260906-static1"></script>
   <script src="sticker-pack-small-02.js?v=20260906-static1"></script>
   <script src="sticker-pack-small-loader.js?v=20260906-static1"></script>
-  <script src="sticker-desktop.js?v=20260906-static1"></script>
-  <script src="app.js?v=20260906-8"></script>
+  <script src="sticker-desktop.js?v=20260907-core1"></script>
+  <script src="app.js?v=20260907-core1"></script>
   <script src="dashboard-exact-20260906.js?v=20260906-1"></script>
-  <script src="table-column-resize-20260906.js?v=20260906-1"></script>
+  <script src="table-column-resize-20260906.js?v=20260907-core1"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js"></script>
   <script src="data-io.js?v=20260906-5"></script>
   <script src="ui-fixes-20260906.js?v=20260906-2"></script>
   <script>window.__bamcoStableStickerInstalled=true;</script>
-  <script src="ui-extra-20260906.js?v=20260906-7"></script>
+  <script src="ui-extra-20260906.js?v=20260907-core1"></script>
   <script src="ux-polish-20260906.js?v=20260906-1"></script>
   <script>document.head.appendChild(document.querySelector('#responsiveStyles'));document.head.appendChild(document.querySelector('#finalLayoutFix'));</script>
 </body>
