@@ -8,13 +8,6 @@
 
   /* Keep the approved unified visual language, while this module alone owns task-table geometry. */
   setTimeout(()=>{
-    if(!document.getElementById('bamcoUnifiedUi')){
-      const link=document.createElement('link');
-      link.id='bamcoUnifiedUi';
-      link.rel='stylesheet';
-      link.href='unified-ui-20260907.css?v=20260907-core1';
-      document.head.appendChild(link);
-    }
     if(!document.getElementById('bamcoTaskTableCoreStyle')){
       const style=document.createElement('style');
       style.id='bamcoTaskTableCoreStyle';
