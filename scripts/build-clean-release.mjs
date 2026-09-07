@@ -54,6 +54,7 @@ html = html.replace(
   '</body>',
   `  <script>\n    document.addEventListener('DOMContentLoaded', () => {\n      const canonical = document.querySelector('#bamcoUnifiedStyles');\n      if (canonical) document.head.appendChild(canonical);\n    }, { once: true });\n  </script>\n</body>`
 );
+html = html.replace(/(<script[^>]+src="[^"?]+)\?v=[^"]+("[^>]*>)/g, '$1?v=final-20260907-2$2');
 
 await mkdir(release, { recursive: true });
 await writeFile(join(release, 'bamco-unified.css'), `${cssParts.join('\n\n')}\n`);
