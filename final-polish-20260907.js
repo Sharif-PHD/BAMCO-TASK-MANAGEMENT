@@ -198,7 +198,7 @@
 
   function boot(){
     run();installObservers();
-    [120,350,700,1200].forEach(ms=>setTimeout(()=>{run();installObservers()},ms));
+    run();installObservers();requestAnimationFrame(run);
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();

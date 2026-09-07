@@ -108,7 +108,7 @@
       requestAnimationFrame(()=>{queued=false;refreshAll()});
     }).observe(document.body,{childList:true,subtree:true});
     window.addEventListener('bamco-stickers-ready',()=>setTimeout(refreshWelcomeStickers,30));
-    [250,700,1400,2600].forEach(ms=>setTimeout(refreshAll,ms));
+    refreshAll();requestAnimationFrame(refreshAll);
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
@@ -194,6 +194,6 @@
 
   function install(){const view=document.querySelector('#templatesView');if(!view||view.dataset.desktopParity==='1')return;view.dataset.desktopParity='1';injectStyle();ensureDialog();const panel=view.querySelector('.panel');if(!panel)return;panel.className='desktop-template-shell';panel.innerHTML=`<fieldset class="desktop-template-fieldset"><legend>ویرایش متن ایمیل</legend><label for="templateState">الگو</label><select id="templateState">${Object.entries(META).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select><button id="openDesktopTemplateEditor" type="button" class="ghost">ویرایش متن</button></fieldset>`;panel.querySelector('#openDesktopTemplateEditor').addEventListener('click',openEditor);panel.querySelector('#templateState').addEventListener('change',e=>{activeKey=e.target.value});}
 
-  function boot(){install();[200,600,1200].forEach(ms=>setTimeout(install,ms))}
+  function boot(){install();requestAnimationFrame(install)}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();

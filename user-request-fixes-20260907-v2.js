@@ -294,7 +294,8 @@
 
   function boot(){
     applyAll();
-    [120,450,900,1500].forEach(ms=>setTimeout(()=>{injectStyle();removeMisplacedLoginSettings();ensureLoginNav();ensureWelcomeView();updateWelcomeStickers()},ms));
+    injectStyle();removeMisplacedLoginSettings();ensureLoginNav();ensureWelcomeView();updateWelcomeStickers();
+    requestAnimationFrame(()=>{ensureWelcomeView();updateWelcomeStickers()});
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();

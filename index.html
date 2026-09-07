@@ -6,91 +6,7 @@
   <title>BAMCO Task Management</title>
   <meta name="description" content="سامانه آنلاین مدیریت، پایش و پیگیری امور خودروسازان بم" />
   <link rel="icon" type="image/png" href="bamco-logo.png" />
-  <link rel="stylesheet" href="styles.css?v=20260905-4" />
-  <link rel="stylesheet" href="manager.css?v=20260906-7" />
-  <link rel="stylesheet" href="ui-fixes-20260906.css?v=20260907-avatar-hard-v4" />
-  <link rel="stylesheet" href="sticker-desktop.css?v=20260907-core2" />
-  <link rel="stylesheet" href="ui-extra-20260906.css?v=20260907-core2" />
-  <link rel="stylesheet" href="stable-layout-20260906.css?v=20260907-core2" />
-  <link rel="stylesheet" href="ux-polish-20260906.css?v=20260906-login-icon2" />
-  <link rel="stylesheet" href="portal-messages.css?v=20260907-1" />
-  <link id="responsiveStyles" rel="stylesheet" href="responsive-20260906.css?v=20260906-4" />
-  <style>
-    #appView.hidden{display:none!important;visibility:hidden!important}
-    #loginView.hidden{display:none!important;visibility:hidden!important}
-    #loginView:not(.hidden)~#appView{display:none!important;visibility:hidden!important}
-    .english-ui,.english,.en-text,[dir="ltr"],input[type="email"],input[type="url"],input[type="password"],.latin-run{font-family:"Times New Roman",Times,serif!important}
-    .english-ui,.english,.en-text,[dir="ltr"],input[type="email"],input[type="url"],input[type="password"],.latin-run{font-size:.90em!important}
-    .latin-run{direction:ltr!important;unicode-bidi:isolate!important}
-    #nav,.sidebar nav{gap:0!important;row-gap:0!important}
-    #nav>.nav-divider,.sidebar nav .nav-divider,.nav-divider.manager-only{display:none!important;height:0!important;margin:0!important;padding:0!important;border:0!important}
-    #nav>button,.sidebar nav button{margin-top:0!important;margin-bottom:0!important}
-  </style>
-  <style id="finalLayoutFix">
-    html,body{width:100%!important;height:100%!important;margin:0!important}
-    html body #loginView.login-shell{
-      width:100%!important;height:100dvh!important;min-height:100dvh!important;max-height:100dvh!important;
-      padding:16px!important;overflow:hidden!important;box-sizing:border-box!important;
-    }
-    html body #loginView .login-card{max-height:calc(100dvh - 32px)!important;overflow:hidden!important;box-sizing:border-box!important}
-    html body #loginView #email,
-    html body #loginView #email:hover,
-    html body #loginView #email:focus,
-    html body #loginView #email:not(:placeholder-shown),
-    html body #loginView #email:-webkit-autofill,
-    html body #loginView #email:autofill{
-      padding-left:54px!important;
-      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 24 24'%3E%3Cpath fill='%237b8683' d='M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z'/%3E%3C/svg%3E")!important;
-      background-repeat:no-repeat!important;background-position:17px center!important;background-size:26px 26px!important;background-color:#fff!important;
-    }
-    html body #loginView #password,
-    html body #loginView #password:hover,
-    html body #loginView #password:focus,
-    html body #loginView #password:not(:placeholder-shown),
-    html body #loginView #password:-webkit-autofill,
-    html body #loginView #password:autofill{
-      padding-left:54px!important;
-      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 24 24'%3E%3Cpath fill='%237b8683' d='M17 8h-1V6a4 4 0 0 0-8 0v2H7a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2Zm-7-2a2 2 0 1 1 4 0v2h-4V6Zm3 9.73V18h-2v-2.27a2 2 0 1 1 2 0Z'/%3E%3C/svg%3E")!important;
-      background-repeat:no-repeat!important;background-position:17px center!important;background-size:26px 26px!important;background-color:#fff!important;
-    }
-    html body #loginView #email:-webkit-autofill,
-    html body #loginView #password:-webkit-autofill{
-      -webkit-box-shadow:0 0 0 1000px #fff inset!important;box-shadow:0 0 0 1000px #fff inset!important;
-      -webkit-text-fill-color:#26352f!important;caret-color:#26352f!important;
-    }
-    html body #appView.app:not(.hidden){
-      width:100%!important;max-width:100%!important;height:100dvh!important;min-height:100dvh!important;
-      zoom:1!important;transform:none!important;overflow:hidden!important;
-    }
-    html body:has(#appView.app:not(.hidden)){overflow:hidden!important}
-    @media (min-width:761px){html body #appView .workspace{height:100dvh!important;min-height:100dvh!important;transform:none!important}}
-    @media (min-width:761px) and (max-height:850px){
-      html body #loginView.login-shell{padding:10px 16px!important}
-      html body #loginView .login-card{max-height:calc(100dvh - 20px)!important;padding:0 34px 18px!important}
-      html body #loginView .brand-lockup{min-height:205px!important;margin:0 -34px 14px!important;padding:17px 24px 15px!important}
-      html body #loginView .brand-lockup img{width:145px!important;height:122px!important}
-      html body #loginView .brand-lockup h1::after{font-size:27px!important;line-height:1.5!important}
-      html body #loginView .login-card label{font-size:18px!important;margin:7px 1px 5px!important}
-      html body #loginView .login-card input{height:53px!important;font-size:18px!important}
-      html body #loginView .primary.wide{height:55px!important;margin-top:15px!important;font-size:21px!important}
-      html body #loginView .login-card::after{margin-top:15px!important;padding-top:11px!important;font-size:16px!important}
-      html body #loginView .form-error{min-height:18px!important;margin-top:3px!important}
-    }
-    @media (max-width:760px){
-      html body #loginView.login-shell{padding:8px!important;align-items:center!important}
-      html body #loginView .login-card{width:min(100%,440px)!important;max-height:calc(100dvh - 16px)!important;overflow:hidden!important;margin:auto!important}
-    }
-    @media (max-width:760px) and (max-height:700px){
-      html body #loginView .login-card{padding:0 22px 14px!important}
-      html body #loginView .brand-lockup{min-height:160px!important;margin:0 -22px 10px!important;padding:11px 14px 10px!important}
-      html body #loginView .brand-lockup img{width:112px!important;height:96px!important}
-      html body #loginView .brand-lockup h1::after{font-size:21px!important;line-height:1.45!important}
-      html body #loginView .login-card label{margin:5px 1px 3px!important;font-size:16px!important}
-      html body #loginView .login-card input{height:47px!important;font-size:16px!important}
-      html body #loginView .primary.wide{height:49px!important;margin-top:10px!important;font-size:18px!important}
-      html body #loginView .login-card::after{margin-top:10px!important;padding-top:8px!important;font-size:14px!important}
-    }
-  </style>
+  <link id="bamcoUnifiedStyles" rel="stylesheet" href="bamco-unified.css?v=1">
 </head>
 <body>
   <div id="toast" class="toast" aria-live="polite"></div>
@@ -232,16 +148,22 @@
   <script src="vendor-xlsx.min.js?v=1.2.0-local"></script>
   <script src="vehicle-management-20260907.js?v=20260907-storage-fallback-v2"></script>
   <script src="data-io.js?v=20260907-avatar-hard-v4"></script>
+  <script src="ui-fixes-20260906.js?v=clean-3"></script>
+  <script src="task-calendar-gantt-20260907.js?v=clean-3"></script>
+  <script src="table-workbench.js?v=clean-3"></script>
   <script>window.__bamcoStableStickerInstalled=true;</script>
   <script src="ui-extra-20260906.js?v=20260907-core2"></script>
+  <script data-sidebar-groups src="sidebar-groups-20260906.js?v=clean-1"></script>
+  <script data-user-request-fixes-v2 src="user-request-fixes-20260907-v2.js?v=clean-1"></script>
+  <script data-login-controls src="login-controls-20260907.js?v=clean-1"></script>
+  <script data-final-polish src="final-polish-20260907.js?v=clean-1"></script>
   <script src="ux-polish-20260906.js?v=20260906-1"></script>
-  <script>document.head.appendChild(document.querySelector('#responsiveStyles'));document.head.appendChild(document.querySelector('#finalLayoutFix'));</script>
-  <style id="avatarDisplayAbsoluteFinal">
-    #appView .account #avatar{border-radius:50%!important;overflow:hidden!important;background-position:center!important;background-size:cover!important;background-repeat:no-repeat!important}
-    #appView .account #avatar.has-image{background-position:center!important;background-size:cover!important;background-repeat:no-repeat!important;color:transparent!important}
-    #settingsView #profileAvatarPreview{width:96px!important;min-width:96px!important;height:96px!important;padding:0!important;margin:0!important;border-radius:50%!important;overflow:hidden!important;background-position:center!important;background-size:cover!important;background-repeat:no-repeat!important;display:flex!important;align-items:center!important;justify-content:center!important}
-    #settingsView #profileAvatarPreview.has-image{background-position:center!important;background-size:cover!important;background-repeat:no-repeat!important;color:transparent!important}
-    #appView #avatar>img,#settingsView #profileAvatarPreview>img{width:100%!important;height:100%!important;object-fit:cover!important;display:block!important;border-radius:50%!important}
-  </style>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const canonical = document.querySelector('#bamcoUnifiedStyles');
+      if (canonical) document.head.appendChild(canonical);
+    }, { once: true });
+  </script>
 </body>
 </html>
