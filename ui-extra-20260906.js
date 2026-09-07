@@ -129,14 +129,7 @@
     document.head.appendChild(l);
   }
 
-  function appendOrderedScript(selector,src,dataName){
-    if(document.querySelector(selector))return;
-    const s=document.createElement('script');
-    s.async=false;
-    s.src=src;
-    s.dataset[dataName]='1';
-    document.body.appendChild(s);
-  }
+  function appendOrderedScript(){ /* Bundled statically in the clean release. */ }
 
   function installGroupedSidebar(){appendOrderedScript('script[data-sidebar-groups]','sidebar-groups-20260906.js?v=20260907-core2','sidebarGroups')}
   function installUserRequestedFixesV2(){appendOrderedScript('script[data-user-request-fixes-v2]','user-request-fixes-20260907-v2.js?v=20260907-hq1','userRequestFixesV2')}
