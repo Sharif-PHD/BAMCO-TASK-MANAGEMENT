@@ -1,0 +1,114 @@
+/* Final sidebar alignment — 2026-09-07 */
+#appView #sidebar nav{
+  padding-top:22px!important;
+}
+
+/* All top-level sidebar rows use one geometry and one typography. */
+#appView #sidebar #nav>.nav-login-root,
+#appView #sidebar #nav>.nav-group>.nav-group-toggle,
+#appView #sidebar #nav>.nav-settings-root{
+  width:100%!important;
+  min-height:48px!important;
+  height:48px!important;
+  margin:0!important;
+  padding:7px 10px!important;
+  box-sizing:border-box!important;
+  display:grid!important;
+  grid-template-columns:28px minmax(0,1fr) 22px!important;
+  align-items:center!important;
+  gap:8px!important;
+  direction:rtl!important;
+  text-align:right!important;
+  font-family:"B Nazanin",BNazanin,"B Nazanin Regular",Tahoma,sans-serif!important;
+  font-size:17px!important;
+  line-height:1.25!important;
+  font-weight:700!important;
+}
+
+/* Direct rows get an empty chevron slot so their text lines up with grouped rows. */
+#appView #sidebar #nav>.nav-login-root::after,
+#appView #sidebar #nav>.nav-settings-root::after{
+  content:""!important;
+  display:block!important;
+  width:22px!important;
+  height:1px!important;
+}
+
+#appView #sidebar #nav>.nav-login-root>span,
+#appView #sidebar #nav>.nav-settings-root>span,
+#appView #sidebar #nav>.nav-group>.nav-group-toggle>span{
+  font-family:"B Nazanin",BNazanin,"B Nazanin Regular",Tahoma,sans-serif!important;
+  font-size:17px!important;
+  line-height:1.25!important;
+  font-weight:700!important;
+  white-space:nowrap!important;
+  text-align:right!important;
+}
+
+/* One optical size and one box for all primary icons. */
+#appView #sidebar #nav>.nav-login-root>b,
+#appView #sidebar #nav>.nav-settings-root>b,
+#appView #sidebar #nav>.nav-group>.nav-group-toggle>.nav-group-icon{
+  width:28px!important;
+  min-width:28px!important;
+  height:28px!important;
+  min-height:28px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  margin:0!important;
+  padding:0!important;
+  font-family:Tahoma,"Segoe UI Symbol",sans-serif!important;
+  font-size:18px!important;
+  line-height:1!important;
+  font-weight:400!important;
+  text-align:center!important;
+}
+
+/* Keep only the expand/collapse chevron smaller; its slot is still identical. */
+#appView #sidebar #nav>.nav-group>.nav-group-toggle>.nav-chevron{
+  width:22px!important;
+  min-width:22px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  margin:0!important;
+  padding:0!important;
+  font-family:Tahoma,sans-serif!important;
+  font-size:12px!important;
+  line-height:1!important;
+}
+
+/* Same vertical rhythm between every top-level item. */
+#appView #sidebar #nav>.nav-group,
+#appView #sidebar #nav>.nav-login-root,
+#appView #sidebar #nav>.nav-settings-root{
+  margin:0!important;
+}
+
+/* Collapsed menu keeps the same icon size and starts slightly lower as well. */
+#appView #sidebar.collapsed #nav{
+  padding-top:22px!important;
+}
+#appView #sidebar.collapsed #nav>.nav-login-root,
+#appView #sidebar.collapsed #nav>.nav-settings-root,
+#appView #sidebar.collapsed #nav>.nav-group>.nav-group-toggle{
+  min-height:48px!important;
+  height:48px!important;
+}
+#appView #sidebar.collapsed #nav>.nav-login-root>span,
+#appView #sidebar.collapsed #nav>.nav-settings-root>span,
+#appView #sidebar.collapsed #nav>.nav-group>.nav-group-toggle>span,
+#appView #sidebar.collapsed #nav>.nav-login-root::after,
+#appView #sidebar.collapsed #nav>.nav-settings-root::after,
+#appView #sidebar.collapsed #nav>.nav-group>.nav-group-toggle>.nav-chevron{
+  display:none!important;
+}
+#appView #sidebar.collapsed #nav>.nav-login-root,
+#appView #sidebar.collapsed #nav>.nav-settings-root,
+#appView #sidebar.collapsed #nav>.nav-group>.nav-group-toggle{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:8px 4px!important;
+}
