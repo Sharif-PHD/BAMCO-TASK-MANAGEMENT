@@ -12,33 +12,3 @@
   q('#optionBody').addEventListener('click',async e=>{const btn=e.target.closest('[data-id]');if(!btn)return;try{const row=rows.find(x=>String(x.id)===btn.dataset.id);if(btn.classList.contains('option-toggle'))await update('task_field_options',`id=eq.${row.id}`,{active:!row.active});else if(confirm(`گزینه «${row.label}» حذف شود؟`))await api(`/rest/v1/task_field_options?id=eq.${row.id}`,{method:'DELETE',prefer:'return=representation'});await load()}catch(err){toast(err.message,true)}});
   document.addEventListener('DOMContentLoaded',()=>{q('#nav').addEventListener('click',e=>{if(e.target.closest('[data-view="systemOptions"]'))setTimeout(load)});setTimeout(()=>{if(state?.profile)load().catch(()=>{})},1500)});
 })();
-
-(()=>{
-  'use strict';
-  const loadScript=(src,id,onload,force=false)=>{
-    const current=document.getElementById(id);
-    if(current&&!force){onload?.();return current}
-    if(current&&force)current.remove();
-    const s=document.createElement('script');s.id=id;s.src=src;s.onload=()=>onload?.();s.onerror=()=>console.error('BAMCO module load failed:',src);document.body.appendChild(s);return s;
-  };
-  const loadVehicle=(force=false)=>loadScript('vehicle-management-20260907.js?v=20260907-vehicle-rebuild1','bamcoVehicleManagement',null,force);
-  const repairIfBlank=()=>{
-    const permanent=document.querySelector('#vehiclePermanentView');
-    const temporary=document.querySelector('#vehicleTemporaryView');
-    if(!permanent||!temporary)return false;
-    const permanentReady=!!permanent.querySelector('table.vehicle-data-table');
-    const temporaryReady=!!temporary.querySelector('table.vehicle-data-table');
-    if(!permanentReady||!temporaryReady){loadVehicle(true);return true}
-    return true;
-  };
-  const boot=()=>{
-    loadVehicle(false);
-    let tries=0;
-    const timer=setInterval(()=>{tries++;if(repairIfBlank()||tries>=12)clearInterval(timer)},250);
-    document.addEventListener('click',e=>{
-      if(!e.target.closest('#nav button[data-view="vehiclePermanent"],#nav button[data-view="vehicleTemporary"]'))return;
-      setTimeout(()=>repairIfBlank(),30);
-    },true);
-  };
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
-})();
