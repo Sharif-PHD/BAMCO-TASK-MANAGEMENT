@@ -285,6 +285,9 @@
   const optionCache={kanban:new Map(),archive:new Map()};
   let valueCache=new WeakMap();
   let idleToken=0;
+  let archivePage=1;
+  let archivePageSize=200;
+  let archiveQuerySignature='';
 
   function resetRenderCaches(){
     rendered.kanban=false;rendered.archive=false;rendered.dashboard=false;
@@ -385,13 +388,23 @@
     updateColumnFilters(scope,allRows,archived);
     const rows=allRows.filter(t=>!query||[t.title,t.description,ownerName(t),t.status,t.priority,displayId(t)].some(v=>String(v??'').toLowerCase().includes(query)))
       .filter(t=>taskColumnValues(t,archived).every((v,index)=>!filters[index]||String(v??'')===filters[index]));
+    let visibleRows=rows;
+    if(archived){
+      const signature=JSON.stringify([query,filters]);
+      if(signature!==archiveQuerySignature){archiveQuerySignature=signature;archivePage=1}
+      const pageCount=Math.max(1,Math.ceil(rows.length/archivePageSize));
+      archivePage=Math.min(archivePage,pageCount);
+      const start=(archivePage-1)*archivePageSize;
+      visibleRows=rows.slice(start,start+archivePageSize);
+      renderArchivePager(rows.length,start,visibleRows.length,pageCount);
+    }
     const body=archived?qs('#archiveBody'):qs('#kanbanBody');if(!body)return;
     if(!rows.some(t=>String(t.id)===String(state.selected[scope])))state.selected[scope]=null;
     if(!rows.length){
       body.innerHTML=`<tr><td colspan="${archived?15:13}" class="empty">موردی برای نمایش وجود ندارد.</td></tr>`;
       updateTaskToolbar(scope);rendered[scope]=true;return;
     }
-    body.innerHTML=rows.map(t=>{
+    body.innerHTML=visibleRows.map(t=>{
       const due=norm(t.due_state),status=norm(t.status),rowClass=status==='منتظر پاسخ'?'row-waiting':due==='دیرکرد'?'row-overdue':due.includes('هشدار')?'row-warning':'row-normal';
       const values=taskColumnValues(t,archived);
       const selected=String(state.selected[scope])===String(t.id);
@@ -400,6 +413,22 @@
     updateTaskToolbar(scope);rendered[scope]=true;
   };
   renderTasks.__ascendingWrapped=true;
+
+  function renderArchivePager(total,start,shown,pageCount){
+    const pager=qs('#archivePager');if(!pager)return;
+    pager.innerHTML=`<span>نمایش ${fa(total?start+1:0)} تا ${fa(start+shown)} از ${fa(total)} رکورد</span><div><label>تعداد در صفحه <select id="archivePageSize"><option value="100">۱۰۰</option><option value="200">۲۰۰</option><option value="500">۵۰۰</option></select></label><button type="button" class="ghost" data-archive-page="prev" ${archivePage<=1?'disabled':''}>صفحه قبل</button><strong>صفحه ${fa(archivePage)} از ${fa(pageCount)}</strong><button type="button" class="ghost" data-archive-page="next" ${archivePage>=pageCount?'disabled':''}>صفحه بعد</button></div>`;
+    qs('#archivePageSize',pager).value=String(archivePageSize);
+  }
+
+  qs('#archivePager')?.addEventListener('click',event=>{
+    const action=event.target.closest('[data-archive-page]')?.dataset.archivePage;if(!action)return;
+    archivePage+=action==='next'?1:-1;renderTasks(true);
+    qs('#archiveView .table-wrap')?.scrollTo({top:0,behavior:'smooth'});
+  });
+  qs('#archivePager')?.addEventListener('change',event=>{
+    if(event.target.id!=='archivePageSize')return;
+    archivePageSize=Number(event.target.value)||200;archivePage=1;renderTasks(true);
+  });
 
   chooseTask=function(scope,id){
     state.selected[scope]=Number(id);
@@ -424,7 +453,7 @@
   refresh=async function(){
     try{
       const profilesPromise=isManager()?select('profiles','select=id,email,full_name,excel_name,role,active&active=eq.true&order=full_name'):Promise.resolve([state.profile]);
-      const tasksPromise=select('task_status_view','select=*&order=id.desc');
+      const tasksPromise=selectAll('task_status_view','select=*&order=id.desc');
       const requestsPromise=isManager()?select('change_requests','select=*&request_status=eq.pending&order=created_at.asc'):Promise.resolve([]);
       const [profiles,tasks,requests]=await Promise.all([profilesPromise,tasksPromise,requestsPromise]);
       state.profiles=profiles;state.tasks=tasks;state.requests=requests;

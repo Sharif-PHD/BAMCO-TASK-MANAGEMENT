@@ -2216,6 +2216,8 @@ html body #appView:has(#sidebar.collapsed) .app-footer-credit { right: var(--bam
   html body #appView #welcomeView .bamco-welcome-sticker-right { grid-column: 2 !important; grid-row: 2 !important; }
 }
 
+/* Retired horizontal shell kept inert for release history. */
+@media (max-width: 0px) {
 /* Canonical 2026-09-07 shell. Keep every structural rule in this file. */
 html,body{width:100%;min-height:100%;overflow-x:hidden}
 body:has(#appView:not(.hidden)){overflow:hidden;background:#f4f7f6}
@@ -2463,6 +2465,8 @@ body.welcome-active #appView .workspace>.view{height:calc(100dvh - 64px)!importa
 #appView .workspace > header { min-height: 62px !important; margin: 12px 16px 0 !important; padding: 10px 16px !important; box-sizing: border-box !important; }
 #appView .workspace > .view { height: calc(100dvh - 154px) !important; max-height: calc(100dvh - 154px) !important; padding: 14px 16px !important; box-sizing: border-box !important; overflow: auto !important; }
 
+}
+
 /* Unified task tables and Excel-like workbench */
 #appView .table-panel { margin: 0 !important; padding: 14px !important; border-radius: var(--bamco-radius-md) !important; }
 #appView .task-toolbar { display: flex !important; align-items: center !important; gap: 8px !important; flex-wrap: wrap !important; padding: 0 0 12px !important; }
@@ -2485,6 +2489,36 @@ body.welcome-active #appView .workspace>.view{height:calc(100dvh - 64px)!importa
 #appView .table-wrap thead { position: sticky !important; top: 0 !important; z-index: 20 !important; }
 #appView .column-filters th { background: #edf4f1 !important; }
 #appView .column-filters select { color: var(--bamco-text) !important; background-color: #fff !important; border-color: #c2d2cb !important; }
+
+/* Complete archive with lightweight paging and truly resizable columns. */
+#appView table.resizable-task-table th,
+#appView table.resizable-task-table td {
+  min-width: 0 !important;
+  max-width: none !important;
+}
+#appView table.resizable-task-table .column-resize-handle {
+  display: block !important;
+  width: 12px !important;
+  left: -6px !important;
+  cursor: col-resize !important;
+}
+.archive-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 46px;
+  padding: 8px 4px 0;
+  color: var(--bamco-text-muted);
+  font-size: 14px;
+}
+.archive-pager > div,.archive-pager label { display: flex; align-items: center; gap: 8px; }
+.archive-pager select { width: 78px !important; min-width: 78px !important; height: 34px !important; }
+.archive-pager button { min-height: 34px !important; padding: 4px 12px !important; }
+@media (max-width:760px){
+  .archive-pager,.archive-pager>div{align-items:stretch;flex-direction:column}
+  .archive-pager label{justify-content:space-between}
+}
 
 /* Messages, alerts and status language */
 .toast { border: 1px solid var(--bamco-border) !important; border-right: 5px solid var(--bamco-green-600) !important; border-radius: var(--bamco-radius-sm) !important; background: #fff !important; color: var(--bamco-text) !important; box-shadow: 0 16px 46px rgba(12,45,34,.2) !important; }

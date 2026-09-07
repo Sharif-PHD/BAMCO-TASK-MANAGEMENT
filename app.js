@@ -32,6 +32,14 @@ async function api(path,{method='GET',body,auth=true,prefer}={}){
   return data;
 }
 const select=(table,q='select=*')=>api(`/rest/v1/${table}?${q}`);
+async function selectAll(table,q='select=*',pageSize=1000){
+  const rows=[];
+  for(let from=0;;from+=pageSize){
+    const page=await api(`/rest/v1/${table}?${q}&offset=${from}&limit=${pageSize}`);
+    rows.push(...page);
+    if(page.length<pageSize)return rows;
+  }
+}
 const insert=(table,body)=>api(`/rest/v1/${table}`,{method:'POST',body,prefer:'return=representation'});
 const update=(table,filter,body)=>api(`/rest/v1/${table}?${filter}`,{method:'PATCH',body,prefer:'return=representation'});
 const rpc=(name,body)=>api(`/rest/v1/rpc/${name}`,{method:'POST',body});
@@ -106,7 +114,7 @@ async function enterApp(){
 async function refresh(){
   try{
     state.profiles=isManager()?await select('profiles','select=id,email,full_name,excel_name,role,active&active=eq.true&order=full_name'):[state.profile];
-    state.tasks=await select('task_status_view','select=*&order=id.desc');
+    state.tasks=await selectAll('task_status_view','select=*&order=id.desc');
     state.requests=await select('change_requests',isManager()?'select=*&request_status=eq.pending&order=created_at.asc':'select=*&request_status=in.(pending,needs_revision)&order=created_at.asc');
     state.requestHistory=await select('change_requests','select=*&request_status=in.(approved,rejected)&order=created_at.desc');
     renderAll();
