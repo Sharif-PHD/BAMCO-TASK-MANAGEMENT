@@ -1,7 +1,7 @@
 (()=>{
   const hasFa=s=>/[\u0600-\u06ff]/.test(String(s||''));
   const hasEn=s=>/[A-Za-z]/.test(String(s||''));
-  document.documentElement.dataset.uiHotfix='20260907-core1';
+  document.documentElement.dataset.uiHotfix='20260907-core2';
 
   function wrapLatinText(root=document.body){
     if(!root)return;
@@ -117,14 +117,14 @@
 
   function refreshStableLayout(){
     document.querySelectorAll('link[href*="stable-layout-20260906.css"]').forEach(x=>x.remove());
-    const l=document.createElement('link');l.rel='stylesheet';l.href='stable-layout-20260906.css?v=20260907-core1';l.dataset.finalLayout='1';document.head.appendChild(l);
+    const l=document.createElement('link');l.rel='stylesheet';l.href='stable-layout-20260906.css?v=20260907-core2';l.dataset.finalLayout='1';document.head.appendChild(l);
   }
 
   function installSidebarUniformStyle(){
     document.querySelectorAll('link[data-sidebar-uniform]').forEach(x=>x.remove());
     const l=document.createElement('link');
     l.rel='stylesheet';
-    l.href='sidebar-uniform-20260907.css?v=20260907-core1';
+    l.href='sidebar-uniform-20260907.css?v=20260907-core2';
     l.dataset.sidebarUniform='1';
     document.head.appendChild(l);
   }
@@ -138,10 +138,10 @@
     document.body.appendChild(s);
   }
 
-  function installGroupedSidebar(){appendOrderedScript('script[data-sidebar-groups]','sidebar-groups-20260906.js?v=20260907-core1','sidebarGroups')}
-  function installUserRequestedFixesV2(){appendOrderedScript('script[data-user-request-fixes-v2]','user-request-fixes-20260907-v2.js?v=20260907-core1','userRequestFixesV2')}
-  function installLoginControls(){appendOrderedScript('script[data-login-controls]','login-controls-20260907.js?v=20260907-core1','loginControls')}
-  function installFinalPolish(){appendOrderedScript('script[data-final-polish]','final-polish-20260907.js?v=20260907-core1','finalPolish')}
+  function installGroupedSidebar(){appendOrderedScript('script[data-sidebar-groups]','sidebar-groups-20260906.js?v=20260907-core2','sidebarGroups')}
+  function installUserRequestedFixesV2(){appendOrderedScript('script[data-user-request-fixes-v2]','user-request-fixes-20260907-v2.js?v=20260907-core2','userRequestFixesV2')}
+  function installLoginControls(){appendOrderedScript('script[data-login-controls]','login-controls-20260907.js?v=20260907-core2','loginControls')}
+  function installFinalPolish(){appendOrderedScript('script[data-final-polish]','final-polish-20260907.js?v=20260907-core2','finalPolish')}
 
   const boot=()=>{
     refreshStableLayout();
