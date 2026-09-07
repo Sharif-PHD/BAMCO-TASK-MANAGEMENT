@@ -12,3 +12,9 @@
   q('#optionBody').addEventListener('click',async e=>{const btn=e.target.closest('[data-id]');if(!btn)return;try{const row=rows.find(x=>String(x.id)===btn.dataset.id);if(btn.classList.contains('option-toggle'))await update('task_field_options',`id=eq.${row.id}`,{active:!row.active});else if(confirm(`گزینه «${row.label}» حذف شود؟`))await api(`/rest/v1/task_field_options?id=eq.${row.id}`,{method:'DELETE',prefer:'return=representation'});await load()}catch(err){toast(err.message,true)}});
   document.addEventListener('DOMContentLoaded',()=>{q('#nav').addEventListener('click',e=>{if(e.target.closest('[data-view="systemOptions"]'))setTimeout(load)});setTimeout(()=>{if(state?.profile)load().catch(()=>{})},1500)});
 })();
+
+(()=>{
+  const loadScript=(src,id,onload)=>{if(document.getElementById(id)){onload?.();return}const s=document.createElement('script');s.id=id;s.src=src;s.onload=()=>onload?.();s.onerror=()=>console.error('BAMCO module load failed:',src);document.body.appendChild(s)};
+  const boot=()=>loadScript('vehicle-management-20260907.js?v=20260907-1','bamcoVehicleManagement',()=>loadScript('vehicle-template-bootstrap-20260907.js?v=20260907-1','bamcoVehicleTemplate'));
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();
