@@ -64,6 +64,47 @@
 }
 .profile-photo-field{align-items:center!important}
 
+/* Profile photo row: avatar on the far right, title/text/buttons immediately to its left. */
+#settingsView .profile-photo-field{
+  display:grid!important;
+  grid-template-columns:96px minmax(0,1fr)!important;
+  grid-template-rows:auto!important;
+  align-items:center!important;
+  justify-content:start!important;
+  column-gap:16px!important;
+  direction:rtl!important;
+  width:100%!important;
+  text-align:right!important;
+}
+#settingsView .profile-photo-field>#profileAvatarPreview{
+  grid-column:1!important;
+  grid-row:1!important;
+  justify-self:start!important;
+}
+#settingsView .profile-photo-field>div:last-child{
+  grid-column:2!important;
+  grid-row:1!important;
+  align-self:center!important;
+  justify-self:stretch!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  justify-content:center!important;
+  gap:4px!important;
+  direction:rtl!important;
+  text-align:right!important;
+  min-width:0!important;
+}
+#settingsView .profile-photo-field>div:last-child>b,
+#settingsView .profile-photo-field>div:last-child>p{
+  margin:0!important;
+  padding:0!important;
+  text-align:right!important;
+  direction:rtl!important;
+}
+#settingsView .profile-photo-field>div:last-child>p{line-height:1.7!important;color:#547065!important}
+#settingsView #chooseAvatarBtn{margin-top:8px!important;align-self:flex-start!important}
+
 /* Keep the actual canvas crop dialog stable. */
 .avatar-crop-dialog{width:min(500px,calc(100vw - 28px))!important;max-width:500px!important}
 .crop-stage{
@@ -82,5 +123,6 @@
 
 @media(max-width:600px){
   #settingsView #profileAvatarPreview.profile-avatar-preview{width:84px!important;min-width:84px!important;height:84px!important}
+  #settingsView .profile-photo-field{grid-template-columns:84px minmax(0,1fr)!important;column-gap:12px!important}
   .crop-stage{width:min(320px,78vw)!important;height:min(320px,78vw)!important}
 }
