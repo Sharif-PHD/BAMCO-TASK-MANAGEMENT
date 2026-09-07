@@ -1,11 +1,12 @@
 (()=>{
   'use strict';
   if(window.__bamcoAvatarHardFix)return;
-  window.__bamcoAvatarHardFix='v3';
+  window.__bamcoAvatarHardFix='v4';
   let currentObjectUrl='';
 
+  const appState=()=>typeof state!=='undefined'?state:null;
   function label(){
-    const p=window.state?.profile;
+    const p=appState()?.profile;
     return String(p?.display_name||p?.full_name||'ب').trim().charAt(0)||'ب';
   }
   function render(el,url=''){
@@ -27,8 +28,8 @@
   }
 
   async function refresh(){
-    const p=window.state?.profile;
-    if(!p)return;
+    const s=appState(),p=s?.profile;
+    if(!p||!s?.token)return;
     if(currentObjectUrl){URL.revokeObjectURL(currentObjectUrl);currentObjectUrl='';}
     render(document.querySelector('#avatar'));
     render(document.querySelector('#profileAvatarPreview'));
@@ -36,7 +37,7 @@
     try{
       const path=String(p.avatar_path).split('/').map(encodeURIComponent).join('/');
       const res=await fetch(`${SB_URL}/storage/v1/object/authenticated/avatars/${path}`,{
-        headers:{apikey:SB_KEY,Authorization:`Bearer ${state.token}`},cache:'no-store'
+        headers:{apikey:SB_KEY,Authorization:`Bearer ${s.token}`},cache:'no-store'
       });
       if(!res.ok)throw new Error('دریافت تصویر پروفایل انجام نشد.');
       currentObjectUrl=URL.createObjectURL(await res.blob());
@@ -55,5 +56,5 @@
     #appView #avatar>img,#settingsView #profileAvatarPreview>img{width:100%!important;height:100%!important;object-fit:cover!important;display:block!important;border-radius:50%!important}
   `;
   document.head.appendChild(style);
-  [0,250,800,1600].forEach(ms=>setTimeout(()=>{if(window.state?.profile)refresh()},ms));
+  [0,250,800,1600].forEach(ms=>setTimeout(()=>{if(appState()?.profile)refresh()},ms));
 })();
