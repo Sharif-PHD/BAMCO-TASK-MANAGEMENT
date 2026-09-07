@@ -3,7 +3,7 @@
   if(window.__bamcoTaskTimeline)return;
   window.__bamcoTaskTimeline=true;
   const q=(s,r=document)=>r.querySelector(s),qa=(s,r=document)=>[...r.querySelectorAll(s)];
-  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
   const faNum=n=>typeof fa==='function'?fa(n):String(n??'').replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);
   const monthNames=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
   const weekNames=['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
@@ -19,7 +19,6 @@
   function toParts(iso){try{return typeof persianParts==='function'?persianParts(iso):null}catch{return null}}
   function isoFor(y,m,d){try{return typeof jalaliToISO==='function'?jalaliToISO(y,m,d):null}catch{return null}}
   function daysInMonth(y,m){try{return typeof daysInJalaliMonth==='function'?daysInJalaliMonth(y,m):(m<=6?31:m<=11?30:29)}catch{return m<=6?31:m<=11?30:29}}
-  function sameMonth(iso,y,m){const p=toParts(iso);return !!p&&p.y===y&&p.m===m}
   function dateIndex(iso,y,m){const p=toParts(iso);return p&&p.y===y&&p.m===m?p.d:null}
   function monthIsoRange(){const max=daysInMonth(month.y,month.m);return {start:isoFor(month.y,month.m,1),end:isoFor(month.y,month.m,max),max}}
   function filtered(){
@@ -71,15 +70,15 @@
   function render(){if(!month)month=currentMonth();q('#ttMonthLabel').textContent=`${monthNames[month.m-1]} ${faNum(month.y)}`;renderBody()}
   function renderBody(){mode==='gantt'?renderGantt():renderCalendar()}
   function renderCalendar(){
-    const body=q('#ttBody'),tasks=filtered(),max=daysInMonth(month.y,month.m),firstIso=isoFor(month.y,month.m,1),firstDay=firstIso?new Date(firstIso+'T12:00:00').getDay():6,offset=(firstDay+1)%7,today=currentMonth();
+    const body=q('#ttBody'),tasks=filtered(),days=daysInMonth(month.y,month.m),firstIso=isoFor(month.y,month.m,1),firstDay=firstIso?new Date(firstIso+'T12:00:00').getDay():6,offset=(firstDay+1)%7,today=currentMonth();
     const byDay={};tasks.forEach(t=>{const iso=t.due_date||t.start_date;if(!iso)return;const d=dateIndex(iso,month.y,month.m);if(d)(byDay[d]||(byDay[d]=[])).push(t)});
     let html='<div class="tt-calendar">'+weekNames.map(x=>`<div class="tt-week">${x}</div>`).join('');
     for(let i=0;i<offset;i++)html+='<div class="tt-day other"></div>';
-    for(let d=1;d<=max;d++){
+    for(let d=1;d<=days;d++){
       const arr=byDay[d]||[],todayClass=today.y===month.y&&today.m===month.m&&today.d===d?' today':'';
       html+=`<div class="tt-day${todayClass}"><div class="tt-day-num">${faNum(d)}</div><div class="tt-dots">${arr.slice(0,7).map(t=>`<button class="tt-dot" style="--c:${colorFor(t)}" data-task="${t.id}" title="#${esc(taskId(t))} — ${esc(t.title)}\nمتولی: ${esc(ownerNameLocal(t))}\nاولویت: ${esc(t.priority)}">${faNum(taskId(t))}</button>`).join('')}${arr.length>7?`<span class="tt-more">+${faNum(arr.length-7)}</span>`:''}</div></div>`;
     }
-    while((offset+max)%7!==0){html+='<div class="tt-day other"></div>';max===0; if((++max)>40)break}
+    let total=offset+days;while(total%7!==0){html+='<div class="tt-day other"></div>';total++}
     html+='</div>';body.innerHTML=html;qa('.tt-dot',body).forEach(b=>b.onclick=()=>{const t=activeTasks().find(x=>String(x.id)===b.dataset.task);if(t)openKanban(t)});
   }
   function renderGantt(){
@@ -95,5 +94,5 @@
     html+='</div></div>';body.innerHTML=html;qa('.tt-bar',body).forEach(b=>b.onclick=()=>{const t=activeTasks().find(x=>String(x.id)===b.dataset.task);if(t)openKanban(t)});
   }
   function boot(){ensure();month=currentMonth()}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,30),{once:true});else setTimeout(boot,30);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,200),{once:true});else setTimeout(boot,200);
 })();
