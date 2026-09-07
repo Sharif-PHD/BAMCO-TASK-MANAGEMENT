@@ -17,7 +17,6 @@
     let style=q('#bamcoFinalPolishStyle');
     if(!style){style=document.createElement('style');style.id='bamcoFinalPolishStyle';document.head.appendChild(style)}
     style.textContent=`
-      /* Sidebar: one icon system, no arrows and no section separator lines. */
       html body #appView #sidebar #nav>.nav-group,
       html body #appView #sidebar #nav>.nav-settings-root{border:0!important;border-top:0!important;border-bottom:0!important;box-shadow:none!important}
       html body #appView #sidebar #nav .nav-chevron{display:none!important;width:0!important;min-width:0!important;margin:0!important;padding:0!important}
@@ -46,7 +45,6 @@
         stroke-width:1.8!important;stroke-linecap:round!important;stroke-linejoin:round!important
       }
 
-      /* Kanban/archive section title: identical legend-on-border treatment to the other tabs. */
       html body #appView #kanbanView>.table-panel,
       html body #appView #archiveView>.table-panel{
         position:relative!important;margin:18px 0 14px!important;padding:28px 16px 16px!important;
@@ -71,7 +69,6 @@
       html body #appView #kanbanView .table-panel>.panel-head small,
       html body #appView #archiveView .table-panel>.panel-head small{display:none!important}
 
-      /* Toolbar: closed search input occupies zero layout space, so every button has the same 10px gap. */
       html body #appView #kanbanView .task-toolbar,
       html body #appView #archiveView .task-toolbar{
         display:flex!important;align-items:center!important;justify-content:flex-start!important;flex-wrap:nowrap!important;
@@ -90,7 +87,6 @@
         opacity:1!important;pointer-events:auto!important
       }
 
-      /* Task tables: exactly header + filter row. Remove sticky positioning that created the visual blank row. */
       html body #appView #kanbanView .table-wrap table,
       html body #appView #archiveView .table-wrap table{border-spacing:0!important;border-collapse:collapse!important}
       html body #appView #kanbanView thead,
@@ -132,19 +128,22 @@
     `;
   }
 
-  function setIcon(el,svg){if(!el)return;el.classList.add('bamco-top-icon');el.innerHTML=svg}
+  function setIcon(el,svg,key){
+    if(!el||el.dataset.bamcoTopIcon===key)return;
+    el.classList.add('bamco-top-icon');el.innerHTML=svg;el.dataset.bamcoTopIcon=key;
+  }
   function polishSidebar(){
     const nav=q('#nav');if(!nav)return;
     qa('.nav-chevron',nav).forEach(x=>x.remove());
-    setIcon(q(':scope>.nav-login-root>b',nav),ICONS.login);
+    setIcon(q(':scope>.nav-login-root>b',nav),ICONS.login,'login');
     qa(':scope>.nav-group',nav).forEach(g=>{
       const key=g.dataset.group||g.dataset.navGroup||'';
       const icon=q('.nav-group-toggle>.nav-group-icon',g);
-      if(key==='tasks')setIcon(icon,ICONS.tasks);
-      if(key==='email')setIcon(icon,ICONS.email);
-      if(key==='vehicle')setIcon(icon,ICONS.vehicle);
+      if(key==='tasks')setIcon(icon,ICONS.tasks,'tasks');
+      if(key==='email')setIcon(icon,ICONS.email,'email');
+      if(key==='vehicle')setIcon(icon,ICONS.vehicle,'vehicle');
     });
-    setIcon(q(':scope>.nav-settings-root>b',nav),ICONS.settings);
+    setIcon(q(':scope>.nav-settings-root>b',nav),ICONS.settings,'settings');
   }
 
   function clearBadFiltersOnce(){
@@ -240,9 +239,7 @@
     }catch{}
   }
 
-  function run(){
-    injectStyle();polishSidebar();clearBadFiltersOnce();installFilterOverride();fixWording();rerenderOnce();
-  }
+  function run(){injectStyle();polishSidebar();clearBadFiltersOnce();installFilterOverride();fixWording();rerenderOnce()}
 
   function installObservers(){
     for(const scope of ['kanban','archive']){
