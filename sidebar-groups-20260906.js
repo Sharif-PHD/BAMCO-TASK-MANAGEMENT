@@ -50,11 +50,12 @@
     nav.append(permanent,temporary);qa('#nav>.nav-divider').forEach(x=>x.remove());
 
     const task=makeGroup('مدیریت وظایف','tasks',['kanban','archive','dashboard','approvals'],'☑');
-    const email=makeGroup('مدیریت ایمیل','email',['people','send','templates','stickers','followup'],'✉');
+    const people=makeGroup('مدیریت افراد و نقش‌ها','people',['people'],'♙');
+    const email=makeGroup('مدیریت پیام','messages',['messages','sentMessages','send','templates','stickers','followup'],'✉');
     const vehicle=makeGroup('مدیریت خودرو','vehicle',['vehiclePermanent','vehicleTemporary'],'◇');
     if(settings)nav.appendChild(settings);
 
-    const refreshVisibility=()=>[task,email,vehicle].forEach(g=>{
+    const refreshVisibility=()=>[task,people,email,vehicle].forEach(g=>{
       if(!g)return;
       const visible=[...g.querySelectorAll('.nav-group-items>button')].some(b=>!b.classList.contains('hidden'));
       g.classList.toggle('hidden',!visible);
