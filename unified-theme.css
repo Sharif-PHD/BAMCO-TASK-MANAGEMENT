@@ -1,0 +1,395 @@
+:root {
+  --bamco-green-900: #123f32;
+  --bamco-green-800: #16513f;
+  --bamco-green-700: #176b4d;
+  --bamco-green-600: #218764;
+  --bamco-green-100: #e8f3ee;
+  --bamco-surface: #ffffff;
+  --bamco-surface-soft: #f6f9f7;
+  --bamco-border: #c8d6d0;
+  --bamco-text: #24332e;
+  --bamco-muted: #687871;
+  --bamco-danger: #b42318;
+  --bamco-radius-sm: 8px;
+  --bamco-radius-md: 12px;
+  --bamco-radius-lg: 18px;
+  --bamco-shadow: 0 8px 28px rgba(18, 63, 50, .09);
+  --bamco-font: Tahoma, Arial, sans-serif;
+}
+
+html, body, button, input, select, textarea, dialog {
+  font-family: var(--bamco-font) !important;
+}
+
+body {
+  color: var(--bamco-text) !important;
+  background: var(--bamco-surface-soft) !important;
+}
+
+.workspace > header,
+.panel,
+.dashboard-chart-card,
+.dashboard-filters,
+.dashboard-performance-range,
+.login-card,
+.bamco-welcome-card {
+  background: var(--bamco-surface) !important;
+  border: 1px solid var(--bamco-border) !important;
+  border-radius: var(--bamco-radius-md) !important;
+  box-shadow: var(--bamco-shadow) !important;
+}
+
+.panel-head,
+.modal-head {
+  border-color: var(--bamco-border) !important;
+}
+
+.panel-head h3,
+.modal-head h3,
+.workspace h2,
+.workspace h3,
+.workspace h4 {
+  color: var(--bamco-green-800) !important;
+}
+
+button,
+.primary,
+.ghost,
+.danger {
+  min-height: 40px;
+  border-radius: var(--bamco-radius-sm) !important;
+  font-weight: 700 !important;
+  transition: background-color .16s ease, border-color .16s ease, color .16s ease, box-shadow .16s ease !important;
+}
+
+button.primary,
+.primary {
+  color: #fff !important;
+  background: var(--bamco-green-700) !important;
+  border: 1px solid var(--bamco-green-700) !important;
+}
+
+button.primary:hover,
+.primary:hover {
+  background: var(--bamco-green-800) !important;
+  border-color: var(--bamco-green-800) !important;
+}
+
+button.ghost,
+.ghost {
+  color: var(--bamco-green-800) !important;
+  background: var(--bamco-surface) !important;
+  border: 1px solid var(--bamco-border) !important;
+}
+
+button.ghost:hover,
+.ghost:hover {
+  background: var(--bamco-green-100) !important;
+  border-color: var(--bamco-green-600) !important;
+}
+
+button.danger,
+.danger {
+  color: var(--bamco-danger) !important;
+  background: #fff5f4 !important;
+  border: 1px solid #f0b7b2 !important;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgba(33, 135, 100, .22) !important;
+  outline-offset: 1px !important;
+}
+
+input,
+select,
+textarea {
+  color: var(--bamco-text) !important;
+  background-color: var(--bamco-surface) !important;
+  border: 1px solid var(--bamco-border) !important;
+  border-radius: var(--bamco-radius-sm) !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--bamco-green-600) !important;
+  box-shadow: 0 0 0 3px rgba(33, 135, 100, .12) !important;
+}
+
+table {
+  color: var(--bamco-text) !important;
+  background: var(--bamco-surface) !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+thead th {
+  color: #fff !important;
+  background: var(--bamco-green-800) !important;
+  border-color: rgba(255, 255, 255, .16) !important;
+}
+
+tbody td {
+  border-color: #dde6e2 !important;
+}
+
+tbody tr:nth-child(even) td {
+  background: #f8fbf9 !important;
+}
+
+tbody tr:hover td,
+tbody tr.selected td,
+tbody tr.person-selected td {
+  background: var(--bamco-green-100) !important;
+}
+
+dialog.modal {
+  color: var(--bamco-text) !important;
+  background: var(--bamco-surface) !important;
+  border: 1px solid var(--bamco-border) !important;
+  border-radius: var(--bamco-radius-lg) !important;
+  box-shadow: 0 24px 70px rgba(14, 42, 33, .24) !important;
+}
+
+dialog::backdrop {
+  background: rgba(10, 30, 24, .52) !important;
+  backdrop-filter: blur(2px);
+}
+
+.sidebar {
+  background: linear-gradient(180deg, var(--bamco-green-900), var(--bamco-green-800)) !important;
+}
+
+#nav button,
+#nav .nav-group-toggle {
+  border-radius: var(--bamco-radius-sm) !important;
+}
+
+#nav button.active,
+#nav button:hover,
+#nav .nav-group-toggle:hover {
+  background: var(--bamco-green-600) !important;
+  color: #fff !important;
+}
+
+.empty,
+.manager-note,
+.form-error,
+.panel-head small,
+.workspace header p {
+  color: var(--bamco-muted) !important;
+}
+
+@media (max-width: 760px) {
+  .panel,
+  .dashboard-chart-card,
+  .dashboard-filters,
+  .dashboard-performance-range {
+    border-radius: var(--bamco-radius-sm) !important;
+  }
+}
+
+/* Horizontal application shell */
+#appView.app:not(.hidden) {
+  display: grid !important;
+  grid-template: 68px minmax(0, 1fr) / minmax(0, 1fr) !important;
+  width: 100% !important;
+  height: 100dvh !important;
+  overflow: hidden !important;
+}
+
+#appView .sidebar {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 100 !important;
+  grid-area: 1 / 1 !important;
+  display: grid !important;
+  grid-template-columns: 260px minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 68px !important;
+  min-height: 68px !important;
+  padding: 0 18px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-sizing: border-box !important;
+  box-shadow: 0 6px 24px rgba(11, 45, 34, .16) !important;
+}
+
+#appView .side-brand {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  width: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+#appView .side-brand img { width: 52px !important; height: 46px !important; object-fit: contain !important; }
+#appView .side-brand strong { display: block !important; max-width: 185px !important; font-size: 13px !important; line-height: 1.5 !important; color: #fff !important; }
+#appView #collapseBtn { display: none !important; }
+
+#appView #nav {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  width: 100% !important;
+  height: 68px !important;
+  padding: 0 8px !important;
+  margin: 0 !important;
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+
+#appView #nav > button,
+#appView #nav > .nav-group > .nav-group-toggle {
+  display: inline-flex !important;
+  grid-template-columns: none !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  width: auto !important;
+  min-width: 0 !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  padding: 0 12px !important;
+  color: rgba(255,255,255,.9) !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  font-size: 14px !important;
+  white-space: nowrap !important;
+}
+
+#appView #nav > button:hover,
+#appView #nav > button.active,
+#appView #nav > .nav-group:hover > .nav-group-toggle,
+#appView #nav > .nav-group:focus-within > .nav-group-toggle {
+  color: #fff !important;
+  background: rgba(255,255,255,.13) !important;
+  border-color: rgba(255,255,255,.16) !important;
+}
+
+#appView #nav > .nav-group { position: relative !important; width: auto !important; border: 0 !important; }
+#appView #nav > .nav-group > .nav-group-items {
+  position: absolute !important;
+  top: calc(100% - 7px) !important;
+  right: 0 !important;
+  z-index: 120 !important;
+  display: none !important;
+  width: 230px !important;
+  padding: 8px !important;
+  background: #fff !important;
+  border: 1px solid var(--bamco-border) !important;
+  border-radius: var(--bamco-radius-md) !important;
+  box-shadow: 0 18px 48px rgba(13, 46, 36, .2) !important;
+}
+
+#appView #nav > .nav-group:hover > .nav-group-items,
+#appView #nav > .nav-group:focus-within > .nav-group-items { display: grid !important; gap: 3px !important; }
+#appView #nav > .nav-group > .nav-group-items > button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 9px !important;
+  width: 100% !important;
+  min-height: 40px !important;
+  padding: 7px 10px !important;
+  color: var(--bamco-text) !important;
+  background: transparent !important;
+  border: 0 !important;
+  text-align: right !important;
+}
+#appView #nav > .nav-group > .nav-group-items > button:hover,
+#appView #nav > .nav-group > .nav-group-items > button.active { color: var(--bamco-green-800) !important; background: var(--bamco-green-100) !important; }
+
+#appView .account {
+  position: static !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: auto !important;
+  min-width: 190px !important;
+  margin: 0 !important;
+  padding: 0 0 0 4px !important;
+  border: 0 !important;
+}
+#appView .account-copy { min-width: 0 !important; color: #fff !important; }
+#appView .account-copy strong,#appView .account-copy small { color: #fff !important; }
+#appView .account #logoutBtn { color: #fff !important; background: rgba(255,255,255,.1) !important; border: 1px solid rgba(255,255,255,.15) !important; }
+
+#appView .workspace {
+  grid-area: 2 / 1 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: calc(100dvh - 68px) !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+}
+#appView .workspace > header { min-height: 62px !important; margin: 12px 16px 0 !important; padding: 10px 16px !important; box-sizing: border-box !important; }
+#appView .workspace > .view { height: calc(100dvh - 154px) !important; max-height: calc(100dvh - 154px) !important; padding: 14px 16px !important; box-sizing: border-box !important; overflow: auto !important; }
+
+/* Unified task tables and Excel-like workbench */
+#appView .table-panel { margin: 0 !important; padding: 14px !important; border-radius: var(--bamco-radius-md) !important; }
+#appView .task-toolbar { display: flex !important; align-items: center !important; gap: 8px !important; flex-wrap: wrap !important; padding: 0 0 12px !important; }
+.table-workbench { display: inline-flex; align-items: center; gap: 6px; margin-right: auto; position: relative; }
+.wb-tool { display: inline-flex !important; align-items: center !important; gap: 6px !important; padding: 0 10px !important; }
+.wb-tool em { font-style: normal; }
+.wb-tool.active { color: #fff !important; background: var(--bamco-green-700) !important; border-color: var(--bamco-green-700) !important; }
+.wb-column-menu { position: absolute; left: 0; top: calc(100% + 8px); z-index: 90; display: grid; grid-template-columns: repeat(2,minmax(150px,1fr)); gap: 4px 12px; width: 370px; max-height: 320px; overflow: auto; padding: 12px; background: #fff; border: 1px solid var(--bamco-border); border-radius: var(--bamco-radius-md); box-shadow: var(--bamco-shadow); }
+.wb-column-menu label { display: flex; align-items: center; gap: 8px; min-height: 32px; font-size: 13px; }
+.wb-column-menu input { width: 16px; height: 16px; }
+.wb-column-hidden { display: none !important; }
+.wb-sortable { cursor: pointer; padding-left: 28px !important; }
+.wb-sortable::after { content: '↕'; position: absolute; left: 9px; opacity: .55; }
+.wb-sortable[aria-sort='ascending']::after { content: '↑'; opacity: 1; }
+.wb-sortable[aria-sort='descending']::after { content: '↓'; opacity: 1; }
+.wb-compact tbody td { padding-top: 4px !important; padding-bottom: 4px !important; line-height: 1.35 !important; font-size: 13px !important; }
+.wb-fullscreen { position: fixed !important; inset: 10px !important; z-index: 1000 !important; height: auto !important; max-height: none !important; background: #fff !important; }
+.wb-fullscreen .table-wrap { max-height: calc(100dvh - 105px) !important; }
+#appView .table-wrap { border: 1px solid var(--bamco-border) !important; border-radius: var(--bamco-radius-sm) !important; background: #fff !important; }
+#appView .table-wrap thead { position: sticky !important; top: 0 !important; z-index: 20 !important; }
+#appView .column-filters th { background: #edf4f1 !important; }
+#appView .column-filters select { color: var(--bamco-text) !important; background-color: #fff !important; border-color: #c2d2cb !important; }
+
+/* Messages, alerts and status language */
+.toast { border: 1px solid var(--bamco-border) !important; border-right: 5px solid var(--bamco-green-600) !important; border-radius: var(--bamco-radius-sm) !important; background: #fff !important; color: var(--bamco-text) !important; box-shadow: 0 16px 46px rgba(12,45,34,.2) !important; }
+.toast.error,.toast.danger { border-right-color: var(--bamco-danger) !important; }
+.badge,#approvalBadge,.status-chip,.priority-chip { border-radius: 999px !important; font-weight: 700 !important; }
+.row-overdue td { background: #fff1f0 !important; }
+.row-warning td { background: #fff8e6 !important; }
+
+/* Calendar and Gantt share the same visual system */
+#taskTimelineView .task-timeline-shell { margin: 0 !important; padding: 18px !important; background: var(--bamco-surface) !important; border: 1px solid var(--bamco-border) !important; border-radius: var(--bamco-radius-md) !important; box-shadow: var(--bamco-shadow) !important; }
+#taskTimelineView .tt-mode.active { background: var(--bamco-green-700) !important; border-color: var(--bamco-green-700) !important; }
+#taskTimelineView .tt-calendar,#taskTimelineView .tt-gantt-wrap,#taskTimelineView .tt-legend { border-color: var(--bamco-border) !important; border-radius: var(--bamco-radius-sm) !important; }
+#taskTimelineView .tt-week,#taskTimelineView .tt-gantt-head { color: var(--bamco-green-800) !important; background: var(--bamco-green-100) !important; }
+#taskTimelineView .tt-day.today { background: #eff8f4 !important; box-shadow: inset 0 0 0 2px var(--bamco-green-600) !important; }
+
+@media (max-width: 1180px) {
+  #appView .sidebar { grid-template-columns: 190px minmax(0,1fr) auto !important; padding: 0 10px !important; }
+  #appView .side-brand strong { display: none !important; }
+  #appView .side-brand { width: 60px !important; }
+  #appView #nav > button span,#appView #nav > .nav-group > .nav-group-toggle > span { display: none !important; }
+  #appView .account { min-width: 150px !important; }
+}
+
+@media (max-width: 760px) {
+  #appView.app:not(.hidden) { grid-template-rows: 58px minmax(0,1fr) !important; }
+  #appView .sidebar { height: 58px !important; min-height: 58px !important; grid-template-columns: 52px minmax(0,1fr) 48px !important; padding: 0 6px !important; }
+  #appView .side-brand img { width: 44px !important; height: 40px !important; }
+  #appView #nav { height: 58px !important; overflow-x: auto !important; overflow-y: hidden !important; justify-content: flex-start !important; }
+  #appView #nav > button,#appView #nav > .nav-group > .nav-group-toggle { width: 40px !important; height: 40px !important; padding: 0 !important; }
+  #appView .account { min-width: 40px !important; }
+  #appView .account-copy,#appView .account #avatar { display: none !important; }
+  #appView .workspace { height: calc(100dvh - 58px) !important; }
+  #appView .workspace > header { margin: 8px 8px 0 !important; }
+  #appView .workspace > .view { height: calc(100dvh - 136px) !important; max-height: calc(100dvh - 136px) !important; padding: 8px !important; }
+  .wb-tool em { display: none; }
+  .wb-column-menu { position: fixed; inset: 72px 10px auto 10px; width: auto; grid-template-columns: 1fr 1fr; }
+}
