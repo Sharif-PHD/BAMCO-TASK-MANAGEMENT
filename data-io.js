@@ -41,4 +41,5 @@ document.querySelector('#importBtn')?.addEventListener('click',()=>document.quer
   const css=document.createElement('link');css.rel='stylesheet';css.href='ui-fixes-20260906.css?v=20260907-profile-title-v5';document.head.appendChild(css);
   const js=document.createElement('script');js.src='ui-fixes-20260906.js?v=20260907-profile-title-v5';document.body.appendChild(js);
   const avatar=document.createElement('script');avatar.src='avatar-display-hard-fix-20260907.js?v=20260907-avatar-hard-v4';document.body.appendChild(avatar);
+  const timeline=document.createElement('script');timeline.src='task-calendar-gantt-20260907.js?v=20260907-calendar-gantt-v2';document.body.appendChild(timeline);
 })();
