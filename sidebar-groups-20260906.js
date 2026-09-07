@@ -51,7 +51,7 @@
 
     const task=makeGroup('مدیریت وظایف','tasks',['kanban','archive','dashboard','approvals'],'☑');
     const people=makeGroup('مدیریت افراد و نقش‌ها','people',['people'],'♙');
-    const email=makeGroup('مدیریت پیام','messages',['messages','sentMessages','send','templates','stickers','followup'],'✉');
+    const email=makeGroup('مدیریت پیام','messages',['messages','sentMessages','templates','stickers'],'✉');
     const vehicle=makeGroup('مدیریت خودرو','vehicle',['vehiclePermanent','vehicleTemporary'],'◇');
     if(settings)nav.appendChild(settings);
 

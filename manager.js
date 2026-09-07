@@ -6,10 +6,8 @@
   const navHtml=`
     <div class="nav-divider manager-only"></div>
     <button data-view="people" class="manager-only"><b>♙</b><span>افراد و نقش‌ها</span></button>
-    <button data-view="send" class="manager-only"><b>✉</b><span>انتخاب و ارسال</span></button>
-    <button data-view="templates" class="manager-only"><b>≡</b><span>متن ایمیل‌ها</span></button>
+    <button data-view="templates" class="manager-only"><b>≡</b><span>متن پیام‌ها</span></button>
     <button data-view="stickers" class="manager-only"><b>◇</b><span>مدیریت استیکرها</span></button>
-    <button data-view="followup" class="manager-only"><b>↻</b><span>پیگیری پاسخ‌ها</span></button>
     <button data-view="settings"><b>⚙</b><span>تنظیمات</span></button>`;
   nav.insertAdjacentHTML('beforeend',navHtml);
 
@@ -114,6 +112,5 @@
     document.querySelector('#applyAvatarCrop')?.addEventListener('click',()=>{if(!cropImage)return;const out=document.createElement('canvas');out.width=512;out.height=512;const ctx=out.getContext('2d'),m=cropMetrics(),ratio=512/360;ctx.clearRect(0,0,512,512);ctx.save();ctx.beginPath();ctx.arc(256,256,256,0,Math.PI*2);ctx.clip();ctx.drawImage(cropImage,m.x*ratio,m.y*ratio,cropImage.naturalWidth*m.scale*ratio,cropImage.naturalHeight*m.scale*ratio);ctx.restore();out.toBlob(blob=>{if(!blob)return toast('ساخت تصویر برش‌خورده انجام نشد.',true);pendingAvatarBlob=blob;if(pendingPreviewUrl)URL.revokeObjectURL(pendingPreviewUrl);pendingPreviewUrl=URL.createObjectURL(blob);paintAvatar(document.querySelector('#profileAvatarPreview'),pendingPreviewUrl);document.querySelector('#avatarCropDialog').close();toast('محدوده عکس انتخاب شد؛ اکنون «ذخیره تنظیمات حساب» را بزنید.')},'image/png')});
     document.querySelector('#changePasswordBtn')?.addEventListener('click',()=>{document.querySelector('#cancelPasswordBtn').classList.remove('hidden');document.querySelector('#passwordError').textContent='';document.querySelector('#passwordForm').reset();document.querySelector('#passwordDialog').showModal()});
     document.querySelector('#saveProfileBtn')?.addEventListener('click',async()=>{try{const display_name=document.querySelector('#profileDisplayName').value.trim();let avatar_path=state.profile.avatar_path||null;if(pendingAvatarBlob){avatar_path=`${state.profile.id}/avatar.png`;const path=avatar_path.split('/').map(encodeURIComponent).join('/'),r=await fetch(`${SB_URL}/storage/v1/object/avatars/${path}`,{method:'POST',headers:{apikey:SB_KEY,Authorization:`Bearer ${state.token}`,'x-upsert':'true','Content-Type':'image/png','cache-control':'3600'},body:pendingAvatarBlob});if(!r.ok){const detail=await r.json().catch(()=>({}));throw new Error(detail.message||detail.error||'آپلود تصویر انجام نشد.')}}const saved=await update('profiles',`id=eq.${state.profile.id}`,{display_name,avatar_path,updated_at:new Date().toISOString()});if(!saved?.length)throw new Error('ذخیره پروفایل توسط پایگاه داده تأیید نشد.');state.profile={...state.profile,...saved[0]};document.querySelector('#userName').textContent=display_name||state.profile.full_name;pendingAvatarBlob=null;if(pendingPreviewUrl){URL.revokeObjectURL(pendingPreviewUrl);pendingPreviewUrl=''}await window.refreshProfileAvatar();toast('نام و تصویر پروفایل ذخیره شد.')}catch(e){toast(e.message,true)}});
-    updateMailState();
   });
 })();
