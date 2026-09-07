@@ -8,6 +8,7 @@
   let currentRows=[];
   let previewObjectUrl='';
   let pendingFiles=new Map();
+  let previewRequestId=0;
 
   const q=s=>document.querySelector(s);
   const qa=s=>[...document.querySelectorAll(s)];
@@ -45,11 +46,14 @@
           </div>
         </fieldset>
 
-        <div class="desktop-sticker-active-note" id="desktopStickerActiveNote"></div>
-        <div class="desktop-sticker-preview-stage">
-          <div id="desktopStickerLoading" class="desktop-sticker-loading hidden">در حال بارگذاری تصویر…</div>
-          <img id="desktopStickerPreview" alt="پیش‌نمایش استیکر">
-        </div>
+        <fieldset class="desktop-sticker-box desktop-sticker-preview-box">
+          <legend>پیش‌نمایش استیکر</legend>
+          <div class="desktop-sticker-active-note" id="desktopStickerActiveNote"></div>
+          <div class="desktop-sticker-preview-stage">
+            <div id="desktopStickerLoading" class="desktop-sticker-loading hidden">در حال بارگذاری تصویر…</div>
+            <img id="desktopStickerPreview" alt="پیش‌نمایش استیکر">
+          </div>
+        </fieldset>
 
         <div id="stickerGrid" class="sticker-grid" hidden></div>
       </div>
@@ -141,24 +145,50 @@
     const r=await fetch(`${SB_URL}/storage/v1/object/authenticated/stickers/${encoded}?v=${Date.now()}`,{headers:{apikey:SB_KEY,Authorization:`Bearer ${state.token}`}});
     if(!r.ok)throw new Error('تصویر ذخیره‌شده قابل دریافت نیست.');
     const blob=await r.blob();
-    if(previewObjectUrl)URL.revokeObjectURL(previewObjectUrl);
-    previewObjectUrl=URL.createObjectURL(blob);
-    return previewObjectUrl;
+    return URL.createObjectURL(blob);
+  }
+
+  function preloadImage(src){
+    return new Promise((resolve,reject)=>{
+      if(!src){reject(new Error('تصویر برای این وضعیت تعریف نشده است.'));return}
+      const probe=new Image();
+      probe.onload=()=>resolve(src);
+      probe.onerror=()=>reject(new Error('بارگذاری تصویر انجام نشد.'));
+      probe.src=src;
+      if(probe.complete&&probe.naturalWidth>0)resolve(src);
+    });
+  }
+
+  async function showPreviewSource(src,alt,objectUrl=''){
+    const img=q('#desktopStickerPreview');if(!img)return;
+    await preloadImage(src);
+    const previousObjectUrl=previewObjectUrl;
+    img.src=src;
+    img.alt=alt;
+    try{if(typeof img.decode==='function')await img.decode()}catch{}
+    if(objectUrl){previewObjectUrl=objectUrl;if(previousObjectUrl&&previousObjectUrl!==objectUrl)URL.revokeObjectURL(previousObjectUrl)}
   }
 
   async function refreshPreview(){
     const img=q('#desktopStickerPreview'),loading=q('#desktopStickerLoading');
     if(!img)return;
+    const requestId=++previewRequestId;
     loading?.classList.remove('hidden');
     const key=selectedState(),gender=selectedGender();
     const row=currentRows.find(r=>r.state_key===key&&r.gender===gender);
+    let objectUrl='';
     try{
-      img.src=row?.storage_path?await authenticatedStickerUrl(row.storage_path):defaultImage(key,gender);
-      img.alt=`${STATE_META[key]} - ${GENDER_FA[gender]}`;
+      const src=row?.storage_path?(objectUrl=await authenticatedStickerUrl(row.storage_path)):defaultImage(key,gender);
+      if(requestId!==previewRequestId){if(objectUrl)URL.revokeObjectURL(objectUrl);return}
+      await showPreviewSource(src,`${STATE_META[key]} - ${GENDER_FA[gender]}`,objectUrl);
     }catch(err){
-      img.src=defaultImage(key,gender);
-      toast?.('نسخه بارگذاری‌شده در دسترس نبود؛ تصویر پایه نمایش داده شد.',true);
-    }finally{loading?.classList.add('hidden')}
+      if(objectUrl)URL.revokeObjectURL(objectUrl);
+      const fallback=defaultImage(key,gender);
+      try{if(requestId===previewRequestId)await showPreviewSource(fallback,`${STATE_META[key]} - ${GENDER_FA[gender]}`)}catch{}
+      if(row?.storage_path)toast?.('نسخه بارگذاری‌شده در دسترس نبود؛ تصویر پایه نمایش داده شد.',true);
+    }finally{
+      if(requestId===previewRequestId)loading?.classList.add('hidden');
+    }
   }
 
   function validateImage(file){
