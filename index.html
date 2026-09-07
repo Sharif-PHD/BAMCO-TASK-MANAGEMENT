@@ -19,6 +19,9 @@
     #appView.hidden{display:none!important;visibility:hidden!important}
     #loginView.hidden{display:none!important;visibility:hidden!important}
     #loginView:not(.hidden)~#appView{display:none!important;visibility:hidden!important}
+    @media (min-width:901px){
+      #loginView:not(.hidden),#appView:not(.hidden){zoom:.8;width:125%;min-height:125vh}
+    }
     .english-ui,.english,.en-text,[dir="ltr"],input[type="email"],input[type="url"],input[type="password"],.latin-run{font-family:"Times New Roman",Times,serif!important}
     .english-ui,.english,.en-text,[dir="ltr"],input[type="email"],input[type="url"],input[type="password"],.latin-run{font-size:.90em!important}
     .latin-run{direction:ltr!important;unicode-bidi:isolate!important}
