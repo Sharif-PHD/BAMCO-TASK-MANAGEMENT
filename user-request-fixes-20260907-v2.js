@@ -4,6 +4,9 @@
   const qa=s=>[...document.querySelectorAll(s)];
 
   function injectStyle(){
+    /* Visual rules now live exclusively in unified-theme.css. */
+    q('#bamcoUserRequestFixes20260907V2')?.remove();
+    return;
     let style=q('#bamcoUserRequestFixes20260907V2');
     if(!style){style=document.createElement('style');style.id='bamcoUserRequestFixes20260907V2';document.head.appendChild(style)}
     style.textContent=`
