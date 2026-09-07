@@ -1,0 +1,136 @@
+name: BAMCO modularize app
+on:
+  push:
+    branches: ['refactor/modular-app']
+    paths:
+      - '.github/workflows/bamco-modularize.yml'
+permissions:
+  contents: write
+jobs:
+  modularize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Split canonical app by responsibility
+        run: |
+          node <<'NODE'
+          const fs=require('fs'), path=require('path');
+          let html=fs.readFileSync('index.html','utf8');
+          const before=Buffer.byteLength(html);
+          const styles=[...html.matchAll(/<style([^>]*)>([\s\S]*?)<\/style>/gi)];
+          const scripts=[...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/gi)];
+          if(styles.length!==2) throw new Error(`Expected 2 style blocks, got ${styles.length}`);
+          if(scripts.length!==26) throw new Error(`Expected 26 script blocks, got ${scripts.length}`);
+          const expect=(i,text)=>{if(!scripts[i-1][2].includes(text))throw new Error(`Script ${i} missing marker ${text}`)};
+          [[1,'manager.js'],[2,'avatar-display-hard-fix'],[3,'portal-messages.js'],[4,'system-options.js'],[5,'01_happy_female'],[6,'01_happy_male'],[7,'sticker-desktop.js'],[8,'app.js'],[9,'secure-storage-bridge'],[10,'dashboard-exact'],[11,'table-column-resize'],[12,'xlsx-js-style'],[14,'vehicle-management'],[15,'data-io.js'],[16,'ui-fixes'],[17,'task-calendar-gantt'],[18,'table-workbench.js'],[20,'ui-extra'],[21,'02_reminder_female'],[22,'sidebar-groups'],[23,'user-request-fixes'],[24,'login-controls'],[25,'final-polish'],[26,'ux-polish']].forEach(([i,m])=>expect(i,m));
+
+          fs.mkdirSync('assets/css',{recursive:true});
+          fs.mkdirSync('assets/js',{recursive:true});
+          fs.mkdirSync('assets/vendor',{recursive:true});
+          const write=(p,c)=>fs.writeFileSync(p,c.replace(/^\s+|\s+$/g,'')+'\n');
+          const stripLead=s=>s.replace(/^\s*\/\*[\s\S]*?\*\/\s*/,'');
+          const join=(ids,label)=>ids.map(i=>`/* ${label}:${i} */\n${stripLead(scripts[i-1][2])}`).join('\n\n');
+
+          write('assets/css/app.css', styles.map(x=>x[2]).join('\n'));
+          write('assets/js/shell.js', join([1,2,3,4],'shell'));
+          write('assets/js/stickers.js', join([5,6,7],'stickers'));
+          write('assets/js/app.js', join([8,9,10,11],'app'));
+          write('assets/vendor/xlsx.min.js', scripts[11][2].trim());
+          write('assets/js/vehicles.js', stripLead(scripts[13][2]));
+          write('assets/js/tasks-io.js', stripLead(scripts[14][2]));
+          write('assets/js/table-ui.js', stripLead(scripts[15][2]));
+          write('assets/js/timeline.js', stripLead(scripts[16][2]));
+          write('assets/js/tables.js', stripLead(scripts[17][2]));
+          write('assets/js/ui-helpers.js', stripLead(scripts[19][2]));
+          write('assets/js/sticker-assets.js', stripLead(scripts[20][2]));
+          write('assets/js/sidebar.js', stripLead(scripts[21][2]));
+          write('assets/js/task-ui.js', stripLead(scripts[22][2]));
+          write('assets/js/auth-ui.js', stripLead(scripts[23][2]));
+          write('assets/js/ux.js', join([25,26],'ux'));
+
+          const loader=`(()=>{\n  let pending=null;\n  window.ensureBamcoXLSX=function(){\n    if(window.XLSX)return Promise.resolve(window.XLSX);\n    if(pending)return pending;\n    pending=new Promise((resolve,reject)=>{\n      const s=document.createElement('script');\n      s.src='assets/vendor/xlsx.min.js';\n      s.async=true;\n      s.onload=()=>window.XLSX?resolve(window.XLSX):reject(new Error('کتابخانه Excel فعال نشد.'));\n      s.onerror=()=>{pending=null;reject(new Error('بارگذاری کتابخانه Excel انجام نشد.'));};\n      (document.head||document.documentElement).appendChild(s);\n    });\n    return pending;\n  };\n})();\n`;
+          write('assets/js/excel.js',loader);
+
+          // Convert the five XLSX consumers to async lazy loading.
+          const patchFile=(p)=>{
+            let s=fs.readFileSync(p,'utf8');
+            s=s.replace(/const XLSX=window\.ensureBamcoXLSX\(\);/g,'const XLSX=await window.ensureBamcoXLSX();');
+            s=s.replace(/function exportWorkbook\(/g,'async function exportWorkbook(');
+            s=s.replace(/function exportRows\(/g,'async function exportRows(');
+            s=s.replace(/function exportRowsFaReminder\(/g,'async function exportRowsFaReminder(');
+            fs.writeFileSync(p,s);
+          };
+          ['assets/js/vehicles.js','assets/js/tasks-io.js','assets/js/task-ui.js'].forEach(patchFile);
+          const consumerText=['assets/js/vehicles.js','assets/js/tasks-io.js','assets/js/task-ui.js'].map(p=>fs.readFileSync(p,'utf8')).join('\n');
+          if((consumerText.match(/await window\.ensureBamcoXLSX\(\)/g)||[]).length!==5) throw new Error('Expected exactly five lazy XLSX consumers');
+          if(/const XLSX=window\.ensureBamcoXLSX\(\)/.test(consumerText)) throw new Error('Synchronous XLSX consumer remains');
+
+          // Rebuild HTML while preserving the original execution order.
+          const replacements=new Map();
+          const ext=(src,attrs='')=>`<script defer src="${src}"${attrs?` ${attrs}`:''}></script>`;
+          replacements.set(scripts[0][0],ext('assets/js/shell.js'));
+          [2,3,4].forEach(i=>replacements.set(scripts[i-1][0],''));
+          replacements.set(scripts[4][0],ext('assets/js/stickers.js')); [6,7].forEach(i=>replacements.set(scripts[i-1][0],''));
+          replacements.set(scripts[7][0],ext('assets/js/app.js')); [9,10,11].forEach(i=>replacements.set(scripts[i-1][0],''));
+          replacements.set(scripts[11][0],'');
+          replacements.set(scripts[12][0],ext('assets/js/excel.js'));
+          replacements.set(scripts[13][0],ext('assets/js/vehicles.js'));
+          replacements.set(scripts[14][0],ext('assets/js/tasks-io.js'));
+          replacements.set(scripts[15][0],ext('assets/js/table-ui.js'));
+          replacements.set(scripts[16][0],ext('assets/js/timeline.js'));
+          replacements.set(scripts[17][0],ext('assets/js/tables.js'));
+          // Keep the tiny runtime flag inline at its original point.
+          replacements.set(scripts[18][0],scripts[18][0]);
+          replacements.set(scripts[19][0],ext('assets/js/ui-helpers.js'));
+          replacements.set(scripts[20][0],ext('assets/js/sticker-assets.js'));
+          replacements.set(scripts[21][0],ext('assets/js/sidebar.js','data-sidebar-groups'));
+          replacements.set(scripts[22][0],ext('assets/js/task-ui.js','data-user-request-fixes-v2'));
+          replacements.set(scripts[23][0],ext('assets/js/auth-ui.js','data-login-controls'));
+          replacements.set(scripts[24][0],ext('assets/js/ux.js','data-final-polish')); replacements.set(scripts[25][0],'');
+
+          html=html.replace(styles[0][0],'<link rel="stylesheet" href="assets/css/app.css">').replace(styles[1][0],'');
+          for(const [oldv,newv] of replacements) html=html.replace(oldv,newv);
+          html=html.replace(/\n{3,}/g,'\n\n');
+          fs.writeFileSync('index.html',html);
+
+          // Structural guards.
+          if(/application\/bamco-xlsx-source/.test(html)||/xlsx-js-style 1\.2\.0-beta/.test(html)) throw new Error('XLSX is still embedded in HTML');
+          for(const marker of ['loginForm','kanbanView','archiveView','taskTimelineView','vehiclePermanentView','vehicleTemporaryView']) if(!html.includes(marker)) throw new Error(`HTML marker missing: ${marker}`);
+          const refs=[...html.matchAll(/<(?:script[^>]+src|link[^>]+href)="([^"]+)"/g)].map(m=>m[1]).filter(x=>x.startsWith('assets/'));
+          for(const r of refs){if(!fs.existsSync(r.split('?')[0]))throw new Error(`Missing referenced asset ${r}`)}
+          const js=fs.readdirSync('assets/js').filter(x=>x.endsWith('.js'));
+          console.log('INDEX_BEFORE='+before);
+          console.log('INDEX_AFTER='+Buffer.byteLength(html));
+          console.log('CSS_BYTES='+fs.statSync('assets/css/app.css').size);
+          console.log('XLSX_LAZY_BYTES='+fs.statSync('assets/vendor/xlsx.min.js').size);
+          console.log('JS_FILES='+js.length);
+          console.log('INITIAL_REFERENCED_ASSET_BYTES='+refs.reduce((n,r)=>n+fs.statSync(r.split('?')[0]).size,0));
+          NODE
+          for f in assets/js/*.js assets/vendor/xlsx.min.js; do node --check "$f"; done
+          test -f .nojekyll && test ! -s .nojekyll
+          git diff --check
+      - name: Browser smoke tests
+        run: |
+          cat > xlsx-smoke.html <<'EOF'
+          <!doctype html><html><head><script defer src="assets/js/excel.js"></script></head><body><div id="state"></div><script>addEventListener('DOMContentLoaded',async()=>{const el=document.getElementById('state');el.textContent='BEFORE:'+typeof window.XLSX;try{const x=await window.ensureBamcoXLSX();el.textContent+='|AFTER:'+x.version}catch(e){el.textContent+='|FAIL:'+e.message}})</script></body></html>
+          EOF
+          python3 -m http.server 8765 >/tmp/bamco-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+          sleep 1
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          DOM="$($CHROME --headless --no-sandbox --disable-gpu --virtual-time-budget=8000 --dump-dom http://127.0.0.1:8765/xlsx-smoke.html 2>/dev/null)"
+          echo "$DOM" | grep -q 'BEFORE:undefined|AFTER:0.18.5'
+          APP="$($CHROME --headless --no-sandbox --disable-gpu --virtual-time-budget=5000 --dump-dom http://127.0.0.1:8765/index.html 2>/dev/null)"
+          echo "$APP" | grep -q 'id="loginForm"'
+          echo "$APP" | grep -q 'BAMCO Task Management'
+          rm xlsx-smoke.html
+          echo 'browser_smoke=OK'
+      - name: Commit modular version and remove one-shot workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -f .github/workflows/bamco-modularize.yml
+          git add index.html assets
+          git commit -m "refactor: modularize app without legacy override files"
+          git push origin HEAD:refactor/modular-app
