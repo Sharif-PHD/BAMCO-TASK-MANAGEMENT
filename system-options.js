@@ -14,7 +14,32 @@
 })();
 
 (()=>{
-  const loadScript=(src,id,onload)=>{if(document.getElementById(id)){onload?.();return}const s=document.createElement('script');s.id=id;s.src=src;s.onload=()=>onload?.();s.onerror=()=>console.error('BAMCO module load failed:',src);document.body.appendChild(s)};
-  const boot=()=>loadScript('vehicle-management-20260907.js?v=20260907-1','bamcoVehicleManagement',()=>loadScript('vehicle-template-bootstrap-20260907.js?v=20260907-1','bamcoVehicleTemplate'));
+  'use strict';
+  const loadScript=(src,id,onload,force=false)=>{
+    const current=document.getElementById(id);
+    if(current&&!force){onload?.();return current}
+    if(current&&force)current.remove();
+    const s=document.createElement('script');s.id=id;s.src=src;s.onload=()=>onload?.();s.onerror=()=>console.error('BAMCO module load failed:',src);document.body.appendChild(s);return s;
+  };
+  const loadTemplate=()=>loadScript('vehicle-template-bootstrap-20260907.js?v=20260907-blankfix2','bamcoVehicleTemplate');
+  const loadVehicle=(force=false)=>loadScript('vehicle-management-20260907.js?v=20260907-blankfix2','bamcoVehicleManagement',loadTemplate,force);
+  const repairIfBlank=()=>{
+    const permanent=document.querySelector('#vehiclePermanentView');
+    const temporary=document.querySelector('#vehicleTemporaryView');
+    if(!permanent||!temporary)return false;
+    const permanentReady=!!permanent.querySelector('table.vehicle-data-table');
+    const temporaryReady=!!temporary.querySelector('table.vehicle-data-table');
+    if(!permanentReady||!temporaryReady){loadVehicle(true);return true}
+    loadTemplate();return true;
+  };
+  const boot=()=>{
+    loadVehicle(false);
+    let tries=0;
+    const timer=setInterval(()=>{tries++;if(repairIfBlank()||tries>=12)clearInterval(timer)},250);
+    document.addEventListener('click',e=>{
+      if(!e.target.closest('#nav button[data-view="vehiclePermanent"],#nav button[data-view="vehicleTemporary"]'))return;
+      setTimeout(()=>repairIfBlank(),30);
+    },true);
+  };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
