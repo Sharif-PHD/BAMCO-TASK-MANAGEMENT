@@ -21,8 +21,7 @@
     if(current&&force)current.remove();
     const s=document.createElement('script');s.id=id;s.src=src;s.onload=()=>onload?.();s.onerror=()=>console.error('BAMCO module load failed:',src);document.body.appendChild(s);return s;
   };
-  const loadTemplate=()=>loadScript('vehicle-template-bootstrap-20260907.js?v=20260907-blankfix2','bamcoVehicleTemplate');
-  const loadVehicle=(force=false)=>loadScript('vehicle-management-20260907.js?v=20260907-blankfix2','bamcoVehicleManagement',loadTemplate,force);
+  const loadVehicle=(force=false)=>loadScript('vehicle-management-20260907.js?v=20260907-vehicle-rebuild1','bamcoVehicleManagement',null,force);
   const repairIfBlank=()=>{
     const permanent=document.querySelector('#vehiclePermanentView');
     const temporary=document.querySelector('#vehicleTemporaryView');
@@ -30,7 +29,7 @@
     const permanentReady=!!permanent.querySelector('table.vehicle-data-table');
     const temporaryReady=!!temporary.querySelector('table.vehicle-data-table');
     if(!permanentReady||!temporaryReady){loadVehicle(true);return true}
-    loadTemplate();return true;
+    return true;
   };
   const boot=()=>{
     loadVehicle(false);
