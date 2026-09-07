@@ -1,8 +1,13 @@
 (()=>{
   'use strict';
   if(window.__bamcoAvatarHardFix)return;
-  window.__bamcoAvatarHardFix='v4';
+  window.__bamcoAvatarHardFix='v5';
   let currentObjectUrl='';
+
+  const layoutCss=document.createElement('link');
+  layoutCss.rel='stylesheet';
+  layoutCss.href='ui-fixes-20260906.css?v=20260907-profile-layout-v6';
+  document.head.appendChild(layoutCss);
 
   const appState=()=>typeof state!=='undefined'?state:null;
   function label(){
