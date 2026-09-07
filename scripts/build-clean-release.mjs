@@ -37,7 +37,7 @@ cssParts.push(`/* Source: task-calendar-gantt-20260907.js#taskTimelineStyles */\
 cssParts.push(`/* Canonical design system */\n${await readFile(join(root, 'unified-theme.css'), 'utf8')}`);
 
 let html = sourceHtml.replace(stylesheetPattern, '').replace(stylePattern, '');
-html = html.replace('</head>', '  <link id="bamcoUnifiedStyles" rel="stylesheet" href="bamco-unified.css?v=final-20260907">\n</head>');
+html = html.replace('</head>', '  <link id="bamcoUnifiedStyles" rel="stylesheet" href="bamco-unified.css?v=final-20260907-2">\n</head>');
 html = html.replace(
   /<script>document\.head\.appendChild\(document\.querySelector\('#responsiveStyles'\)\);document\.head\.appendChild\(document\.querySelector\('#finalLayoutFix'\)\);<\/script>/,
   ''
@@ -54,7 +54,7 @@ html = html.replace(
   '</body>',
   `  <script>\n    document.addEventListener('DOMContentLoaded', () => {\n      const canonical = document.querySelector('#bamcoUnifiedStyles');\n      if (canonical) document.head.appendChild(canonical);\n    }, { once: true });\n  </script>\n</body>`
 );
-html = html.replace(/(<script[^>]+src="[^"?]+)\?v=[^"]+("[^>]*>)/g, '$1?v=final-20260907-2$2');
+html = html.replace(/(<script[^>]+src="[^"?]+)\?v=[^"]+("[^>]*>)/g, '$1?v=final-20260907-3$2');
 
 await mkdir(release, { recursive: true });
 await writeFile(join(release, 'bamco-unified.css'), `${cssParts.join('\n\n')}\n`);
