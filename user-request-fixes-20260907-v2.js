@@ -69,6 +69,7 @@
         pointer-events:none!important;
         user-select:none!important;
         filter:none!important;
+        image-rendering:auto!important;
       }
       #welcomeView .bamco-welcome-sticker-left{grid-column:1!important}
       #welcomeView .bamco-welcome-sticker-right{grid-column:3!important}
@@ -85,6 +86,17 @@
         cursor:pointer!important;
       }
       #appView #sidebar #nav>.nav-login-root.active{background:#218764!important;color:#fff!important}
+
+      /* Every sidebar subitem starts five character-spaces inward from the right. */
+      #appView #sidebar #nav>.nav-group>.nav-group-items{
+        padding:0 5ch 4px 0!important;
+        box-sizing:border-box!important;
+      }
+      #appView #sidebar #nav>.nav-group>.nav-group-items>button{
+        padding-right:0!important;
+        padding-left:10px!important;
+        box-sizing:border-box!important;
+      }
 
       @media(max-width:1050px){
         #welcomeView .bamco-welcome-layout{grid-template-columns:150px minmax(500px,760px) 150px!important;gap:14px!important}
@@ -136,10 +148,37 @@
   function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
   function happySticker(gender){return window.BAMCO_DESKTOP_ASSETS?.[`01_happy_${gender}`]||''}
 
+  const welcomeHQPaths={female:'sets/1/state1_female.png',male:'sets/1/state1_male.png'};
+  const welcomeHQUrls=window.BAMCO_WELCOME_HQ_URLS=window.BAMCO_WELCOME_HQ_URLS||{};
+  function preloadImage(src){return new Promise((resolve,reject)=>{const p=new Image();p.onload=()=>resolve(src);p.onerror=reject;p.src=src;if(p.complete&&p.naturalWidth>0)resolve(src)})}
+  async function fullResolutionWelcomeSticker(gender){
+    if(welcomeHQUrls[gender])return welcomeHQUrls[gender];
+    let token='';try{token=state?.token||''}catch{}
+    if(!token)return '';
+    const path=welcomeHQPaths[gender],encoded=path.split('/').map(encodeURIComponent).join('/');
+    const r=await fetch(`${SB_URL}/storage/v1/object/authenticated/stickers/${encoded}?v=20260907-hq1`,{headers:{apikey:SB_KEY,Authorization:`Bearer ${token}`},cache:'force-cache'});
+    if(!r.ok)throw new Error(`HQ sticker ${gender} unavailable`);
+    const blob=await r.blob();
+    const url=URL.createObjectURL(blob);
+    await preloadImage(url);
+    welcomeHQUrls[gender]=url;
+    return url;
+  }
+
+  async function setWelcomeSticker(img,gender){
+    if(!img)return;
+    try{
+      const src=await fullResolutionWelcomeSticker(gender);
+      if(src&&img.isConnected){img.src=src;img.dataset.quality='full-resolution'}
+    }catch{
+      const fallback=happySticker(gender);
+      if(fallback&&img.isConnected){img.src=fallback;img.dataset.quality='fallback'}
+    }
+  }
+
   function updateWelcomeStickers(){
-    const left=q('#welcomeHappyFemale'),right=q('#welcomeHappyMale');
-    if(left){const src=happySticker('female');if(src&&left.getAttribute('src')!==src)left.src=src}
-    if(right){const src=happySticker('male');if(src&&right.getAttribute('src')!==src)right.src=src}
+    setWelcomeSticker(q('#welcomeHappyFemale'),'female');
+    setWelcomeSticker(q('#welcomeHappyMale'),'male');
   }
 
   function ensureWelcomeView(){
