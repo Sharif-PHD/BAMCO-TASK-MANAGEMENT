@@ -17,13 +17,29 @@
         display:block!important;
         width:100%!important;
       }
-      #loginView .bamco-auth-field>input{
+      html body #loginView .bamco-auth-field>#email,
+      html body #loginView .bamco-auth-field>#email:hover,
+      html body #loginView .bamco-auth-field>#email:focus,
+      html body #loginView .bamco-auth-field>#email:not(:placeholder-shown),
+      html body #loginView .bamco-auth-field>#email:-webkit-autofill,
+      html body #loginView .bamco-auth-field>#email:autofill,
+      html body #loginView .bamco-auth-field>#password,
+      html body #loginView .bamco-auth-field>#password:hover,
+      html body #loginView .bamco-auth-field>#password:focus,
+      html body #loginView .bamco-auth-field>#password:not(:placeholder-shown),
+      html body #loginView .bamco-auth-field>#password:-webkit-autofill,
+      html body #loginView .bamco-auth-field>#password:autofill{
         width:100%!important;
         box-sizing:border-box!important;
         background-image:none!important;
         padding-left:54px!important;
       }
-      #loginView .bamco-auth-field.bamco-password-field>input{
+      html body #loginView .bamco-auth-field.bamco-password-field>#password,
+      html body #loginView .bamco-auth-field.bamco-password-field>#password:hover,
+      html body #loginView .bamco-auth-field.bamco-password-field>#password:focus,
+      html body #loginView .bamco-auth-field.bamco-password-field>#password:not(:placeholder-shown),
+      html body #loginView .bamco-auth-field.bamco-password-field>#password:-webkit-autofill,
+      html body #loginView .bamco-auth-field.bamco-password-field>#password:autofill{
         padding-right:54px!important;
       }
       #loginView .bamco-auth-leading-icon{
@@ -74,19 +90,6 @@
         color:#176b4d!important;
         background:transparent!important;
         box-shadow:none!important;
-      }
-      #loginView .bamco-auth-field>input:-webkit-autofill,
-      #loginView .bamco-auth-field>input:-webkit-autofill:hover,
-      #loginView .bamco-auth-field>input:-webkit-autofill:focus,
-      #loginView .bamco-auth-field>input:autofill{
-        background-image:none!important;
-        padding-left:54px!important;
-      }
-      #loginView .bamco-auth-field.bamco-password-field>input:-webkit-autofill,
-      #loginView .bamco-auth-field.bamco-password-field>input:-webkit-autofill:hover,
-      #loginView .bamco-auth-field.bamco-password-field>input:-webkit-autofill:focus,
-      #loginView .bamco-auth-field.bamco-password-field>input:autofill{
-        padding-right:54px!important;
       }
     `;
     document.head.appendChild(style);
