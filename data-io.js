@@ -1,7 +1,7 @@
 (()=>{
-let preview=[];
+let preview=[],importArchived=false;
 const key=(o,...ks)=>{for(const k of ks)if(o[k]!==undefined&&String(o[k]).trim()!=='')return o[k];return null};
-const iso=v=>{if(!v)return null;if(v instanceof Date&&!isNaN(v))return v.toISOString().slice(0,10);if(typeof v==='number'&&XLSX?.SSF){const d=XLSX.SSF.parse_date_code(v);return d?`${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`:null}const s=String(v).trim();return /^\d{4}-\d{1,2}-\d{1,2}$/.test(s)?s.split('-').map((x,i)=>i?x.padStart(2,'0'):x).join('-'):null};
+const iso=v=>{if(!v)return null;if(v instanceof Date&&!isNaN(v))return v.toISOString().slice(0,10);if(typeof v==='number'&&XLSX?.SSF){const d=XLSX.SSF.parse_date_code(v);return d?`${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`:null}const s=en(String(v).trim()).replace(/-/g,'/');if(/^\d{4}\/\d{1,2}\/\d{1,2}$/.test(s)){const [y,m,d]=s.split('/').map(Number);if(y<1700&&typeof jalaliToISO==='function')return jalaliToISO(y,m,d);return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`}return null};
 function owner(value){const s=norm(value).toLowerCase();return state.profiles.find(p=>norm(p.full_name).toLowerCase()===s||norm(p.excel_name).toLowerCase()===s||String(p.email).toLowerCase()===s)}
 async function parse(file){
   if(typeof XLSX==='undefined')throw new Error('کتابخانه Excel بارگذاری نشده است؛ صفحه را تازه‌سازی کنید.');
@@ -13,7 +13,7 @@ async function parse(file){
     const status=String(key(r,'وضعیت','status')||'ثبت شده'),errors=[];
     if(!title)errors.push('عنوان خالی');if(!who)errors.push('متولی نامعتبر');
     if(!['ثبت شده','منتظر پاسخ','در حال انجام','انجام شده'].includes(status))errors.push('وضعیت نامعتبر');
-    return{row:i+2,errors,data:{legacy_id:Number(key(r,'شناسه','ID','id'))||null,title:String(title||''),description:String(key(r,'توضیحات','description')||''),owner_id:who?.id,status,priority:String(key(r,'اولویت','priority')||'متوسط'),start_date:iso(key(r,'تاریخ شروع','start_date')),done_date:iso(key(r,'تاریخ انجام','done_date')),due_date:status==='منتظر پاسخ'?null:iso(key(r,'تاریخ پایان','due_date')),reminder_days:Number(key(r,'یادآور','reminder_days')||0),manager_notes:String(key(r,'توضیحات مدیر','manager_notes')||''),source:'excel'}};
+    return{row:i+2,errors,data:{legacy_id:Number(key(r,'شناسه','ID','id'))||null,title:String(title||''),description:String(key(r,'توضیحات','description')||''),owner_id:who?.id,status,priority:String(key(r,'اولویت','priority')||'متوسط'),start_date:iso(key(r,'تاریخ شروع','start_date')),done_date:iso(key(r,'تاریخ انجام','done_date')),due_date:status==='منتظر پاسخ'?null:iso(key(r,'تاریخ پایان','due_date')),reminder_days:Number(key(r,'یادآور','reminder_days')||0),manager_notes:String(key(r,'توضیحات مدیر','manager_notes')||''),archived:importArchived,archived_at:importArchived?new Date().toISOString():null,source:'excel'}};
   });
   renderPreview(rows.length);
 }
@@ -22,7 +22,8 @@ async function commit(){const mode=document.querySelector('#duplicateMode').valu
 function exportRows(archived){
   if(typeof XLSX==='undefined')return toast('کتابخانه Excel بارگذاری نشده است؛ صفحه را تازه‌سازی کنید.',true);
   const rows=state.tasks.filter(t=>!!t.archived===archived),headers=['شناسه','عنوان فعالیت','توضیحات','متولی','وضعیت','اولویت','تاریخ شروع','تاریخ انجام','تاریخ پایان','یادآور','آخرین به‌روزرسانی','وضعیت دیرکرد','توضیحات مدیر',...(archived?['تأخیر','تعجیل']:[])];
-  const data=rows.map(t=>[fa(displayId(t)),t.title,t.description||'',ownerName(t),t.status,t.priority,jalaliText(t.start_date),jalaliText(t.done_date),jalaliText(t.due_date),fa(t.reminder_days),jalaliDateTime(t.last_updated_at),t.due_state||'عادی',t.manager_notes||'',...(archived?[fa(t.delay_days||0),fa(t.advance_days||0)]:[])]);
+  const asDate=value=>value?new Date(`${value}T12:00:00`):null;
+  const data=rows.map(t=>[Number(displayId(t)),t.title,t.description||'',ownerName(t),t.status,t.priority,asDate(t.start_date),asDate(t.done_date),asDate(t.due_date),Number(t.reminder_days||0),t.last_updated_at?new Date(t.last_updated_at):null,t.due_state||'عادی',t.manager_notes||'',...(archived?[Number(t.delay_days||0),Number(t.advance_days||0)]:[])]);
   const ws=XLSX.utils.aoa_to_sheet([headers,...data]),range=XLSX.utils.decode_range(ws['!ref']);
   const border={top:{style:'thin',color:{rgb:'7F8C87'}},bottom:{style:'thin',color:{rgb:'7F8C87'}},left:{style:'thin',color:{rgb:'7F8C87'}},right:{style:'thin',color:{rgb:'7F8C87'}}};
   for(let r=range.s.r;r<=range.e.r;r++)for(let c=range.s.c;c<=range.e.c;c++){
@@ -30,10 +31,12 @@ function exportRows(archived){
     cell.s=r===0?{font:{name:'B Nazanin',sz:14,bold:true,color:{rgb:'FFFFFF'}},fill:{patternType:'solid',fgColor:{rgb:'176B4D'}},alignment:{horizontal:'center',vertical:'center',readingOrder:2,wrapText:false},border}:{font:{name:persian?'B Nazanin':'Times New Roman',sz:12},alignment:{horizontal:persian?'right':'left',vertical:'center',readingOrder:persian?2:1,wrapText:true},border};
   }
   ws['!views']=[{rightToLeft:true}];ws['!autofilter']={ref:XLSX.utils.encode_range({s:{r:0,c:0},e:{r:range.e.r,c:range.e.c}})};ws['!freeze']={xSplit:0,ySplit:1,topLeftCell:'A2',activePane:'bottomLeft',state:'frozen'};
+  for(let r=1;r<=range.e.r;r++){for(const c of [6,7,8])if(ws[XLSX.utils.encode_cell({r,c})]?.v)ws[XLSX.utils.encode_cell({r,c})].z='yyyy/mm/dd';if(ws[XLSX.utils.encode_cell({r,c:10})]?.v)ws[XLSX.utils.encode_cell({r,c:10})].z='yyyy/mm/dd hh:mm'}
   ws['!rows']=[{hpt:28},...rows.map(()=>({hpt:24}))];ws['!cols']=headers.map((h,i)=>({wch:[10,28,42,24,18,12,15,15,15,10,22,18,30,10,10][i]||14}));
   const wb=XLSX.utils.book_new();wb.Workbook={Views:[{RTL:true}]};XLSX.utils.book_append_sheet(wb,ws,archived?'Archive':'KANBAN');XLSX.writeFile(wb,`BAMCO_${archived?'Archive':'KANBAN'}_${new Date().toISOString().slice(0,10)}.xlsx`,{compression:true});toast('فایل Excel راست‌چین و قالب‌بندی‌شده آماده شد.');
 }
-document.querySelector('#importBtn')?.addEventListener('click',()=>document.querySelector('#importFile').click());document.querySelector('#archiveImportBtn')?.addEventListener('click',()=>document.querySelector('#importFile').click());document.querySelector('#importFile')?.addEventListener('change',e=>e.target.files?.[0]&&parse(e.target.files[0]).catch(x=>toast(x.message,true)));document.querySelector('#commitImportBtn')?.addEventListener('click',commit);document.querySelector('#kanbanExportBtn')?.addEventListener('click',()=>exportRows(false));document.querySelector('#archiveExportBtn')?.addEventListener('click',()=>exportRows(true));
+document.querySelector('#importBtn')?.addEventListener('click',()=>{importArchived=false;document.querySelector('#importFile').click()});document.querySelector('#archiveImportBtn')?.addEventListener('click',()=>{importArchived=true;document.querySelector('#importFile').click()});document.querySelector('#importFile')?.addEventListener('change',e=>e.target.files?.[0]&&parse(e.target.files[0]).catch(x=>toast(x.message,true)));document.querySelector('#commitImportBtn')?.addEventListener('click',commit);document.querySelector('#kanbanExportBtn')?.addEventListener('click',()=>exportRows(false));document.querySelector('#archiveExportBtn')?.addEventListener('click',()=>exportRows(true));
+window.BAMCO_DATA_IO={iso,exportRows,parse};
 })();
 
 // Load the latest UI corrections without changing the stable page structure.
