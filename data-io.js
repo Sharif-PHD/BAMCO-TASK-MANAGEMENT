@@ -38,6 +38,7 @@ document.querySelector('#importBtn')?.addEventListener('click',()=>document.quer
 
 // Load the latest UI corrections without changing the stable page structure.
 (()=>{
-  const css=document.createElement('link');css.rel='stylesheet';css.href='ui-fixes-20260906.css?v=20260907-avatar-display-final';document.head.appendChild(css);
-  const js=document.createElement('script');js.src='ui-fixes-20260906.js?v=20260907-avatar-display-final';document.body.appendChild(js);
+  const css=document.createElement('link');css.rel='stylesheet';css.href='ui-fixes-20260906.css?v=20260907-avatar-hard-v3';document.head.appendChild(css);
+  const js=document.createElement('script');js.src='ui-fixes-20260906.js?v=20260907-avatar-hard-v3';document.body.appendChild(js);
+  const avatar=document.createElement('script');avatar.src='avatar-display-hard-fix-20260907.js?v=20260907-avatar-hard-v3';document.body.appendChild(avatar);
 })();
