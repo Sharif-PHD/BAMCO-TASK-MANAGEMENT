@@ -116,17 +116,11 @@
   }
 
   function refreshStableLayout(){
-    document.querySelectorAll('link[href*="stable-layout-20260906.css"]').forEach(x=>x.remove());
-    const l=document.createElement('link');l.rel='stylesheet';l.href='stable-layout-20260906.css?v=20260907-hq1';l.dataset.finalLayout='1';document.head.appendChild(l);
+    /* Bundled in bamco-unified.css. */
   }
 
   function installSidebarUniformStyle(){
-    document.querySelectorAll('link[data-sidebar-uniform]').forEach(x=>x.remove());
-    const l=document.createElement('link');
-    l.rel='stylesheet';
-    l.href='sidebar-uniform-20260907.css?v=20260907-core2';
-    l.dataset.sidebarUniform='1';
-    document.head.appendChild(l);
+    /* Bundled in bamco-unified.css. */
   }
 
   function appendOrderedScript(){ /* Bundled statically in the clean release. */ }
