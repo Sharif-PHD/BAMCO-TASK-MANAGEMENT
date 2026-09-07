@@ -6,6 +6,7 @@
   const ICONS={
     login:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1v-9.5Z"/></svg>`,
     tasks:`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4.5V3h6v1.5M8.5 10l1.6 1.6L13 8.8M8.5 15l1.6 1.6L13 13.8M15 10h1.5M15 15h1.5"/></svg>`,
+    people:`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3.5 19c.5-3.5 2.6-5.2 5.5-5.2s5 1.7 5.5 5.2M15 6.5a2.5 2.5 0 0 1 0 5M16.5 14c2.3.4 3.7 2 4 5"/></svg>`,
     email:`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4.5 7 7.5 6 7.5-6"/></svg>`,
     vehicle:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 16h14l-1.3-5.2A2.4 2.4 0 0 0 15.4 9H8.6a2.4 2.4 0 0 0-2.3 1.8L5 16Zm-1 0v2.2c0 .4.4.8.8.8H6m12 0h1.2c.4 0 .8-.4.8-.8V16M7 13h.01M17 13h.01"/></svg>`,
     settings:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 3.8 10 2h4l.5 1.8 1.8.8 1.7-.9 2.8 2.8-.9 1.7.8 1.8 1.8.5v4l-1.8.5-.8 1.8.9 1.7-2.8 2.8-1.7-.9-1.8.8L14 22h-4l-.5-1.8-1.8-.8-1.7.9-2.8-2.8.9-1.7-.8-1.8-1.8-.5v-4l1.8-.5.8-1.8-.9-1.7L6 3.7l1.7.9 1.8-.8Z"/><circle cx="12" cy="12" r="3"/></svg>`
@@ -47,7 +48,21 @@
         padding-left:0!important;
       }
       html body #appView #sidebar #nav>.nav-group>.nav-group-items>button{
+        display:grid!important;
+        grid-template-columns:22px minmax(0,1fr)!important;
+        align-items:center!important;
+        gap:10px!important;
+        direction:rtl!important;
+        text-align:right!important;
+        justify-items:stretch!important;
         padding-right:0!important;
+      }
+      html body #appView #sidebar #nav>.nav-group>.nav-group-items>button>span{
+        display:block!important;
+        width:100%!important;
+        direction:rtl!important;
+        text-align:right!important;
+        justify-self:stretch!important;
       }
 
       html body #appView #welcomeView.bamco-welcome-view{
@@ -148,6 +163,8 @@
       const key=g.dataset.group||g.dataset.navGroup||'';
       const icon=q('.nav-group-toggle>.nav-group-icon',g);
       if(key==='tasks')setIcon(icon,ICONS.tasks,'tasks');
+      if(key==='people')setIcon(icon,ICONS.people,'people');
+      if(key==='messages')setIcon(icon,ICONS.email,'messages');
       if(key==='email')setIcon(icon,ICONS.email,'email');
       if(key==='vehicle')setIcon(icon,ICONS.vehicle,'vehicle');
     });
@@ -161,6 +178,7 @@
     }
     const k=q('#kanbanView .panel-head h3');if(k)k.textContent='وظایف جاری';
     const a=q('#archiveView .panel-head h3');if(a)a.textContent='وظایف آرشیو شده';
+    const footer=q('#appFooterCredit');if(footer)footer.textContent='توسعه یافته توسط واحد توسعه و تکوین محصول شرکت خودروسازان بم | شهاب‌الدین تنهائیان و نازنین قائمی';
   }
 
   function run(){injectStyle();polishSidebar();fixWording()}
