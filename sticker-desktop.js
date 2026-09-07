@@ -3,7 +3,6 @@
   const STATES=['state1','state2','state3','state4','state5'];
   const GENDERS=['female','male'];
   const GENDER_FA={female:'خانم',male:'آقا'};
-  const ENGINEERING_SET='واحد مهندسی محصول';
   let sets=[];
   let currentRows=[];
   let previewObjectUrl='';
@@ -42,7 +41,6 @@
             <select id="desktopStickerSet" aria-label="نسخه استیکر"></select>
             <button id="activateDesktopStickerSet" class="desktop-sticker-green" type="button">فعال‌سازی نسخه</button>
             <button id="addDesktopStickerSet" class="desktop-sticker-green" type="button">افزودن نسخه جدید</button>
-            <button id="restoreEngineeringStickerSet" class="desktop-sticker-green" type="button">بازگردانی واحد مهندسی محصول</button>
           </div>
         </fieldset>
 
@@ -91,7 +89,6 @@
     q('#desktopStickerSet')?.addEventListener('change',async()=>{await loadRowsForSelectedSet();await refreshPreview()});
     q('#activateDesktopStickerSet')?.addEventListener('click',()=>activateSelectedSet().catch(showError));
     q('#addDesktopStickerSet')?.addEventListener('click',openNewPackDialog);
-    q('#restoreEngineeringStickerSet')?.addEventListener('click',()=>restoreEngineeringDefaults().catch(showError));
     q('#editCurrentStickerBtn')?.addEventListener('click',()=>q('#editCurrentStickerFile')?.click());
     q('#editCurrentStickerFile')?.addEventListener('change',e=>editCurrentSticker(e).catch(showError));
     q('#closeDesktopStickerDialog')?.addEventListener('click',()=>q('#desktopStickerPackDialog')?.close());
@@ -105,8 +102,6 @@
   function selectedState(){return q('#desktopStickerState')?.value||'state1'}
   function selectedSetId(){return Number(q('#desktopStickerSet')?.value||0)}
   function selectedSet(){const id=selectedSetId();return sets.find(s=>Number(s.id)===id)||null}
-  const DEFAULT_ASSET_KEY={state1:'01_happy',state2:'02_reminder',state3:'03_concerned',state4:'04_serious',state5:'05_urgent'};
-  function defaultImage(stateKey,gender){return window.BAMCO_DESKTOP_ASSETS?.[`${DEFAULT_ASSET_KEY[stateKey]}_${gender}`]||''}
 
   async function loadDesktopStickerManager(){
     installView();
@@ -120,7 +115,7 @@
       }
       const combo=q('#desktopStickerSet');
       const previous=Number(combo.value||0);
-      const active=sets.find(s=>s.active)||sets.find(s=>s.name===ENGINEERING_SET)||sets[0];
+      const active=sets.find(s=>s.active)||sets[0];
       combo.innerHTML=sets.map(s=>`<option value="${s.id}">${esc(s.name)}${s.active?' — فعال':''}</option>`).join('');
       combo.value=String(sets.some(s=>Number(s.id)===previous)?previous:active.id);
       await loadRowsForSelectedSet();
@@ -178,14 +173,14 @@
     const row=currentRows.find(r=>r.state_key===key&&r.gender===gender);
     let objectUrl='';
     try{
-      const src=row?.storage_path?(objectUrl=await authenticatedStickerUrl(row.storage_path)):defaultImage(key,gender);
+      if(!row?.storage_path)throw new Error('برای این وضعیت تصویری بارگذاری نشده است.');
+      const src=objectUrl=await authenticatedStickerUrl(row.storage_path);
       if(requestId!==previewRequestId){if(objectUrl)URL.revokeObjectURL(objectUrl);return}
       await showPreviewSource(src,`${STATE_META[key]} - ${GENDER_FA[gender]}`,objectUrl);
     }catch(err){
       if(objectUrl)URL.revokeObjectURL(objectUrl);
-      const fallback=defaultImage(key,gender);
-      try{if(requestId===previewRequestId)await showPreviewSource(fallback,`${STATE_META[key]} - ${GENDER_FA[gender]}`)}catch{}
-      if(row?.storage_path)toast?.('نسخه بارگذاری‌شده در دسترس نبود؛ تصویر پایه نمایش داده شد.',true);
+      if(requestId===previewRequestId){img.removeAttribute('src');img.alt=err.message}
+      if(row?.storage_path)toast?.('تصویر بارگذاری‌شده در دسترس نیست.',true);
     }finally{
       if(requestId===previewRequestId)loading?.classList.add('hidden');
     }
@@ -279,18 +274,6 @@
       if(created?.id){try{await api(`/rest/v1/sticker_sets?id=eq.${created.id}`,{method:'DELETE',prefer:'return=representation'})}catch{} }
       throw err;
     }finally{button.disabled=false;button.textContent='ذخیره و فعال‌سازی'}
-  }
-
-  async function restoreEngineeringDefaults(){
-    const set=sets.find(s=>s.name===ENGINEERING_SET);
-    if(!set)throw new Error('نسخه «واحد مهندسی محصول» پیدا نشد.');
-    if(!confirm('همه تغییرات تصاویر نسخه «واحد مهندسی محصول» به تصاویر اصلی دسکتاپ بازگردد و همین نسخه فعال شود؟'))return;
-    await api(`/rest/v1/stickers?set_id=eq.${set.id}`,{method:'DELETE',prefer:'return=representation'});
-    await update('sticker_sets','active=eq.true',{active:false});
-    await update('sticker_sets',`id=eq.${set.id}`,{active:true});
-    q('#desktopStickerSet').value=String(set.id);
-    await loadDesktopStickerManager();
-    toast('نسخه «واحد مهندسی محصول» به تصاویر اصلی بازگردانی و فعال شد.');
   }
 
   function showError(err){console.error(err);if(typeof toast==='function')toast(err?.message||String(err),true)}

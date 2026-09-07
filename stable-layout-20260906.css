@@ -37,7 +37,7 @@ html,body{width:100%;height:100%;margin:0!important;overflow:hidden!important;ba
 .nav-group.collapsed-group .nav-chevron{transform:rotate(90deg)!important}
 /* Subitems: exactly five character-spaces of RTL indentation from the sidebar's right edge. */
 .nav-group-items{padding:0 5ch 4px 0!important;box-sizing:border-box!important}
-.sidebar nav .nav-group-items>button,.sidebar nav>button.nav-settings-root{width:100%!important;min-height:42px!important;margin:0!important;padding:6px 0 6px 10px!important;border:0!important;background:transparent!important;color:#dcebe6!important;display:flex!important;align-items:center!important;gap:10px!important;text-align:right!important;font-size:15.5px!important;font-weight:700!important;cursor:pointer!important}
+.sidebar nav .nav-group-items>button,.sidebar nav>button.nav-settings-root{width:100%!important;min-height:42px!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;color:#dcebe6!important;display:flex!important;align-items:center!important;gap:10px!important;text-align:right!important;font-size:15.5px!important;font-weight:700!important;cursor:pointer!important}
 .sidebar nav .nav-group-items>button:hover,.sidebar nav>button.nav-settings-root:hover{background:rgba(0,0,0,.08)!important}
 .sidebar nav .nav-group-items>button.active,.sidebar nav>button.nav-settings-root.active{background:var(--bamco-active)!important;color:#fff!important}
 .sidebar nav .nav-group-items>button b,.sidebar nav>button.nav-settings-root b{width:22px!important;min-width:22px!important;text-align:center!important;font-size:16px!important}

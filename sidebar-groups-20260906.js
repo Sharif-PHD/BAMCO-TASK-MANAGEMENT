@@ -49,12 +49,13 @@
     const temporary=document.createElement('button');temporary.dataset.view='vehicleTemporary';temporary.className='manager-only';temporary.innerHTML='<b>▤</b><span>تحویل موقت</span>';
     nav.append(permanent,temporary);qa('#nav>.nav-divider').forEach(x=>x.remove());
 
-    const task=makeGroup('مدیریت وظایف','tasks',['kanban','archive','dashboard','approvals'],'☑');
-    const email=makeGroup('مدیریت ایمیل','email',['people','send','templates','stickers','followup'],'✉');
+    const task=makeGroup('مدیریت وظایف','tasks',['kanban','archive','dashboard','approvals','requestHistory'],'☑');
+    const people=makeGroup('مدیریت افراد و نقش‌ها','people',['people','systemOptions'],'♙');
+    const email=makeGroup('مدیریت پیام','messages',['messages','sentMessages','templates','stickers'],'✉');
     const vehicle=makeGroup('مدیریت خودرو','vehicle',['vehiclePermanent','vehicleTemporary'],'◇');
     if(settings)nav.appendChild(settings);
 
-    const refreshVisibility=()=>[task,email,vehicle].forEach(g=>{
+    const refreshVisibility=()=>[task,people,email,vehicle].forEach(g=>{
       if(!g)return;
       const visible=[...g.querySelectorAll('.nav-group-items>button')].some(b=>!b.classList.contains('hidden'));
       g.classList.toggle('hidden',!visible);
@@ -151,7 +152,6 @@
     installTaskTools();
     removeSubtitle();
     installSidebarHoverScroll();
-    loadStickerAssets().catch(console.error);
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();

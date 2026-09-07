@@ -20,7 +20,8 @@ Deno.serve(async(req)=>{
     if(!b.email||!b.initial_password||String(b.initial_password).length<8)return json({error:"ایمیل و رمز اولیه حداقل ۸ کاراکتری الزامی است."},400);
     const created=await fetch(`${url}/auth/v1/admin/users`,{method:"POST",headers:{apikey:service,Authorization:`Bearer ${service}`,"Content-Type":"application/json"},body:JSON.stringify({email:String(b.email).trim(),password:b.initial_password,email_confirm:true,user_metadata:{full_name:b.full_name||""}})});
     const account=await created.json();if(!created.ok)return json({error:account.msg||account.message||"ساخت حساب انجام نشد."},created.status);
-    await fetch(`${url}/rest/v1/profiles?id=eq.${account.id}`,{method:"PATCH",headers:{apikey:service,Authorization:`Bearer ${service}`,"Content-Type":"application/json"},body:JSON.stringify({full_name:b.full_name||"",display_name:b.full_name||"",gender:b.gender||null,salutation:b.salutation||null,cc_emails:Array.isArray(b.cc_emails)?b.cc_emails:[],active:b.active!==false,must_change_password:true})});
+    const role=b.role==="manager"?"manager":"owner";
+    await fetch(`${url}/rest/v1/profiles?id=eq.${account.id}`,{method:"PATCH",headers:{apikey:service,Authorization:`Bearer ${service}`,"Content-Type":"application/json"},body:JSON.stringify({full_name:b.full_name||"",display_name:b.full_name||"",role,gender:b.gender||null,salutation:b.salutation||null,cc_emails:Array.isArray(b.cc_emails)?b.cc_emails:[],active:b.active!==false,must_change_password:true})});
     return json({ok:true,id:account.id});
   }catch(e){return json({error:e instanceof Error?e.message:"خطای ناشناخته"},500)}
 });

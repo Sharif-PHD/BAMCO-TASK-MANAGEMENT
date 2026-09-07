@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="ui-extra-20260906.css?v=20260907-core2" />
   <link rel="stylesheet" href="stable-layout-20260906.css?v=20260907-core2" />
   <link rel="stylesheet" href="ux-polish-20260906.css?v=20260906-login-icon2" />
+  <link rel="stylesheet" href="portal-messages.css?v=20260907-1" />
   <link id="responsiveStyles" rel="stylesheet" href="responsive-20260906.css?v=20260906-4" />
   <style>
     #appView.hidden{display:none!important;visibility:hidden!important}
@@ -119,6 +120,7 @@
         <button data-view="archive"><b>▣</b><span>آرشیو</span></button>
         <button data-view="dashboard"><b>▦</b><span>داشبورد</span></button>
         <button data-view="approvals" id="approvalsNav" class="hidden"><b>✓</b><span>تأیید درخواست‌ها</span><i id="approvalBadge"></i></button>
+        <button data-view="requestHistory" id="requestHistoryNav"><b>◷</b><span>سوابق درخواست‌ها</span></button>
       </nav>
       <div class="account">
         <div class="avatar" id="avatar">ب</div>
@@ -164,8 +166,9 @@
       </section>
 
       <section id="approvalsView" class="view hidden">
-        <div class="panel table-panel"><div class="panel-head"><h3>درخواست‌های منتظر بررسی</h3></div><div class="table-wrap"><table><thead><tr><th>شماره</th><th>درخواست‌دهنده</th><th>نوع</th><th>عنوان وظیفه</th><th>زمان</th><th></th></tr></thead><tbody id="approvalBody"></tbody></table></div></div>
+        <div class="panel table-panel"><div class="panel-head"><h3>درخواست‌های جاری</h3></div><div class="table-wrap"><table><thead><tr><th>شماره</th><th>درخواست‌دهنده</th><th>نوع</th><th>عنوان وظیفه</th><th>زمان</th><th>وضعیت</th><th>عملیات</th></tr></thead><tbody id="approvalBody"></tbody></table></div></div>
       </section>
+      <section id="requestHistoryView" class="view hidden"><div class="panel table-panel"><div class="panel-head"><h3>سوابق درخواست‌ها</h3></div><div class="table-wrap"><table><thead><tr><th>شماره</th><th>درخواست‌دهنده</th><th>نوع</th><th>عنوان وظیفه</th><th>زمان</th><th>وضعیت</th><th>یادداشت مدیر</th></tr></thead><tbody id="requestHistoryBody"></tbody></table></div></div></section>
     </section>
   </div>
 
@@ -198,7 +201,7 @@
     <div class="modal-head"><div><h3>بررسی درخواست</h3><p>جزئیات تغییر پیشنهادی را بررسی کنید.</p></div><button type="button" data-close="reviewDialog">×</button></div>
     <div id="reviewDetails" class="review-details"></div>
     <label>یادداشت مدیر<textarea id="managerNote" rows="3"></textarea></label>
-    <div class="modal-actions"><button id="rejectBtn" class="danger">رد درخواست</button><button id="approveBtn" class="primary">تأیید و اعمال</button></div>
+    <div class="modal-actions"><button id="rejectBtn" class="danger">رد درخواست</button><button id="revisionBtn" class="ghost">نیاز به اصلاح</button><button id="editRequestBtn" class="ghost">ویرایش در فرم وظیفه</button><button id="approveBtn" class="primary">تأیید و اعمال</button></div>
   </dialog>
 
   <dialog id="passwordDialog" class="modal small first-login-dialog"><form id="passwordForm"><div class="first-login-brand"><img src="bamco-task-logo-white.png" alt="BAMCO"><div><h3>تغییر رمز عبور</h3><p>رمز جدید حساب کاربری را وارد کنید.</p></div></div><div class="first-login-fields"><label>رمز جدید<input id="newPassword" type="password" minlength="8" autocomplete="new-password" required></label><label>تکرار رمز جدید<input id="confirmPassword" type="password" minlength="8" autocomplete="new-password" required></label></div><p id="passwordError" class="form-error"></p><div class="modal-actions"><button id="cancelPasswordBtn" class="ghost" type="button" data-close="passwordDialog">انصراف</button><button class="primary" type="submit">ثبت رمز جدید</button></div></form></dialog>
@@ -208,19 +211,16 @@
   <dialog id="avatarCropDialog" class="modal avatar-crop-dialog"><div class="modal-head"><div><h3>تنظیم تصویر پروفایل</h3><p>تصویر را جابه‌جا کنید و با نوار زیر اندازه را تنظیم کنید.</p></div><button type="button" data-close="avatarCropDialog">×</button></div><div class="crop-stage"><canvas id="avatarCropCanvas" width="360" height="360"></canvas></div><label class="crop-zoom">اندازه تصویر<input id="avatarCropZoom" type="range" min="1" max="3" value="1" step="0.01"></label><div class="modal-actions"><button type="button" class="ghost" data-close="avatarCropDialog">انصراف</button><button id="applyAvatarCrop" type="button" class="primary">تأیید محدوده تصویر</button></div></dialog>
 
   <script src="manager.js?v=20260906-6"></script>
-  <script src="sticker-pack-01.js?v=20260906-static1"></script>
-  <script src="sticker-pack-02.js?v=20260906-static1"></script>
-  <script src="sticker-pack-loader.js?v=20260906-static1"></script>
-  <script src="sticker-pack-small-01.js?v=20260906-static1"></script>
-  <script src="sticker-pack-small-02.js?v=20260906-static1"></script>
-  <script src="sticker-pack-small-loader.js?v=20260906-static1"></script>
+  <script src="portal-messages.js?v=20260907-1"></script>
+  <script src="system-options.js?v=20260907-1"></script>
+  <script src="sticker-assets-exact/01_happy_female.js?v=20260907-fixed"></script>
+  <script src="sticker-assets-exact/01_happy_male.js?v=20260907-fixed"></script>
   <script src="sticker-desktop.js?v=20260907-core2"></script>
   <script src="app.js?v=20260907-core2"></script>
   <script src="dashboard-exact-20260906.js?v=20260906-1"></script>
   <script src="table-column-resize-20260906.js?v=20260907-core2"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js"></script>
   <script src="data-io.js?v=20260906-5"></script>
-  <script src="ui-fixes-20260906.js?v=20260906-2"></script>
   <script>window.__bamcoStableStickerInstalled=true;</script>
   <script src="ui-extra-20260906.js?v=20260907-core2"></script>
   <script src="ux-polish-20260906.js?v=20260906-1"></script>
