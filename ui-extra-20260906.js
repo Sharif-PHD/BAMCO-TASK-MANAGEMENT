@@ -1,7 +1,7 @@
 (()=>{
   const hasFa=s=>/[\u0600-\u06ff]/.test(String(s||''));
   const hasEn=s=>/[A-Za-z]/.test(String(s||''));
-  document.documentElement.dataset.uiHotfix='20260907-user6';
+  document.documentElement.dataset.uiHotfix='20260907-user7';
 
   function wrapLatinText(root=document.body){
     if(!root)return;
@@ -117,7 +117,7 @@
 
   function refreshStableLayout(){
     document.querySelectorAll('link[href*="stable-layout-20260906.css"]').forEach(x=>x.remove());
-    const l=document.createElement('link');l.rel='stylesheet';l.href='stable-layout-20260906.css?v=20260907-user6';l.dataset.finalLayout='1';document.head.appendChild(l);
+    const l=document.createElement('link');l.rel='stylesheet';l.href='stable-layout-20260906.css?v=20260907-user7';l.dataset.finalLayout='1';document.head.appendChild(l);
   }
 
   function installSidebarUniformStyle(){
@@ -131,18 +131,18 @@
 
   function installGroupedSidebar(){
     if(document.querySelector('script[data-sidebar-groups]'))return;
-    const s=document.createElement('script');s.src='sidebar-groups-20260906.js?v=20260907-user6';s.dataset.sidebarGroups='1';document.body.appendChild(s);
+    const s=document.createElement('script');s.src='sidebar-groups-20260906.js?v=20260907-user7';s.dataset.sidebarGroups='1';document.body.appendChild(s);
   }
 
   function installUserRequestedFixesV2(){
     if(document.querySelector('script[data-user-request-fixes-v2]'))return;
-    const s=document.createElement('script');s.src='user-request-fixes-20260907-v2.js?v=20260907-user6';s.dataset.userRequestFixesV2='1';document.body.appendChild(s);
+    const s=document.createElement('script');s.src='user-request-fixes-20260907-v2.js?v=20260907-user7';s.dataset.userRequestFixesV2='1';document.body.appendChild(s);
   }
 
   function installLoginControls(){
     if(document.querySelector('script[data-login-controls]'))return;
     const s=document.createElement('script');
-    s.src='login-controls-20260907.js?v=20260907-user1';
+    s.src='login-controls-20260907.js?v=20260907-user2';
     s.dataset.loginControls='1';
     document.body.appendChild(s);
   }
