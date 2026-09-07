@@ -1948,6 +1948,274 @@ dialog::backdrop {
   }
 }
 
+/* Final application shell: one vertical sidebar, one centered workspace. */
+:root {
+  --bamco-final-sidebar: 282px;
+  --bamco-final-sidebar-collapsed: 82px;
+  --bamco-final-footer: 36px;
+}
+
+html body #appView.app:not(.hidden) {
+  display: block !important;
+  width: 100% !important;
+  min-height: 100dvh !important;
+  height: 100dvh !important;
+  overflow: hidden !important;
+}
+
+html body #appView #sidebar.sidebar {
+  position: fixed !important;
+  inset: 0 0 0 auto !important;
+  z-index: 100 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  width: var(--bamco-final-sidebar) !important;
+  min-width: var(--bamco-final-sidebar) !important;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  padding: 14px 12px 12px !important;
+  overflow: hidden !important;
+  background: linear-gradient(180deg,#0b503e 0%,#083d31 100%) !important;
+  box-shadow: -8px 0 30px rgba(8,49,38,.13) !important;
+}
+
+html body #appView #sidebar.sidebar.collapsed {
+  width: var(--bamco-final-sidebar-collapsed) !important;
+  min-width: var(--bamco-final-sidebar-collapsed) !important;
+}
+
+html body #appView #sidebar .side-brand {
+  display: flex !important;
+  flex: 0 0 106px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  height: 106px !important;
+  min-height: 106px !important;
+  margin: 0 !important;
+  padding: 4px 8px 12px !important;
+  border-bottom: 1px solid rgba(255,255,255,.12) !important;
+}
+
+html body #appView #sidebar .side-brand img {
+  display: block !important;
+  width: 142px !important;
+  height: 86px !important;
+  max-width: 100% !important;
+  object-fit: contain !important;
+}
+
+html body #appView #sidebar .side-brand strong { display: none !important; }
+html body #appView #sidebar.collapsed .side-brand img { width: 58px !important; height: 62px !important; }
+html body #appView #sidebar #collapseBtn {
+  position: absolute !important;
+  top: 84px !important;
+  left: -15px !important;
+  display: grid !important;
+  place-items: center !important;
+  width: 30px !important;
+  height: 30px !important;
+  padding: 0 !important;
+  border: 1px solid #d4e1dc !important;
+  border-radius: 50% !important;
+  background: #fff !important;
+  color: #0b503e !important;
+  box-shadow: 0 5px 16px rgba(8,49,38,.18) !important;
+}
+
+html body #appView #sidebar #nav {
+  position: static !important;
+  display: block !important;
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 12px 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+html body #appView #sidebar #nav > .nav-group,
+html body #appView #sidebar #nav > button { width: 100% !important; margin: 0 !important; }
+html body #appView #sidebar #nav > button,
+html body #appView #sidebar #nav > .nav-group > .nav-group-toggle {
+  display: grid !important;
+  grid-template-columns: 28px minmax(0,1fr) 18px !important;
+  align-items: center !important;
+  justify-content: stretch !important;
+  gap: 10px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 46px !important;
+  min-height: 46px !important;
+  padding: 7px 11px !important;
+  color: #e9f4f0 !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  font-size: 16px !important;
+  text-align: right !important;
+}
+html body #appView #sidebar #nav > button:hover,
+html body #appView #sidebar #nav > button.active,
+html body #appView #sidebar #nav > .nav-group > .nav-group-toggle:hover {
+  color: #fff !important;
+  background: rgba(255,255,255,.13) !important;
+}
+html body #appView #sidebar #nav > .nav-group > .nav-group-items {
+  position: static !important;
+  display: grid !important;
+  width: 100% !important;
+  padding: 2px 38px 5px 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+html body #appView #sidebar #nav > .nav-group.collapsed-group > .nav-group-items { display: none !important; }
+html body #appView #sidebar #nav > .nav-group > .nav-group-items > button {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-height: 38px !important;
+  padding: 5px 9px !important;
+  color: #d9ebe5 !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  font-size: 14px !important;
+}
+html body #appView #sidebar #nav > .nav-group > .nav-group-items > button:hover,
+html body #appView #sidebar #nav > .nav-group > .nav-group-items > button.active {
+  color: #fff !important;
+  background: #218764 !important;
+}
+html body #appView #sidebar .account {
+  position: static !important;
+  display: flex !important;
+  flex: 0 0 auto !important;
+  align-items: center !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 12px 4px 0 !important;
+  border-top: 1px solid rgba(255,255,255,.12) !important;
+}
+
+html body #appView .workspace {
+  position: relative !important;
+  display: block !important;
+  width: calc(100vw - var(--bamco-final-sidebar)) !important;
+  height: calc(100dvh - var(--bamco-final-footer)) !important;
+  min-height: 0 !important;
+  margin: 0 var(--bamco-final-sidebar) var(--bamco-final-footer) 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  background: #f3f7f5 !important;
+}
+html body #appView:has(#sidebar.collapsed) .workspace {
+  width: calc(100vw - var(--bamco-final-sidebar-collapsed)) !important;
+  margin-right: var(--bamco-final-sidebar-collapsed) !important;
+}
+html body #appView .workspace > header {
+  height: 64px !important;
+  min-height: 64px !important;
+  margin: 0 !important;
+  padding: 10px 24px !important;
+  border-bottom: 1px solid #dce6e2 !important;
+  background: #fff !important;
+}
+html body #appView .workspace > .view {
+  width: 100% !important;
+  height: calc(100dvh - var(--bamco-final-footer) - 64px) !important;
+  max-height: none !important;
+  padding: 16px 20px !important;
+  overflow: auto !important;
+}
+html body.welcome-active #appView .workspace > header { display: none !important; }
+html body.welcome-active #appView .workspace > #welcomeView.bamco-welcome-view {
+  display: grid !important;
+  place-items: center !important;
+  width: 100% !important;
+  height: calc(100dvh - var(--bamco-final-footer)) !important;
+  max-height: none !important;
+  padding: clamp(18px,3vw,42px) !important;
+  overflow: hidden !important;
+}
+html body #appView #welcomeView.bamco-welcome-view.hidden { display: none !important; }
+html body #appView #welcomeView .bamco-welcome-layout {
+  position: static !important;
+  display: grid !important;
+  grid-template-columns: 170px minmax(360px,680px) 170px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: clamp(12px,2vw,28px) !important;
+  width: min(1080px,96%) !important;
+  margin: 0 auto !important;
+  overflow: visible !important;
+  direction: ltr !important;
+}
+html body #appView #welcomeView .bamco-welcome-card {
+  position: static !important;
+  display: grid !important;
+  place-items: center !important;
+  width: 100% !important;
+  min-height: 270px !important;
+  margin: 0 !important;
+  padding: 38px !important;
+}
+html body #appView #welcomeView .bamco-welcome-copy { text-align: center !important; }
+html body #appView #welcomeView .bamco-welcome-sticker {
+  position: static !important;
+  display: block !important;
+  width: 170px !important;
+  max-width: 170px !important;
+  height: 240px !important;
+  object-fit: contain !important;
+  object-position: center bottom !important;
+}
+html body #appView .app-footer-credit {
+  position: fixed !important;
+  right: var(--bamco-final-sidebar) !important;
+  left: 0 !important;
+  bottom: 0 !important;
+  z-index: 90 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: auto !important;
+  height: var(--bamco-final-footer) !important;
+  margin: 0 !important;
+  padding: 0 18px !important;
+  color: #315f51 !important;
+  background: #eef4f1 !important;
+  text-align: center !important;
+  white-space: normal !important;
+}
+html body #appView:has(#sidebar.collapsed) .app-footer-credit { right: var(--bamco-final-sidebar-collapsed) !important; }
+
+@media (max-width: 760px) {
+  :root { --bamco-final-sidebar: 78px; --bamco-final-sidebar-collapsed: 78px; --bamco-final-footer: 42px; }
+  html body #appView #sidebar.sidebar { padding-inline: 8px !important; }
+  html body #appView #sidebar .side-brand { height: 82px !important; min-height: 82px !important; flex-basis: 82px !important; padding-inline: 0 !important; }
+  html body #appView #sidebar .side-brand img { width: 58px !important; height: 58px !important; }
+  html body #appView #sidebar #collapseBtn,
+  html body #appView #sidebar #nav span,
+  html body #appView #sidebar #nav .nav-chevron,
+  html body #appView #sidebar .account-copy,
+  html body #appView #sidebar .account #logoutBtn { display: none !important; }
+  html body #appView #sidebar #nav > button,
+  html body #appView #sidebar #nav > .nav-group > .nav-group-toggle { display: flex !important; justify-content: center !important; padding: 7px !important; }
+  html body #appView #sidebar #nav > .nav-group > .nav-group-items { display: none !important; }
+  html body #appView #welcomeView .bamco-welcome-layout { grid-template-columns: 1fr 1fr !important; width: 100% !important; gap: 12px !important; }
+  html body #appView #welcomeView .bamco-welcome-card { grid-column: 1 / -1 !important; grid-row: 1 !important; min-height: 210px !important; padding: 22px 12px !important; }
+  html body #appView #welcomeView .bamco-welcome-sticker { width: 100px !important; max-width: 100px !important; height: 130px !important; justify-self: center !important; }
+  html body #appView #welcomeView .bamco-welcome-sticker-left { grid-column: 1 !important; grid-row: 2 !important; }
+  html body #appView #welcomeView .bamco-welcome-sticker-right { grid-column: 2 !important; grid-row: 2 !important; }
+}
+
 /* Canonical 2026-09-07 shell. Keep every structural rule in this file. */
 html,body{width:100%;min-height:100%;overflow-x:hidden}
 body:has(#appView:not(.hidden)){overflow:hidden;background:#f4f7f6}
@@ -2254,4 +2522,3 @@ body.welcome-active #appView .workspace>.view{height:calc(100dvh - 64px)!importa
   .wb-tool em { display: none; }
   .wb-column-menu { position: fixed; inset: 72px 10px auto 10px; width: auto; grid-template-columns: 1fr 1fr; }
 }
-

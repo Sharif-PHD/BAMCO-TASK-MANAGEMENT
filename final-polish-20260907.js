@@ -13,6 +13,9 @@
   };
 
   function injectStyle(){
+    /* Layout and visual rules belong to bamco-unified.css only. */
+    q('#bamcoFinalPolishStyle')?.remove();
+    return;
     let style=q('#bamcoFinalPolishStyle');
     if(!style){style=document.createElement('style');style.id='bamcoFinalPolishStyle';document.head.appendChild(style)}
     style.textContent=`
