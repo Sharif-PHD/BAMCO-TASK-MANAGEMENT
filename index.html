@@ -19,9 +19,6 @@
     #appView.hidden{display:none!important;visibility:hidden!important}
     #loginView.hidden{display:none!important;visibility:hidden!important}
     #loginView:not(.hidden)~#appView{display:none!important;visibility:hidden!important}
-    @media (min-width:901px){
-      #loginView:not(.hidden),#appView:not(.hidden){zoom:.8;width:125%;min-height:125vh}
-    }
     .english-ui,.english,.en-text,[dir="ltr"],input[type="email"],input[type="url"],input[type="password"],.latin-run{font-family:"Times New Roman",Times,serif!important}
     .english-ui,.english,.en-text,[dir="ltr"],input[type="email"],input[type="url"],input[type="password"],.latin-run{font-size:.90em!important}
     .latin-run{direction:ltr!important;unicode-bidi:isolate!important}
@@ -221,7 +218,7 @@
 
   <dialog id="avatarCropDialog" class="modal avatar-crop-dialog"><div class="modal-head"><div><h3>تنظیم تصویر پروفایل</h3><p>تصویر را جابه‌جا کنید و با نوار زیر اندازه را تنظیم کنید.</p></div><button type="button" data-close="avatarCropDialog">×</button></div><div class="crop-stage"><canvas id="avatarCropCanvas" width="360" height="360"></canvas></div><label class="crop-zoom">اندازه تصویر<input id="avatarCropZoom" type="range" min="1" max="3" value="1" step="0.01"></label><div class="modal-actions"><button type="button" class="ghost" data-close="avatarCropDialog">انصراف</button><button id="applyAvatarCrop" type="button" class="primary">تأیید محدوده تصویر</button></div></dialog>
 
-  <script src="manager.js?v=20260906-6"></script>
+  <script src="manager.js?v=20260907-avatar-single-handler"></script>
   <script src="portal-messages.js?v=20260907-1"></script>
   <script src="system-options.js?v=20260907-direct-vehicle"></script>
   <script src="sticker-assets-exact/01_happy_female.js?v=20260907-fixed"></script>
@@ -231,8 +228,8 @@
   <script src="dashboard-exact-20260906.js?v=20260906-1"></script>
   <script src="table-column-resize-20260906.js?v=20260907-core2"></script>
   <script src="vendor-xlsx.min.js?v=1.2.0-local"></script>
-  <script src="vehicle-management-20260907.js?v=20260907-upload-fix4"></script>
-  <script src="data-io.js?v=20260907-avatar-circle3"></script>
+  <script src="vehicle-management-20260907.js?v=20260907-storage-role-fix"></script>
+  <script src="data-io.js?v=20260907-avatar-handler-clean"></script>
   <script>window.__bamcoStableStickerInstalled=true;</script>
   <script src="ui-extra-20260906.js?v=20260907-core2"></script>
   <script src="ux-polish-20260906.js?v=20260906-1"></script>
