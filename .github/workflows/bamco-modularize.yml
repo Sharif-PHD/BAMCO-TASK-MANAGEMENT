@@ -86,6 +86,7 @@ jobs:
           replacements.set(scripts[24][0],ext('assets/js/ux.js','data-final-polish')); replacements.set(scripts[25][0],'');
 
           html=html.replace(styles[0][0],'<link rel="stylesheet" href="assets/css/app.css">').replace(styles[1][0],'');
+          html=html.replace(/<script\s+type=["']application\/bamco-xlsx-source["'][^>]*>[\s\S]*?<\/script>/i,'');
           for(const [oldv,newv] of replacements) html=html.replace(oldv,newv);
           html=html.replace(/\n{3,}/g,'\n\n');
           fs.writeFileSync('index.html',html);
