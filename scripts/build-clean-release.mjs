@@ -37,7 +37,7 @@ cssParts.push(`/* Source: task-calendar-gantt-20260907.js#taskTimelineStyles */\
 cssParts.push(`/* Canonical design system */\n${await readFile(join(root, 'unified-theme.css'), 'utf8')}`);
 
 let html = sourceHtml.replace(stylesheetPattern, '').replace(stylePattern, '');
-html = html.replace('</head>', '  <link id="bamcoUnifiedStyles" rel="stylesheet" href="bamco-unified.css?v=1">\n</head>');
+html = html.replace('</head>', '  <link id="bamcoUnifiedStyles" rel="stylesheet" href="bamco-unified.css?v=final-20260907">\n</head>');
 html = html.replace(
   /<script>document\.head\.appendChild\(document\.querySelector\('#responsiveStyles'\)\);document\.head\.appendChild\(document\.querySelector\('#finalLayoutFix'\)\);<\/script>/,
   ''
