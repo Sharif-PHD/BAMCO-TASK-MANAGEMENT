@@ -42,6 +42,13 @@
         width:20px!important;height:20px!important;display:block!important;fill:none!important;stroke:currentColor!important;
         stroke-width:1.8!important;stroke-linecap:round!important;stroke-linejoin:round!important
       }
+      html body #appView #sidebar #nav>.nav-group>.nav-group-items{
+        padding-right:2.5em!important;
+        padding-left:0!important;
+      }
+      html body #appView #sidebar #nav>.nav-group>.nav-group-items>button{
+        padding-right:0!important;
+      }
 
       html body #appView #kanbanView>.table-panel,
       html body #appView #archiveView>.table-panel{
