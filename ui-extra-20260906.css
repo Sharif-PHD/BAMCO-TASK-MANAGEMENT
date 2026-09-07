@@ -1,4 +1,4 @@
-/* Stable UI corrections - 2026-09-06 */
+/* Stable UI corrections - 2026-09-07 */
 :root{
   --bamco-shell-green:#0f4f3f;
   --bamco-active-green:#218764;
@@ -28,7 +28,7 @@
   border-color:var(--bamco-border)!important;
 }
 
-/* Sidebar: no visible scrollbar. Wheel/touch still work; mouse-position scrolling is added in JS. */
+/* Sidebar: no visible scrollbar. */
 .sidebar nav{
   overflow-y:auto!important;
   overflow-x:hidden!important;
@@ -46,7 +46,7 @@
   display:none!important;height:0!important;margin:0!important;padding:0!important;border:0!important
 }
 
-/* Free useful vertical space below the 126px desktop header. */
+/* Workspace and fixed footer reservation. */
 .workspace{
   padding-top:136px!important;
   padding-bottom:14px!important;
@@ -59,7 +59,6 @@
 .workspace>header h2{font-size:21px!important}
 .workspace>header p{margin-top:0!important;font-size:14px!important}
 
-/* Footer belongs to document flow: never cover content or the account block. */
 #appView{padding-bottom:0!important}
 .app-footer-credit{
   position:relative!important;
@@ -86,40 +85,8 @@
 }
 .app:has(.sidebar.collapsed) .app-footer-credit{margin-right:76px!important}
 
-/* Sticker manager: compact, centered, no dead vertical space. */
-#stickersView{padding:0!important}
-#stickersView .desktop-sticker-page{padding:0 0 8px!important}
-.desktop-sticker-box{margin:0 0 8px!important;padding:6px 12px 9px!important}
-.desktop-sticker-box legend{font-size:16px!important}
-.desktop-sticker-control-row{min-height:44px!important;gap:8px!important}
-.desktop-sticker-inline-label select,#desktopStickerSet{height:35px!important;font-size:15px!important}
-.desktop-sticker-secondary,.desktop-sticker-green,.desktop-sticker-cancel{
-  min-height:36px!important;padding:5px 14px!important;font-size:15px!important
-}
-.desktop-sticker-active-note{height:22px!important;font-size:13px!important;padding:0 4px!important}
-.desktop-sticker-preview-stage{
-  min-height:280px!important;
-  height:clamp(300px,46vh,390px)!important;
-  max-height:390px!important;
-  background:#f7faf8!important;
-  border:1px solid var(--bamco-border)!important;
-}
-#desktopStickerPreview{
-  max-width:min(390px,58%)!important;
-  max-height:94%!important;
-  width:auto!important;
-  height:auto!important;
-  object-fit:contain!important;
-}
+/* Sticker sizing and task-table geometry intentionally live in their own modules. */
 #stickersView .sticker-grid{display:none!important}
-
-/* Selection cell */
-#kanbanView thead>tr:first-child>th:first-child,
-#archiveView thead>tr:first-child>th:first-child,
-#kanbanView tbody td:first-child,
-#archiveView tbody td:first-child{
-  text-align:center!important;width:58px!important;min-width:58px!important
-}
 
 @media(max-width:900px){
   .app-footer-credit{margin-right:230px!important}
@@ -131,6 +98,4 @@
   .app-footer-credit,.app:has(.sidebar.collapsed) .app-footer-credit{
     margin-right:72px!important;font-size:9.5px!important;white-space:normal!important;height:auto!important;min-height:26px!important;padding:3px 8px!important
   }
-  .desktop-sticker-preview-stage{height:300px!important;min-height:300px!important}
-  #desktopStickerPreview{max-width:82%!important}
 }
