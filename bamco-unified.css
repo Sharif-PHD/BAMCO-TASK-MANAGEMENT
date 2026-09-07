@@ -2216,6 +2216,8 @@ html body #appView:has(#sidebar.collapsed) .app-footer-credit { right: var(--bam
   html body #appView #welcomeView .bamco-welcome-sticker-right { grid-column: 2 !important; grid-row: 2 !important; }
 }
 
+/* Retired horizontal shell kept inert for release history. */
+@media (max-width: 0px) {
 /* Canonical 2026-09-07 shell. Keep every structural rule in this file. */
 html,body{width:100%;min-height:100%;overflow-x:hidden}
 body:has(#appView:not(.hidden)){overflow:hidden;background:#f4f7f6}
@@ -2462,6 +2464,8 @@ body.welcome-active #appView .workspace>.view{height:calc(100dvh - 64px)!importa
 }
 #appView .workspace > header { min-height: 62px !important; margin: 12px 16px 0 !important; padding: 10px 16px !important; box-sizing: border-box !important; }
 #appView .workspace > .view { height: calc(100dvh - 154px) !important; max-height: calc(100dvh - 154px) !important; padding: 14px 16px !important; box-sizing: border-box !important; overflow: auto !important; }
+
+}
 
 /* Unified task tables and Excel-like workbench */
 #appView .table-panel { margin: 0 !important; padding: 14px !important; border-radius: var(--bamco-radius-md) !important; }
