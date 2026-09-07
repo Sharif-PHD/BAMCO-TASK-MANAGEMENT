@@ -1,0 +1,193 @@
+:root {
+  --bamco-green-900: #123f32;
+  --bamco-green-800: #16513f;
+  --bamco-green-700: #176b4d;
+  --bamco-green-600: #218764;
+  --bamco-green-100: #e8f3ee;
+  --bamco-surface: #ffffff;
+  --bamco-surface-soft: #f6f9f7;
+  --bamco-border: #c8d6d0;
+  --bamco-text: #24332e;
+  --bamco-muted: #687871;
+  --bamco-danger: #b42318;
+  --bamco-radius-sm: 8px;
+  --bamco-radius-md: 12px;
+  --bamco-radius-lg: 18px;
+  --bamco-shadow: 0 8px 28px rgba(18, 63, 50, .09);
+  --bamco-font: Tahoma, Arial, sans-serif;
+}
+
+html, body, button, input, select, textarea, dialog {
+  font-family: var(--bamco-font) !important;
+}
+
+body {
+  color: var(--bamco-text) !important;
+  background: var(--bamco-surface-soft) !important;
+}
+
+.workspace > header,
+.panel,
+.dashboard-chart-card,
+.dashboard-filters,
+.dashboard-performance-range,
+.login-card,
+.bamco-welcome-card {
+  background: var(--bamco-surface) !important;
+  border: 1px solid var(--bamco-border) !important;
+  border-radius: var(--bamco-radius-md) !important;
+  box-shadow: var(--bamco-shadow) !important;
+}
+
+.panel-head,
+.modal-head {
+  border-color: var(--bamco-border) !important;
+}
+
+.panel-head h3,
+.modal-head h3,
+.workspace h2,
+.workspace h3,
+.workspace h4 {
+  color: var(--bamco-green-800) !important;
+}
+
+button,
+.primary,
+.ghost,
+.danger {
+  min-height: 40px;
+  border-radius: var(--bamco-radius-sm) !important;
+  font-weight: 700 !important;
+  transition: background-color .16s ease, border-color .16s ease, color .16s ease, box-shadow .16s ease !important;
+}
+
+button.primary,
+.primary {
+  color: #fff !important;
+  background: var(--bamco-green-700) !important;
+  border: 1px solid var(--bamco-green-700) !important;
+}
+
+button.primary:hover,
+.primary:hover {
+  background: var(--bamco-green-800) !important;
+  border-color: var(--bamco-green-800) !important;
+}
+
+button.ghost,
+.ghost {
+  color: var(--bamco-green-800) !important;
+  background: var(--bamco-surface) !important;
+  border: 1px solid var(--bamco-border) !important;
+}
+
+button.ghost:hover,
+.ghost:hover {
+  background: var(--bamco-green-100) !important;
+  border-color: var(--bamco-green-600) !important;
+}
+
+button.danger,
+.danger {
+  color: var(--bamco-danger) !important;
+  background: #fff5f4 !important;
+  border: 1px solid #f0b7b2 !important;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgba(33, 135, 100, .22) !important;
+  outline-offset: 1px !important;
+}
+
+input,
+select,
+textarea {
+  color: var(--bamco-text) !important;
+  background-color: var(--bamco-surface) !important;
+  border: 1px solid var(--bamco-border) !important;
+  border-radius: var(--bamco-radius-sm) !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--bamco-green-600) !important;
+  box-shadow: 0 0 0 3px rgba(33, 135, 100, .12) !important;
+}
+
+table {
+  color: var(--bamco-text) !important;
+  background: var(--bamco-surface) !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+thead th {
+  color: #fff !important;
+  background: var(--bamco-green-800) !important;
+  border-color: rgba(255, 255, 255, .16) !important;
+}
+
+tbody td {
+  border-color: #dde6e2 !important;
+}
+
+tbody tr:nth-child(even) td {
+  background: #f8fbf9 !important;
+}
+
+tbody tr:hover td,
+tbody tr.selected td,
+tbody tr.person-selected td {
+  background: var(--bamco-green-100) !important;
+}
+
+dialog.modal {
+  color: var(--bamco-text) !important;
+  background: var(--bamco-surface) !important;
+  border: 1px solid var(--bamco-border) !important;
+  border-radius: var(--bamco-radius-lg) !important;
+  box-shadow: 0 24px 70px rgba(14, 42, 33, .24) !important;
+}
+
+dialog::backdrop {
+  background: rgba(10, 30, 24, .52) !important;
+  backdrop-filter: blur(2px);
+}
+
+.sidebar {
+  background: linear-gradient(180deg, var(--bamco-green-900), var(--bamco-green-800)) !important;
+}
+
+#nav button,
+#nav .nav-group-toggle {
+  border-radius: var(--bamco-radius-sm) !important;
+}
+
+#nav button.active,
+#nav button:hover,
+#nav .nav-group-toggle:hover {
+  background: var(--bamco-green-600) !important;
+  color: #fff !important;
+}
+
+.empty,
+.manager-note,
+.form-error,
+.panel-head small,
+.workspace header p {
+  color: var(--bamco-muted) !important;
+}
+
+@media (max-width: 760px) {
+  .panel,
+  .dashboard-chart-card,
+  .dashboard-filters,
+  .dashboard-performance-range {
+    border-radius: var(--bamco-radius-sm) !important;
+  }
+}
