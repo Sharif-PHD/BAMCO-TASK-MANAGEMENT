@@ -39,5 +39,5 @@ document.querySelector('#importBtn')?.addEventListener('click',()=>document.quer
 // Load the latest UI corrections without changing the stable page structure.
 (()=>{
   const css=document.createElement('link');css.rel='stylesheet';css.href='ui-fixes-20260906.css?v=20260906-2';document.head.appendChild(css);
-  const js=document.createElement('script');js.src='ui-fixes-20260906.js?v=20260906-2';document.body.appendChild(js);
+  const js=document.createElement('script');js.src='ui-fixes-20260906.js?v=20260907-avatar-circle3';document.body.appendChild(js);
 })();
