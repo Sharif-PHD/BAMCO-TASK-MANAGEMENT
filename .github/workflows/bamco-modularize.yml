@@ -41,7 +41,7 @@ jobs:
           write('assets/js/table-ui.js',stripLead(scripts[15][2]));
           write('assets/js/timeline.js',stripLead(scripts[16][2]));
           write('assets/js/tables.js',stripLead(scripts[17][2]));
-          write('assets/js/ui-helpers.js',stripLead(scripts[19][2]));
+          write('assets/js/ui-helpers.js',join([19,20],'ui'));
           write('assets/js/sticker-assets.js',stripLead(scripts[20][2]));
           write('assets/js/sidebar.js',stripLead(scripts[21][2]));
           write('assets/js/task-ui.js',stripLead(scripts[22][2]));
@@ -61,9 +61,9 @@ jobs:
           ['assets/js/vehicles.js','assets/js/tasks-io.js','assets/js/task-ui.js'].forEach(patchFile);
           const consumerText=['assets/js/vehicles.js','assets/js/tasks-io.js','assets/js/task-ui.js'].map(p=>fs.readFileSync(p,'utf8')).join('\n');
           const lazyCount=(consumerText.match(/await window\.ensureBamcoXLSX\(\)/g)||[]).length;
+          const allCount=(consumerText.match(/window\.ensureBamcoXLSX\(\)/g)||[]).length;
           console.log('LAZY_XLSX_CONSUMERS='+lazyCount);
-          if(lazyCount<1) throw new Error('No lazy XLSX consumers were converted');
-          if(/const XLSX=window\.ensureBamcoXLSX\(\)/.test(consumerText)) throw new Error('Synchronous XLSX consumer remains');
+          if(lazyCount<1||lazyCount!==allCount) throw new Error(`Unsafe XLSX consumers remain: lazy=${lazyCount}, all=${allCount}`);
 
           const replacements=new Map();
           const ext=(src,attrs='')=>`<script defer src="${src}"${attrs?` ${attrs}`:''}></script>`;
@@ -77,8 +77,7 @@ jobs:
           replacements.set(scripts[15][0],ext('assets/js/table-ui.js'));
           replacements.set(scripts[16][0],ext('assets/js/timeline.js'));
           replacements.set(scripts[17][0],ext('assets/js/tables.js'));
-          replacements.set(scripts[18][0],scripts[18][0]);
-          replacements.set(scripts[19][0],ext('assets/js/ui-helpers.js'));
+          replacements.set(scripts[18][0],ext('assets/js/ui-helpers.js')); replacements.set(scripts[19][0],'');
           replacements.set(scripts[20][0],ext('assets/js/sticker-assets.js'));
           replacements.set(scripts[21][0],ext('assets/js/sidebar.js','data-sidebar-groups'));
           replacements.set(scripts[22][0],ext('assets/js/task-ui.js','data-user-request-fixes-v2'));
@@ -92,7 +91,18 @@ jobs:
           fs.writeFileSync('index.html',html);
 
           if(/application\/bamco-xlsx-source/.test(html)||/xlsx-js-style 1\.2\.0-beta/.test(html)) throw new Error('XLSX is still embedded in HTML');
-          for(const marker of ['loginForm','kanbanView','archiveView','taskTimelineView','vehiclePermanentView','vehicleTemporaryView']) if(!html.includes(marker)) throw new Error(`HTML marker missing: ${marker}`);
+          for(const marker of ['loginForm','kanbanView','archiveView']) if(!html.includes(marker)) throw new Error(`HTML marker missing: ${marker}`);
+          const moduleMarkers={
+            'assets/js/app.js':['SB_URL'],
+            'assets/js/timeline.js':['taskTimelineView'],
+            'assets/js/vehicles.js':['vehiclePermanentView','vehicleTemporaryView'],
+            'assets/js/sidebar.js':['data-view'],
+            'assets/js/auth-ui.js':['loginForm']
+          };
+          for(const [p,markers] of Object.entries(moduleMarkers)){
+            const text=fs.readFileSync(p,'utf8');
+            for(const m of markers)if(!text.includes(m))throw new Error(`${p} missing marker ${m}`);
+          }
           const refs=[...html.matchAll(/<(?:script[^>]+src|link[^>]+href)="([^"]+)"/g)].map(m=>m[1]).filter(x=>x.startsWith('assets/'));
           for(const r of refs) if(!fs.existsSync(r.split('?')[0])) throw new Error(`Missing referenced asset ${r}`);
           const js=fs.readdirSync('assets/js').filter(x=>x.endsWith('.js'));
@@ -123,11 +133,10 @@ jobs:
           echo "$APP" | grep -q 'BAMCO Task Management'
           rm xlsx-smoke.html
           echo 'browser_smoke=OK'
-      - name: Commit modular version and remove one-shot workflow
+      - name: Commit modular version
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git rm -f .github/workflows/bamco-modularize.yml
           git add index.html assets
           git commit -m "refactor: modularize app without legacy override files"
           git push origin HEAD:refactor/modular-app
