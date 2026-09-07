@@ -50,6 +50,47 @@
         padding-right:0!important;
       }
 
+      html body #appView #welcomeView.bamco-welcome-view{
+        overflow:visible!important;
+      }
+      html body #appView #welcomeView .bamco-welcome-layout{
+        position:relative!important;
+        display:block!important;
+        width:min(900px,68vw)!important;
+        max-width:900px!important;
+        margin:0 auto!important;
+        overflow:visible!important;
+      }
+      html body #appView #welcomeView .bamco-welcome-card{
+        width:100%!important;
+        min-height:270px!important;
+        margin:0!important;
+      }
+      html body #appView #welcomeView .bamco-welcome-sticker{
+        position:absolute!important;
+        width:min(470px,34vw)!important;
+        height:540px!important;
+        max-width:none!important;
+        bottom:-195px!important;
+        z-index:4!important;
+        object-fit:contain!important;
+        pointer-events:none!important;
+      }
+      html body #appView #welcomeView .bamco-welcome-sticker-left{
+        left:-260px!important;
+        right:auto!important;
+      }
+      html body #appView #welcomeView .bamco-welcome-sticker-right{
+        right:-260px!important;
+        left:auto!important;
+      }
+      @media(max-width:1100px){
+        html body #appView #welcomeView .bamco-welcome-layout{width:min(720px,65vw)!important}
+        html body #appView #welcomeView .bamco-welcome-sticker{width:330px!important;height:400px!important;bottom:-145px!important}
+        html body #appView #welcomeView .bamco-welcome-sticker-left{left:-185px!important}
+        html body #appView #welcomeView .bamco-welcome-sticker-right{right:-185px!important}
+      }
+
       html body #appView #kanbanView>.table-panel,
       html body #appView #archiveView>.table-panel{
         position:relative!important;margin:18px 0 14px!important;padding:28px 16px 16px!important;
