@@ -46,7 +46,7 @@
       html body #appView #kanbanView>.table-panel,
       html body #appView #archiveView>.table-panel{
         position:relative!important;margin:18px 0 14px!important;padding:28px 16px 16px!important;
-        border:1px solid #b8c8c1!important;border-radius:10px!important;background:#f8faf9!important;overflow:hidden!important
+        border:1px solid #b8c8c1!important;border-radius:10px!important;background:#f8faf9!important;overflow:visible!important
       }
       html body #appView #kanbanView .table-panel>.panel-head,
       html body #appView #archiveView .table-panel>.panel-head{
