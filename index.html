@@ -8,7 +8,7 @@
   <link rel="icon" type="image/png" href="bamco-logo.png" />
   <link rel="stylesheet" href="styles.css?v=20260905-4" />
   <link rel="stylesheet" href="manager.css?v=20260906-7" />
-  <link rel="stylesheet" href="ui-fixes-20260906.css?v=20260907-avatar-display-final" />
+  <link rel="stylesheet" href="ui-fixes-20260906.css?v=20260907-avatar-hard-v4" />
   <link rel="stylesheet" href="sticker-desktop.css?v=20260907-core2" />
   <link rel="stylesheet" href="ui-extra-20260906.css?v=20260907-core2" />
   <link rel="stylesheet" href="stable-layout-20260906.css?v=20260907-core2" />
@@ -219,18 +219,19 @@
   <dialog id="avatarCropDialog" class="modal avatar-crop-dialog"><div class="modal-head"><div><h3>تنظیم تصویر پروفایل</h3><p>تصویر را جابه‌جا کنید و با نوار زیر اندازه را تنظیم کنید.</p></div><button type="button" data-close="avatarCropDialog">×</button></div><div class="crop-stage"><canvas id="avatarCropCanvas" width="360" height="360"></canvas></div><label class="crop-zoom">اندازه تصویر<input id="avatarCropZoom" type="range" min="1" max="3" value="1" step="0.01"></label><div class="modal-actions"><button type="button" class="ghost" data-close="avatarCropDialog">انصراف</button><button id="applyAvatarCrop" type="button" class="primary">تأیید محدوده تصویر</button></div></dialog>
 
   <script src="manager.js?v=20260907-avatar-final2"></script>
+  <script src="avatar-display-hard-fix-20260907.js?v=20260907-avatar-hard-v4"></script>
   <script src="portal-messages.js?v=20260907-1"></script>
   <script src="system-options.js?v=20260907-direct-vehicle"></script>
   <script src="sticker-assets-exact/01_happy_female.js?v=20260907-fixed"></script>
   <script src="sticker-assets-exact/01_happy_male.js?v=20260907-fixed"></script>
   <script src="sticker-desktop.js?v=20260907-core2"></script>
   <script src="app.js?v=20260907-core2"></script>
-  <script src="secure-storage-bridge-20260907.js?v=20260907-secure-upload-final1"></script>
+  <script src="secure-storage-bridge-20260907.js?v=20260907-storage-fallback-v2"></script>
   <script src="dashboard-exact-20260906.js?v=20260906-1"></script>
   <script src="table-column-resize-20260906.js?v=20260907-core2"></script>
   <script src="vendor-xlsx.min.js?v=1.2.0-local"></script>
-  <script src="vehicle-management-20260907.js?v=20260907-secure-upload-final1"></script>
-  <script src="data-io.js?v=20260907-avatar-display-final"></script>
+  <script src="vehicle-management-20260907.js?v=20260907-storage-fallback-v2"></script>
+  <script src="data-io.js?v=20260907-avatar-hard-v4"></script>
   <script>window.__bamcoStableStickerInstalled=true;</script>
   <script src="ui-extra-20260906.js?v=20260907-core2"></script>
   <script src="ux-polish-20260906.js?v=20260906-1"></script>
@@ -240,6 +241,7 @@
     #appView .account #avatar.has-image{background-position:center!important;background-size:cover!important;background-repeat:no-repeat!important;color:transparent!important}
     #settingsView #profileAvatarPreview{width:96px!important;min-width:96px!important;height:96px!important;padding:0!important;margin:0!important;border-radius:50%!important;overflow:hidden!important;background-position:center!important;background-size:cover!important;background-repeat:no-repeat!important;display:flex!important;align-items:center!important;justify-content:center!important}
     #settingsView #profileAvatarPreview.has-image{background-position:center!important;background-size:cover!important;background-repeat:no-repeat!important;color:transparent!important}
+    #appView #avatar>img,#settingsView #profileAvatarPreview>img{width:100%!important;height:100%!important;object-fit:cover!important;display:block!important;border-radius:50%!important}
   </style>
 </body>
 </html>
