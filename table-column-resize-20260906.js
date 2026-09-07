@@ -220,7 +220,6 @@
     try{saved=JSON.parse(localStorage.getItem(key)||'{}')||{}}catch{saved={}}
     const widths=heads.map(head=>{
       const name=(head.childNodes[0]?.textContent||head.textContent||'').trim();
-      if(name==='شناسه')return WIDTHS['شناسه'];
       const stored=Number(saved[name]);
       return Number.isFinite(stored)&&stored>0?stored:(WIDTHS[name]||140);
     });
