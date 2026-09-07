@@ -32,6 +32,7 @@
     if(q('#vehicleModuleStyles'))return;
     const s=document.createElement('style');s.id='vehicleModuleStyles';s.textContent=`
       #appView .vehicle-view{height:calc(100dvh - 58px - var(--footer-h,34px))!important;overflow:hidden!important;box-sizing:border-box!important}
+      #appView .vehicle-view:not(.hidden){display:block!important;width:100%!important}
       #appView .vehicle-view>.vehicle-panel{height:calc(100% - 8px)!important;display:flex!important;flex-direction:column!important;min-height:0!important;padding:28px 16px 16px!important;margin:4px 0!important;position:relative!important;border:1px solid #b8c8c1!important;background:#f8faf9!important;overflow:visible!important}
       #appView .vehicle-title{position:absolute!important;top:-15px!important;right:18px!important;margin:0!important;padding:0 10px!important;background:#eef3f0!important;color:#145741!important;font-size:18px!important;z-index:3!important}
       #appView .vehicle-toolbar{display:flex!important;align-items:center!important;gap:8px!important;direction:rtl!important;margin-bottom:10px!important;overflow-x:auto!important;padding:1px!important}
