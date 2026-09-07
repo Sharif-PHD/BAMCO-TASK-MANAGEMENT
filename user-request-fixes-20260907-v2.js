@@ -13,22 +13,24 @@
         justify-content:center!important;
         height:calc(100vh - var(--footer-h,34px) - 10px)!important;
         max-height:none!important;
-        padding:24px 26px!important;
+        padding:20px 26px 120px!important;
         box-sizing:border-box!important;
-        overflow:hidden!important;
+        overflow:visible!important;
       }
       #welcomeView.bamco-welcome-view.hidden{display:none!important}
       #welcomeView .bamco-welcome-layout{
-        width:min(1320px,98%)!important;
-        display:grid!important;
-        grid-template-columns:minmax(150px,260px) minmax(560px,900px) minmax(150px,260px)!important;
+        position:relative!important;
+        width:min(1000px,74vw)!important;
+        min-height:430px!important;
+        display:flex!important;
         align-items:center!important;
         justify-content:center!important;
-        gap:24px!important;
         direction:ltr!important;
+        overflow:visible!important;
       }
       #welcomeView .bamco-welcome-card{
-        grid-column:2!important;
+        position:relative!important;
+        z-index:2!important;
         width:100%!important;
         min-height:270px!important;
         padding:42px 48px!important;
@@ -58,21 +60,22 @@
       #welcomeView .bamco-welcome-system{font-size:28px!important;line-height:1.9!important;white-space:nowrap!important}
       #welcomeView .bamco-welcome-greeting{font-size:25px!important;line-height:1.9!important;white-space:nowrap!important}
       #welcomeView .bamco-welcome-sticker{
+        position:absolute!important;
+        z-index:3!important;
         display:block!important;
-        width:min(235px,16vw)!important;
-        height:330px!important;
-        max-width:100%!important;
+        width:340px!important;
+        height:430px!important;
+        max-width:none!important;
         object-fit:contain!important;
-        object-position:center!important;
-        align-self:center!important;
-        justify-self:center!important;
+        object-position:center bottom!important;
+        bottom:-145px!important;
         pointer-events:none!important;
         user-select:none!important;
         filter:none!important;
         image-rendering:auto!important;
       }
-      #welcomeView .bamco-welcome-sticker-left{grid-column:1!important}
-      #welcomeView .bamco-welcome-sticker-right{grid-column:3!important}
+      #welcomeView .bamco-welcome-sticker-left{left:-175px!important}
+      #welcomeView .bamco-welcome-sticker-right{right:-175px!important}
       #welcomeView .bamco-welcome-sticker:not([src]),
       #welcomeView .bamco-welcome-sticker[src=""]{visibility:hidden!important}
       body.welcome-active .workspace>header{display:none!important}
@@ -99,16 +102,19 @@
       }
 
       @media(max-width:1050px){
-        #welcomeView .bamco-welcome-layout{grid-template-columns:150px minmax(500px,760px) 150px!important;gap:14px!important}
-        #welcomeView .bamco-welcome-sticker{width:145px!important;height:260px!important}
+        #welcomeView.bamco-welcome-view{padding-bottom:90px!important}
+        #welcomeView .bamco-welcome-layout{width:min(760px,68vw)!important;min-height:370px!important}
+        #welcomeView .bamco-welcome-sticker{width:260px!important;height:340px!important;bottom:-115px!important}
+        #welcomeView .bamco-welcome-sticker-left{left:-120px!important}
+        #welcomeView .bamco-welcome-sticker-right{right:-120px!important}
       }
       @media(max-width:760px){
-        #welcomeView.bamco-welcome-view{padding:18px 12px!important;overflow:auto!important}
-        #welcomeView .bamco-welcome-layout{width:98%!important;grid-template-columns:1fr!important;gap:12px!important}
-        #welcomeView .bamco-welcome-card{grid-column:1!important;grid-row:1!important;width:100%!important;padding:28px 12px!important}
-        #welcomeView .bamco-welcome-sticker{width:125px!important;height:170px!important}
-        #welcomeView .bamco-welcome-sticker-left{grid-column:1!important;grid-row:2!important;justify-self:start!important}
-        #welcomeView .bamco-welcome-sticker-right{grid-column:1!important;grid-row:2!important;justify-self:end!important}
+        #welcomeView.bamco-welcome-view{padding:18px 12px 100px!important;overflow:auto!important}
+        #welcomeView .bamco-welcome-layout{width:94%!important;min-height:390px!important}
+        #welcomeView .bamco-welcome-card{width:100%!important;padding:28px 12px!important;min-height:230px!important}
+        #welcomeView .bamco-welcome-sticker{width:165px!important;height:220px!important;bottom:-95px!important}
+        #welcomeView .bamco-welcome-sticker-left{left:-35px!important}
+        #welcomeView .bamco-welcome-sticker-right{right:-35px!important}
         #welcomeView .bamco-welcome-name,#welcomeView .bamco-welcome-greeting{font-size:20px!important}
         #welcomeView .bamco-welcome-system{font-size:19px!important;white-space:nowrap!important}
       }
@@ -156,7 +162,7 @@
     let token='';try{token=state?.token||''}catch{}
     if(!token)return '';
     const path=welcomeHQPaths[gender],encoded=path.split('/').map(encodeURIComponent).join('/');
-    const r=await fetch(`${SB_URL}/storage/v1/object/authenticated/stickers/${encoded}?v=20260907-hq1`,{headers:{apikey:SB_KEY,Authorization:`Bearer ${token}`},cache:'force-cache'});
+    const r=await fetch(`${SB_URL}/storage/v1/object/authenticated/stickers/${encoded}?v=20260907-hq2`,{headers:{apikey:SB_KEY,Authorization:`Bearer ${token}`},cache:'force-cache'});
     if(!r.ok)throw new Error(`HQ sticker ${gender} unavailable`);
     const blob=await r.blob();
     const url=URL.createObjectURL(blob);
