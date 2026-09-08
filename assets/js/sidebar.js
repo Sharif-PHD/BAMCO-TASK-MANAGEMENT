@@ -86,6 +86,76 @@
     document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAllGroups()});
   }
 
+  function installHeaderTools(){
+    const sidebar=q('#sidebar');
+    if(!sidebar||q('.header-tools'))return;
+
+    const tools=document.createElement('div');
+    tools.className='header-tools';
+    tools.setAttribute('aria-label','ابزارهای کاربری');
+
+    const account=q('.account');
+    if(account)tools.appendChild(account);
+
+    const bell=document.createElement('button');
+    bell.type='button';
+    bell.id='notificationBell';
+    bell.className='header-tool-btn header-notification-bell';
+    bell.title='پیام‌های من';
+    bell.setAttribute('aria-label','پیام‌ها');
+    bell.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M10 21h4"></path></svg><span class="header-notification-count" aria-hidden="true"></span>`;
+
+    const settingsProxy=document.createElement('button');
+    settingsProxy.type='button';
+    settingsProxy.id='headerSettingsBtn';
+    settingsProxy.className='header-tool-btn header-settings-btn';
+    settingsProxy.title='تنظیمات';
+    settingsProxy.setAttribute('aria-label','تنظیمات');
+    settingsProxy.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.25A3.25 3.25 0 1 0 12 8.75a3.25 3.25 0 0 0 0 6.5Z"></path><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.12 2.12-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V20.3h-3v-.08a1.7 1.7 0 0 0-1.03-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06-2.12-2.12.06-.06A1.7 1.7 0 0 0 7.02 15a1.7 1.7 0 0 0-1.56-1.03H5.4v-3h.06A1.7 1.7 0 0 0 7.02 9a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.12-2.12.06.06A1.7 1.7 0 0 0 10.68 5.34a1.7 1.7 0 0 0 1.03-1.56V3.7h3v.08a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06 2.12 2.12-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.56 1.03h.06v3h-.06A1.7 1.7 0 0 0 19.4 15Z"></path></svg>`;
+
+    tools.append(bell,settingsProxy);
+    sidebar.appendChild(tools);
+
+    const syncBell=()=>{
+      const badge=q('#messageBadge'),count=bell.querySelector('.header-notification-count');
+      const value=(badge?.textContent||'').trim();
+      count.textContent=value;
+      bell.classList.toggle('has-unread',!!value);
+      bell.setAttribute('aria-label',value?`پیام‌ها، ${value} پیام خوانده‌نشده`:'پیام‌ها');
+    };
+
+    const bindMessageBadge=()=>{
+      const badge=q('#messageBadge');
+      if(!badge||badge.dataset.headerBellBound==='1')return false;
+      badge.dataset.headerBellBound='1';
+      new MutationObserver(syncBell).observe(badge,{childList:true,characterData:true,subtree:true,attributes:true});
+      syncBell();
+      return true;
+    };
+
+    if(!bindMessageBadge()){
+      const nav=q('#nav');
+      if(nav){
+        const observer=new MutationObserver(()=>{if(bindMessageBadge())observer.disconnect()});
+        observer.observe(nav,{childList:true,subtree:true});
+      }
+    }
+
+    bell.addEventListener('click',()=>{
+      closeAllGroups();
+      const source=q('#nav button[data-view="messages"]');
+      if(source)source.click();
+      else if(typeof showView==='function')showView('messages');
+    });
+
+    settingsProxy.addEventListener('click',()=>{
+      closeAllGroups();
+      const source=q('#nav button[data-view="settings"]');
+      if(source)source.click();
+      else if(typeof showView==='function')showView('settings');
+    });
+  }
+
   function installCollapseButton(){
     const btn=q('#collapseBtn');
     if(btn){btn.hidden=true;btn.setAttribute('aria-hidden','true')}
@@ -155,6 +225,7 @@
   const boot=()=>{
     forceNormalScale();
     installGroupedNav();
+    installHeaderTools();
     installCollapseButton();
     installTaskTools();
     removeSubtitle();
