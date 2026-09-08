@@ -1,0 +1,270 @@
+/* BAMCO horizontal header refresh — 2026-09-08 */
+#appView.app{--app-header-h:132px}
+
+#appView .sidebar,
+#appView .sidebar.collapsed{
+  height:var(--app-header-h);
+  background:linear-gradient(100deg,#0b493a 0%,#0d5744 50%,#0b493a 100%);
+  border-bottom:1px solid rgba(255,255,255,.14);
+  box-shadow:0 7px 24px rgba(4,33,25,.18);
+  overflow:visible;
+}
+
+/* Top row: brand / title / user tools */
+#appView .side-brand{
+  position:absolute;
+  top:7px;
+  right:22px;
+  left:auto;
+  width:148px;
+  height:64px;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+}
+#appView .side-brand img{
+  width:126px;
+  height:62px;
+  object-fit:contain;
+  filter:drop-shadow(0 2px 7px rgba(0,0,0,.18));
+}
+#appView .header-system-title{
+  position:absolute!important;
+  top:11px!important;
+  left:50%!important;
+  right:auto!important;
+  transform:translateX(-50%)!important;
+  width:min(660px,52vw)!important;
+  margin:0!important;
+  color:#fff!important;
+  text-align:center!important;
+  font-size:21px!important;
+  line-height:44px!important;
+  font-weight:800!important;
+  white-space:nowrap!important;
+  text-shadow:none!important;
+}
+
+#appView .header-tools{
+  position:absolute;
+  top:10px;
+  left:18px;
+  z-index:125;
+  height:50px;
+  display:flex;
+  direction:rtl;
+  align-items:center;
+  gap:7px;
+}
+#appView .header-tools .account{
+  position:static!important;
+  inset:auto!important;
+  height:50px!important;
+  display:flex!important;
+  direction:rtl;
+  align-items:center;
+  gap:8px!important;
+  margin:0!important;
+  padding:0 0 0 4px!important;
+}
+#appView .header-tools .account-copy{
+  display:grid!important;
+  min-width:0;
+  line-height:1.35;
+  text-align:right;
+}
+#appView .header-tools .account-copy strong,
+#appView .header-tools .account-copy small{
+  max-width:145px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+#appView .header-tools .account-copy strong{font-size:13px;color:#fff}
+#appView .header-tools .account-copy small{font-size:11px;color:#bdd5cc}
+#appView .header-tools .account .avatar{
+  width:42px!important;
+  height:42px!important;
+  min-width:42px!important;
+  border:1px solid rgba(255,255,255,.35)!important;
+  box-shadow:none!important;
+  font-size:16px!important;
+}
+#appView .header-tools .account>button,
+#appView .header-tool-btn{
+  position:relative;
+  width:42px!important;
+  height:42px!important;
+  min-width:42px!important;
+  min-height:42px!important;
+  display:grid;
+  place-items:center;
+  padding:0!important;
+  border:1px solid rgba(255,255,255,.25)!important;
+  border-radius:12px!important;
+  background:rgba(255,255,255,.08)!important;
+  color:#fff!important;
+  box-shadow:none!important;
+  cursor:pointer;
+  transition:background .15s ease,border-color .15s ease,transform .15s ease;
+}
+#appView .header-tools .account>button:hover,
+#appView .header-tool-btn:hover{
+  background:rgba(255,255,255,.16)!important;
+  border-color:rgba(255,255,255,.45)!important;
+  transform:translateY(-1px);
+}
+#appView .header-tool-btn svg{
+  width:20px;
+  height:20px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+#appView .header-notification-count{
+  position:absolute;
+  top:-5px;
+  right:-5px;
+  min-width:18px;
+  height:18px;
+  padding:0 4px;
+  border:2px solid #0c5140;
+  border-radius:999px;
+  background:#d94343;
+  color:#fff;
+  font:700 10px/14px Tahoma,Arial,sans-serif;
+  display:grid;
+  place-items:center;
+  box-shadow:0 2px 7px rgba(0,0,0,.24);
+}
+#appView .header-notification-count:empty{display:none}
+#appView .header-notification-bell.has-unread:after{
+  content:"";
+  position:absolute;
+  inset:5px;
+  border-radius:9px;
+  border:1px solid rgba(255,255,255,.13);
+  pointer-events:none;
+}
+
+/* The real settings action lives in the tidy tool cluster now. */
+#appView .sidebar nav>.nav-settings-root{display:none!important}
+
+/* Bottom row: one clean horizontal navigation line */
+#appView .sidebar nav{
+  position:absolute!important;
+  right:0!important;
+  left:0!important;
+  bottom:0!important;
+  width:100%!important;
+  height:57px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:8px!important;
+  padding:7px 18px 9px!important;
+  flex-wrap:nowrap!important;
+  overflow-x:auto!important;
+  overflow-y:visible!important;
+  border-top:1px solid rgba(255,255,255,.10)!important;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(255,255,255,.22) transparent;
+}
+#appView .sidebar nav::-webkit-scrollbar{height:4px}
+#appView .sidebar nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.22);border-radius:99px}
+#appView .nav-group{position:relative;display:block;flex:0 0 auto}
+#appView .nav-group>.nav-group-toggle,
+#appView .sidebar nav>button:not(.nav-settings-root){
+  height:39px!important;
+  min-height:39px!important;
+  min-width:142px!important;
+  padding:6px 12px!important;
+  border:1px solid rgba(255,255,255,.18)!important;
+  border-radius:10px!important;
+  background:rgba(255,255,255,.055)!important;
+  color:#e5f0ec!important;
+  box-shadow:none!important;
+  font-size:13px!important;
+  font-weight:700!important;
+  justify-content:center!important;
+}
+#appView .nav-group>.nav-group-toggle:hover,
+#appView .nav-group.open>.nav-group-toggle,
+#appView .sidebar nav>button:not(.nav-settings-root):hover{
+  background:rgba(255,255,255,.13)!important;
+  border-color:rgba(255,255,255,.34)!important;
+  color:#fff!important;
+  transform:none!important;
+}
+#appView .sidebar nav button.active,
+#appView .nav-group-items>button.active{
+  background:#218764!important;
+  color:#fff!important;
+  border-color:rgba(255,255,255,.34)!important;
+}
+#appView .nav-group-icon{font-size:16px!important}
+#appView .nav-chevron{margin-right:auto!important;font-size:15px!important}
+#appView .nav-group.open>.nav-group-items{
+  top:45px!important;
+  min-width:230px!important;
+  padding:7px!important;
+  border-radius:11px!important;
+  background:#094536!important;
+  border:1px solid rgba(255,255,255,.20)!important;
+  box-shadow:0 16px 34px rgba(0,0,0,.27)!important;
+}
+#appView .nav-group-items>button{
+  height:38px!important;
+  padding:6px 10px!important;
+  border-radius:8px!important;
+  font-size:13px!important;
+}
+
+#appView .workspace,
+#appView.app:has(.sidebar.collapsed) .workspace{
+  padding:calc(var(--app-header-h) + 14px) 20px calc(var(--app-footer-h) + 12px)!important;
+}
+
+@media(max-width:1050px){
+  #appView.app{--app-header-h:124px}
+  #appView .side-brand{right:10px;top:6px;width:112px;height:58px}
+  #appView .side-brand img{width:100px;height:56px}
+  #appView .header-system-title{top:10px!important;width:50vw!important;font-size:17px!important;line-height:40px!important}
+  #appView .header-tools{top:9px;left:10px;height:44px}
+  #appView .header-tools .account-copy{display:none!important}
+  #appView .header-tools .account .avatar,
+  #appView .header-tools .account>button,
+  #appView .header-tool-btn{width:38px!important;height:38px!important;min-width:38px!important;min-height:38px!important;border-radius:10px!important}
+  #appView .sidebar nav{height:54px!important;justify-content:flex-start!important;padding:7px 10px 8px!important}
+  #appView .nav-group>.nav-group-toggle,
+  #appView .sidebar nav>button:not(.nav-settings-root){min-width:132px!important;height:37px!important;min-height:37px!important}
+}
+
+@media(max-width:650px){
+  #appView.app{--app-header-h:112px;--app-footer-h:45px}
+  #appView .side-brand{right:4px;top:5px;width:72px;height:46px}
+  #appView .side-brand img{width:68px;height:45px}
+  #appView .header-system-title{
+    top:6px!important;
+    width:46vw!important;
+    font-size:13px!important;
+    line-height:18px!important;
+    white-space:normal!important;
+    padding-top:4px!important;
+  }
+  #appView .header-tools{top:7px;left:5px;height:36px;gap:5px}
+  #appView .header-tools .account .avatar{display:none!important}
+  #appView .header-tools .account{height:34px!important;padding:0!important;gap:5px!important}
+  #appView .header-tools .account>button,
+  #appView .header-tool-btn{width:34px!important;height:34px!important;min-width:34px!important;min-height:34px!important;border-radius:9px!important}
+  #appView .header-tool-btn svg{width:17px;height:17px}
+  #appView .header-notification-count{top:-5px;right:-5px;min-width:17px;height:17px;font-size:9px}
+  #appView .sidebar nav{height:51px!important;padding:6px 7px 8px!important;gap:6px!important}
+  #appView .nav-group>.nav-group-toggle,
+  #appView .sidebar nav>button:not(.nav-settings-root){min-width:119px!important;height:35px!important;min-height:35px!important;padding:5px 8px!important;font-size:12px!important}
+  #appView .nav-group.open>.nav-group-items{top:41px!important;min-width:205px!important}
+  #appView .workspace,
+  #appView.app:has(.sidebar.collapsed) .workspace{padding:calc(var(--app-header-h) + 9px) 9px calc(var(--app-footer-h) + 9px)!important}
+}
