@@ -10,6 +10,7 @@
     let style=q('#bamcoLoginControlsStyle');
     if(!style){style=document.createElement('style');style.id='bamcoLoginControlsStyle';document.head.appendChild(style)}
     style.textContent=`
+      .bamco-fa{font-family:BamcoPersian,"B Nazanin",BNazanin,"B Nazanin Regular",Tahoma,sans-serif!important}
       #loginView .brand-lockup img{width:122px!important;height:122px!important;padding:12px!important;border-radius:24px!important}
       #loginView .bamco-auth-field{position:relative!important;display:block!important;width:100%!important}
       #loginView .bamco-auth-field>#email,#loginView .bamco-auth-field>#password{width:100%!important;box-sizing:border-box!important;background-image:none!important;padding-left:50px!important}
@@ -17,9 +18,9 @@
       #loginView .bamco-auth-leading-icon{position:absolute!important;left:15px!important;top:50%!important;transform:translateY(-50%)!important;width:23px!important;height:23px!important;display:flex!important;align-items:center!important;justify-content:center!important;color:#7b8683!important;pointer-events:none!important;z-index:8!important}
       #loginView .bamco-auth-leading-icon svg,#loginView .bamco-password-toggle svg{width:23px!important;height:23px!important;display:block!important;fill:currentColor!important}
       #loginView .bamco-password-toggle{position:absolute!important;right:14px!important;top:50%!important;transform:translateY(-50%)!important;width:30px!important;height:30px!important;padding:0!important;margin:0!important;border:0!important;background:transparent!important;color:#7b8683!important;display:flex!important;align-items:center!important;justify-content:center!important;cursor:pointer!important;z-index:9!important}
-      #loginView .bamco-verification{margin-top:12px!important;padding:10px!important;border:1px solid #d4e0db!important;border-radius:10px!important;background:#f6faf8!important;direction:rtl!important;text-align:right!important}
-      #loginView .bamco-verification-title{display:block!important;margin-bottom:7px!important;font-weight:700!important;color:#31584b!important;text-align:right!important;direction:rtl!important}
-      #loginView .bamco-verification-title span{display:block!important;width:100%!important;text-align:right!important}
+      #loginView .bamco-verification-wrap{position:relative!important;margin-top:22px!important;padding-top:8px!important;direction:rtl!important}
+      #loginView .bamco-verification-title{position:absolute!important;top:-4px!important;right:12px!important;z-index:2!important;padding:0 8px!important;background:#fff!important;color:#31584b!important;font-weight:700!important;font-size:14px!important;line-height:1.4!important;text-align:right!important;direction:rtl!important}
+      #loginView .bamco-verification{position:relative!important;margin:0!important;padding:18px 10px 10px!important;border:1px solid #d4e0db!important;border-radius:10px!important;background:#f6faf8!important;direction:rtl!important;text-align:right!important}
       #loginView .bamco-code-row{display:grid!important;grid-template-columns:112px 1fr 34px!important;gap:7px!important;align-items:center!important}
       #loginView .bamco-code-box{height:40px!important;display:grid!important;place-items:center!important;border:1px dashed #8eaaa0!important;border-radius:8px!important;background:#fff!important;font-family:"Times New Roman",Times,serif!important;font-size:20px!important;font-weight:700!important;letter-spacing:5px!important;direction:ltr!important;color:#174f3e!important;user-select:none!important}
       #loginView #loginVerifyCode{height:40px!important;text-align:center!important;direction:ltr!important;font-family:"Times New Roman",Times,serif!important;font-size:16px!important;letter-spacing:3px!important;padding:6px 8px!important}
@@ -48,16 +49,18 @@
 
   function installVerification(){
     const form=q('#loginForm');if(!form)return;
+    let wrap=q('#loginVerificationWrap');
     let box=q('#loginVerification');
-    if(!box){
-      box=document.createElement('div');box.id='loginVerification';box.className='bamco-verification';
-      box.innerHTML=`<div class="bamco-verification-title"><span>کد را وارد کنید</span></div><div class="bamco-code-row"><div id="loginVerifyDisplay" class="bamco-code-box" aria-label="کد تأیید"></div><input id="loginVerifyCode" type="text" inputmode="numeric" autocomplete="off" maxlength="4" pattern="[0-9۰-۹٠-٩]{4}" placeholder="کد"><button type="button" id="refreshLoginVerify" class="bamco-refresh-code" title="ساخت کد جدید" aria-label="ساخت کد جدید">↻</button></div><div id="loginVerifyError" class="bamco-code-error"></div>`;
+    if(!wrap){
+      wrap=document.createElement('div');wrap.id='loginVerificationWrap';wrap.className='bamco-verification-wrap bamco-fa';
+      wrap.innerHTML=`<div class="bamco-verification-title bamco-fa">تأیید عددی</div><div id="loginVerification" class="bamco-verification"><div class="bamco-code-row"><div id="loginVerifyDisplay" class="bamco-code-box" aria-label="کد تأیید"></div><input id="loginVerifyCode" type="text" inputmode="numeric" autocomplete="off" maxlength="4" pattern="[0-9۰-۹٠-٩]{4}" placeholder="کد را وارد کنید"><button type="button" id="refreshLoginVerify" class="bamco-refresh-code" title="ساخت کد جدید" aria-label="ساخت کد جدید">↻</button></div><div id="loginVerifyError" class="bamco-code-error bamco-fa"></div></div>`;
       const submit=form.querySelector('button[type="submit"],.primary.wide');
-      if(submit)form.insertBefore(box,submit);else form.appendChild(box);
+      if(submit)form.insertBefore(wrap,submit);else form.appendChild(wrap);
+      box=q('#loginVerification');
     }else{
-      const title=box.querySelector('.bamco-verification-title');
-      if(title)title.innerHTML='<span>کد را وارد کنید</span>';
+      const title=wrap.querySelector('.bamco-verification-title');if(title)title.textContent='تأیید عددی';
     }
+    if(!box)return;
     const display=q('#loginVerifyDisplay'),input=q('#loginVerifyCode'),error=q('#loginVerifyError'),refresh=q('#refreshLoginVerify');
     const renew=(clearError=true)=>{box.dataset.code=makeCode();if(display)display.textContent=box.dataset.code;if(input)input.value='';if(clearError&&error)error.textContent=''};
     if(!box.dataset.code)renew();
@@ -67,17 +70,24 @@
       form.dataset.verifyBound='1';
       form.addEventListener('submit',e=>{
         const entered=toLatinDigits(input?.value).replace(/\D/g,'');
-        if(entered!==box.dataset.code){
-          e.preventDefault();e.stopImmediatePropagation();
-          renew(false);
-          if(error)error.textContent='کد تأیید صحیح نیست. کد جدید را وارد کنید.';
-          setTimeout(()=>input?.focus(),0);
-        }
+        if(entered!==box.dataset.code){e.preventDefault();e.stopImmediatePropagation();renew(false);if(error)error.textContent='کد تأیید صحیح نیست. کد جدید را وارد کنید.';setTimeout(()=>input?.focus(),0)}
       },true);
     }
   }
 
-  function install(){injectStyle();const email=q('#email'),password=q('#password');wrapInput(email,'email',USER_ICON);const passWrap=wrapInput(password,'password',LOCK_ICON);installPasswordToggle(passWrap,password);installVerification()}
-  function boot(){install();[100,350,900,1600].forEach(ms=>setTimeout(install,ms));const login=q('#loginView');if(login&&!login.dataset.loginControlsObserved){login.dataset.loginControlsObserved='1';let queued=false;new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;install()})}).observe(login,{childList:true,subtree:true})}}
+  function applyPersianFonts(root=document){
+    const persian=/[\u0600-\u06FF]/;
+    const nodes=root.querySelectorAll?root.querySelectorAll('body *'):[];
+    nodes.forEach(el=>{
+      if(el.closest('.english,.english-ui,.en-text,[dir="ltr"]'))return;
+      if(el.matches('input[type="email"],input[type="url"],input[type="password"]'))return;
+      const direct=[...el.childNodes].some(n=>n.nodeType===Node.TEXT_NODE&&persian.test(n.nodeValue||''));
+      const attrs=[el.getAttribute('placeholder'),el.getAttribute('title'),el.getAttribute('aria-label')].filter(Boolean).some(v=>persian.test(v));
+      if(direct||attrs)el.classList.add('bamco-fa');
+    });
+  }
+
+  function install(){injectStyle();const email=q('#email'),password=q('#password');wrapInput(email,'email',USER_ICON);const passWrap=wrapInput(password,'password',LOCK_ICON);installPasswordToggle(passWrap,password);installVerification();applyPersianFonts(document)}
+  function boot(){install();[100,350,900,1600].forEach(ms=>setTimeout(install,ms));const login=q('#loginView');if(login&&!login.dataset.loginControlsObserved){login.dataset.loginControlsObserved='1';let queued=false;new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;install()})}).observe(login,{childList:true,subtree:true})}if(document.body&&!document.body.dataset.bamcoPersianFontObserved){document.body.dataset.bamcoPersianFontObserved='1';let queued=false;new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;applyPersianFonts(document)})}).observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['placeholder','title','aria-label']})}}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
