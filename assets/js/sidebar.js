@@ -12,6 +12,10 @@
       <section id="vehicleTemporaryView" class="view hidden manager-only vehicle-view"><div class="panel"><div class="panel-head"><div><h3>تحویل موقت</h3><small>مدیریت اطلاعات خودروهای تحویل موقت</small></div></div><div class="empty vehicle-empty">این بخش برای ثبت و مدیریت اطلاعات تحویل موقت آماده است.</div></div></section>`);
   }
 
+  function closeAllGroups(except=null){
+    qa('#nav .nav-group.open').forEach(g=>{if(g!==except)g.classList.remove('open')});
+  }
+
   function makeGroup(title,key,views,icon){
     const nav=q('#nav');
     const children=views.map(v=>q(`#nav button[data-view="${v}"]`)).filter(Boolean);
@@ -19,18 +23,20 @@
     const group=document.createElement('div');
     group.className='nav-group';group.dataset.group=key;
     const toggle=document.createElement('button');
-    toggle.type='button';toggle.className='nav-group-toggle';toggle.title=title;toggle.setAttribute('aria-label',title);
+    toggle.type='button';toggle.className='nav-group-toggle';toggle.title=title;toggle.setAttribute('aria-label',title);toggle.setAttribute('aria-expanded','false');
     toggle.innerHTML=`<b class="nav-group-icon">${icon}</b><span>${title}</span><b class="nav-chevron">⌄</b>`;
     const items=document.createElement('div');items.className='nav-group-items';children.forEach(b=>items.appendChild(b));
     group.append(toggle,items);nav.appendChild(group);
-    toggle.addEventListener('click',()=>{
-      const sidebar=q('#sidebar');
-      if(sidebar?.classList.contains('collapsed')){
-        sidebar.classList.remove('collapsed');
-        group.classList.remove('collapsed-group');
-        return;
-      }
-      group.classList.toggle('collapsed-group');
+    toggle.addEventListener('click',e=>{
+      e.preventDefault();e.stopPropagation();
+      const willOpen=!group.classList.contains('open');
+      closeAllGroups(group);
+      group.classList.toggle('open',willOpen);
+      toggle.setAttribute('aria-expanded',willOpen?'true':'false');
+    });
+    items.addEventListener('click',e=>{
+      const btn=e.target.closest('button[data-view]');
+      if(btn){group.classList.remove('open');toggle.setAttribute('aria-expanded','false')}
     });
     return group;
   }
@@ -55,7 +61,8 @@
     const vehicle=makeGroup('مدیریت خودرو','vehicle',['vehiclePermanent','vehicleTemporary'],'◇');
     if(settings)nav.appendChild(settings);
 
-    const refreshVisibility=()=>[task,people,email,vehicle].forEach(g=>{
+    const groups=[task,people,email,vehicle];
+    const refreshVisibility=()=>groups.forEach(g=>{
       if(!g)return;
       const visible=[...g.querySelectorAll('.nav-group-items>button')].some(b=>!b.classList.contains('hidden'));
       g.classList.toggle('hidden',!visible);
@@ -64,17 +71,19 @@
     new MutationObserver(refreshVisibility).observe(nav,{subtree:true,attributes:true,attributeFilter:['class']});
 
     [permanent,temporary].forEach(b=>b.addEventListener('click',()=>{
+      closeAllGroups();
       document.body.classList.remove('welcome-active');q('#welcomeView')?.classList.add('hidden');
       if(typeof showView==='function')showView(b.dataset.view);
       const h=q('#viewTitle');if(h)h.textContent=b.dataset.view==='vehiclePermanent'?'تحویل دائم':'تحویل موقت';
     }));
+
+    document.addEventListener('click',e=>{if(!e.target.closest('#nav .nav-group'))closeAllGroups()});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAllGroups()});
   }
 
   function installCollapseButton(){
-    const btn=q('#collapseBtn'),account=q('#sidebar .account');
-    if(!btn||!account)return;
-    btn.textContent='';btn.title='باز و بسته کردن منو';btn.setAttribute('aria-label','باز و بسته کردن منو');
-    account.appendChild(btn);
+    const btn=q('#collapseBtn');
+    if(btn){btn.hidden=true;btn.setAttribute('aria-hidden','true')}
   }
 
   function installTaskTools(){
@@ -112,18 +121,15 @@
   async function loadStickerAssets(){
     window.BAMCO_DESKTOP_ASSETS=window.BAMCO_DESKTOP_ASSETS||{};
     const smallCandidates={...window.BAMCO_DESKTOP_ASSETS};
-
     window.BAMCO_STICKER_PACK='';
     await appendScript('sticker-pack-01.js?v=20260907-core1');
     await appendScript('sticker-pack-02.js?v=20260907-core1');
     await appendScript('sticker-pack-loader.js?v=20260907-core1');
     const fullCandidates={...window.BAMCO_DESKTOP_ASSETS};
-
     const beforeExact={...window.BAMCO_DESKTOP_ASSETS};
     const exact=['01_happy_female.js','01_happy_male.js','02_reminder_female.js','02_reminder_male.js','03_concerned_female.js','03-04-pair.js'];
     for(const name of exact)await appendScript(`sticker-assets-exact/${name}?v=20260907-core1`);
     const afterExact={...window.BAMCO_DESKTOP_ASSETS};
-
     let valid=0;
     for(const key of STICKER_KEYS){
       const exactCandidate=afterExact[key]!==beforeExact[key]?afterExact[key]:'';
@@ -136,20 +142,17 @@
     window.dispatchEvent(new CustomEvent('bamco-stickers-ready',{detail:{count:valid}}));
   }
 
-  function installSidebarHoverScroll(){
-    const nav=q('#sidebar nav');if(!nav||nav.dataset.hoverScroll==='1')return;
-    nav.dataset.hoverScroll='1';let speed=0,raf=0;
-    const tick=()=>{if(!speed){raf=0;return}nav.scrollTop+=speed;raf=requestAnimationFrame(tick)};
-    const setSpeed=e=>{const r=nav.getBoundingClientRect();if(!r.height){speed=0;return}const y=(e.clientY-r.top)/r.height,edge=.2,max=5;if(y<edge)speed=-Math.max(1,Math.round((edge-y)/edge*max));else if(y>1-edge)speed=Math.max(1,Math.round((y-(1-edge))/edge*max));else speed=0;if(speed&&!raf)raf=requestAnimationFrame(tick)};
-    nav.addEventListener('mousemove',setSpeed,{passive:true});nav.addEventListener('mouseenter',setSpeed,{passive:true});nav.addEventListener('mouseleave',()=>{speed=0},{passive:true});
+  function forceNormalScale(){
+    document.documentElement.style.setProperty('zoom','1');
+    document.body.style.setProperty('zoom','1');
   }
 
   const boot=()=>{
+    forceNormalScale();
     installGroupedNav();
     installCollapseButton();
     installTaskTools();
     removeSubtitle();
-    installSidebarHoverScroll();
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
