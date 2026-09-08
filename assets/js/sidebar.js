@@ -80,15 +80,28 @@
     const permanent=document.createElement('button');permanent.dataset.view='vehiclePermanent';permanent.className='manager-only';permanent.innerHTML='<b>▣</b><span>تحویل دائم</span>';
     const temporary=document.createElement('button');temporary.dataset.view='vehicleTemporary';temporary.className='manager-only';temporary.innerHTML='<b>▤</b><span>تحویل موقت</span>';
     nav.append(permanent,temporary);qa('#nav>.nav-divider').forEach(x=>x.remove());
-    const task=makeGroup('مدیریت وظایف','tasks',['kanban','archive','taskTimeline','dashboard','approvals','requestHistory'],'☑');
-    const people=makeGroup('مدیریت افراد و نقش‌ها','people',['people','systemOptions'],'♙');
+    const task=makeGroup('مدیریت وظایف','tasks',['kanban','archive','taskTimeline','approvals','requestHistory','approvalChains'],'☑');
+    const people=makeGroup('مدیریت افراد','people',['people'],'♙');
     const email=makeGroup('مدیریت پیام','messages',['messages','sentMessages','templates','stickers'],'✉');
     const vehicle=makeGroup('مدیریت خودرو','vehicle',['vehiclePermanent','vehicleTemporary'],'◇');
+    const reports=makeGroup('گزارش‌ها','reports',['dashboard'],'▦');
+    const configuration=makeGroup('تنظیمات','configuration',['systemOptions'],'⚙');
     if(settings)nav.appendChild(settings);
-    const groups=[task,people,email,vehicle];
-    const refreshVisibility=()=>groups.forEach(g=>{if(!g)return;const visible=[...g.querySelectorAll('.nav-group-items>button')].some(b=>!b.classList.contains('hidden'));g.classList.toggle('hidden',!visible)});
-    refreshVisibility();new MutationObserver(refreshVisibility).observe(nav,{subtree:true,attributes:true,attributeFilter:['class']});
-    [permanent,temporary].forEach(b=>b.addEventListener('click',()=>{closeAllGroups();document.body.classList.remove('welcome-active');q('#welcomeView')?.classList.add('hidden');if(typeof showView==='function')showView(b.dataset.view);const h=q('#viewTitle');if(h)h.textContent=b.dataset.view==='vehiclePermanent'?'تحویل دائم':'تحویل موقت'}));
+    const groups=[task,email,people,vehicle,reports,configuration];
+    const refreshVisibility=()=>groups.forEach(g=>{
+      if(!g)return;
+      const visible=[...g.querySelectorAll('.nav-group-items>button')].some(b=>!b.classList.contains('hidden'));
+      g.classList.toggle('hidden',!visible);
+    });
+    refreshVisibility();
+    new MutationObserver(refreshVisibility).observe(nav,{subtree:true,attributes:true,attributeFilter:['class']});
+
+    [permanent,temporary].forEach(b=>b.addEventListener('click',()=>{
+      closeAllGroups();
+      document.body.classList.remove('welcome-active');q('#welcomeView')?.classList.add('hidden');
+      if(typeof showView==='function')showView(b.dataset.view);
+      const h=q('#viewTitle');if(h)h.textContent=b.dataset.view==='vehiclePermanent'?'تحویل دائم':'تحویل موقت';
+    }));
     document.addEventListener('click',e=>{if(!e.target.closest('#nav .nav-group'))closeAllGroups()});
     document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAllGroups()});
     window.addEventListener('resize',()=>qa('#nav .nav-group.open').forEach(positionDropdown));
