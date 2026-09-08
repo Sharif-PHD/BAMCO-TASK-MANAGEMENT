@@ -1,47 +1,90 @@
 (()=>{
   'use strict';
+
   const q=s=>document.querySelector(s);
   const USER_ICON=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z"/></svg>`;
   const LOCK_ICON=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 8h-1V6a4 4 0 0 0-8 0v2H7a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2Zm-7-2a2 2 0 1 1 4 0v2h-4V6Zm3 9.73V18h-2v-2.27a2 2 0 1 1 2 0Z"/></svg>`;
   const EYE_ICON=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5c5.2 0 9.3 4.6 10.5 6.1a1.4 1.4 0 0 1 0 1.8C21.3 14.4 17.2 19 12 19S2.7 14.4 1.5 12.9a1.4 1.4 0 0 1 0-1.8C2.7 9.6 6.8 5 12 5Zm0 2C8 7 4.6 10.4 3.5 12c1.1 1.6 4.5 5 8.5 5s7.4-3.4 8.5-5C19.4 10.4 16 7 12 7Zm0 2.2a2.8 2.8 0 1 1 0 5.6 2.8 2.8 0 0 1 0-5.6Z"/></svg>`;
   const EYE_OFF_ICON=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.3 2 18.7 18.7-1.3 1.3-3.4-3.4A11.8 11.8 0 0 1 12 20C6.8 20 2.7 15.4 1.5 13.9a1.4 1.4 0 0 1 0-1.8 20.5 20.5 0 0 1 4.1-4.2L2 3.3 3.3 2Zm3.8 7.4A18.5 18.5 0 0 0 3.5 13c1.1 1.6 4.5 5 8.5 5 1.3 0 2.6-.4 3.7-1l-1.8-1.8a4 4 0 0 1-5.1-5.1L7.1 9.4ZM12 6c5.2 0 9.3 4.6 10.5 6.1a1.4 1.4 0 0 1 0 1.8 18.2 18.2 0 0 1-2.2 2.4l-1.4-1.4a17.2 17.2 0 0 0 1.6-1.9c-1.1-1.6-4.5-5-8.5-5-.8 0-1.5.1-2.2.3L8.2 6.7A12 12 0 0 1 12 6Z"/></svg>`;
-  function injectStyle(){let style=q('#bamcoLoginControlsStyle');if(!style){style=document.createElement('style');style.id='bamcoLoginControlsStyle';document.head.appendChild(style)}style.textContent=`
-    .bamco-fa{font-family:BamcoPersian,"B Nazanin",BNazanin,"B Nazanin Regular",Tahoma,sans-serif!important}
-    #loginView .login-card{height:auto!important;min-height:0!important;padding:22px 32px!important}
-    #loginView #loginForm{margin:0!important;padding:0!important}
-    #loginView #loginForm>label{margin:0!important}
-    #loginView #loginForm>label:has(#password){margin-top:48px!important}
-    #loginView .brand-lockup{margin-bottom:18px!important}
-    #loginView .brand-lockup img{width:134px!important;height:134px!important;padding:12px!important;border-radius:26px!important}
-    #loginView .bamco-auth-field{position:relative!important;display:block!important;width:100%!important}
-    #loginView .bamco-auth-field>#email,#loginView .bamco-auth-field>#password{width:100%!important;box-sizing:border-box!important;background-image:none!important;padding-left:50px!important}
-    #loginView .bamco-password-field>#password{padding-right:50px!important}
-    #loginView .bamco-auth-leading-icon{position:absolute!important;left:15px!important;top:50%!important;transform:translateY(-50%)!important;width:23px!important;height:23px!important;display:flex!important;align-items:center!important;justify-content:center!important;color:#7b8683!important;pointer-events:none!important;z-index:8!important}
-    #loginView .bamco-auth-leading-icon svg,#loginView .bamco-password-toggle svg{width:23px!important;height:23px!important;display:block!important;fill:currentColor!important}
-    #loginView .bamco-password-toggle{position:absolute!important;right:14px!important;top:50%!important;transform:translateY(-50%)!important;width:30px!important;height:30px!important;padding:0!important;margin:0!important;border:0!important;background:transparent!important;color:#7b8683!important;display:flex!important;align-items:center!important;justify-content:center!important;cursor:pointer!important;z-index:9!important}
-    #loginView .bamco-verification-wrap{margin-top:48px!important;margin-bottom:0!important;direction:rtl!important;text-align:right!important}
-    #loginView .bamco-verification-title{display:block!important;position:static!important;margin:0 0 6px!important;padding:0!important;background:transparent!important;color:#17352d!important;font-weight:700!important;font-size:14px!important;line-height:1.45!important;text-align:right!important;direction:rtl!important}
-    #loginView .bamco-verification{height:auto!important;min-height:0!important;max-height:none!important;margin:0!important;padding:7px 9px!important;border:1px solid #d4e0db!important;border-radius:10px!important;background:#f6faf8!important;direction:rtl!important;overflow:visible!important}
-    #loginView .bamco-code-row{display:grid!important;grid-template-columns:112px minmax(0,1fr) 34px!important;gap:7px!important;align-items:center!important;height:40px!important;min-height:40px!important}
-    #loginView .bamco-code-box{height:40px!important;display:grid!important;place-items:center!important;border:1px dashed #8eaaa0!important;border-radius:8px!important;background:#fff!important;font-family:"Times New Roman",Times,serif!important;font-size:20px!important;font-weight:700!important;letter-spacing:5px!important;direction:ltr!important;color:#174f3e!important;user-select:none!important}
-    #loginView .bamco-code-input-wrap{position:relative!important;height:40px!important;min-height:40px!important;display:flex!important;align-items:center!important;justify-content:center!important}
-    #loginView #loginVerifyCode{position:absolute!important;inset:0!important;width:100%!important;height:40px!important;border:0!important;background:transparent!important;color:transparent!important;caret-color:transparent!important;opacity:.02!important;direction:ltr!important;z-index:3!important;padding:0!important}
-    #loginView .bamco-code-slots{display:grid!important;grid-template-columns:repeat(4,36px)!important;gap:7px!important;direction:ltr!important;justify-content:center!important;pointer-events:none!important}
-    #loginView .bamco-code-slot{width:36px!important;height:40px!important;border:1px solid #bdcdc6!important;border-radius:8px!important;background:#fff!important;display:grid!important;place-items:center!important;font-family:"Times New Roman",Times,serif!important;font-size:18px!important;font-weight:700!important;color:#174f3e!important;line-height:1!important}
-    #loginView .bamco-code-input-wrap:focus-within .bamco-code-slot{border-color:#218764!important;box-shadow:0 0 0 2px #21876412!important}
-    #loginView .bamco-refresh-code{height:34px!important;width:34px!important;border:1px solid #cad8d2!important;border-radius:8px!important;background:#fff!important;color:#176b4d!important;cursor:pointer!important;padding:0!important}
-    #loginView .bamco-code-error{min-height:0!important;height:auto!important;margin:0!important;padding:0!important;color:#b42318!important;text-align:right!important;font-size:12px!important;line-height:1.35!important}
-    #loginView .bamco-code-error:empty{display:none!important}
-    #loginView .bamco-code-error:not(:empty){display:block!important;margin-top:4px!important}
-    #loginView .primary.wide{margin-top:12px!important;margin-bottom:0!important}
-    #loginView .form-error:empty{display:none!important}
-  `}
-  function wrapInput(input,kind,iconSvg){if(!input)return null;let wrap=input.closest('.bamco-auth-field');if(!wrap){wrap=document.createElement('div');wrap.className=`bamco-auth-field bamco-${kind}-field`;input.parentNode.insertBefore(wrap,input);wrap.appendChild(input)}else wrap.classList.add(`bamco-${kind}-field`);if(!wrap.querySelector('.bamco-auth-leading-icon')){const icon=document.createElement('span');icon.className='bamco-auth-leading-icon';icon.setAttribute('aria-hidden','true');icon.innerHTML=iconSvg;wrap.appendChild(icon)}return wrap}
-  function installPasswordToggle(wrap,input){if(!wrap||!input||wrap.querySelector('.bamco-password-toggle'))return;const btn=document.createElement('button');btn.type='button';btn.className='bamco-password-toggle';btn.title='نمایش رمز عبور';btn.setAttribute('aria-label','نمایش رمز عبور');btn.innerHTML=EYE_ICON;btn.addEventListener('click',()=>{const showing=input.type==='text';input.type=showing?'password':'text';btn.innerHTML=showing?EYE_ICON:EYE_OFF_ICON;btn.title=showing?'نمایش رمز عبور':'مخفی کردن رمز عبور';btn.setAttribute('aria-label',btn.title);try{input.focus({preventScroll:true})}catch{}});wrap.appendChild(btn)}
+
+  function injectStyle(){
+    let style=q('#bamcoLoginControlsStyle');
+    if(!style){style=document.createElement('style');style.id='bamcoLoginControlsStyle';document.head.appendChild(style)}
+    style.textContent=`
+      .bamco-fa{font-family:BamcoPersian,"B Nazanin",BNazanin,"B Nazanin Regular",Tahoma,sans-serif!important}
+      #loginView .login-card{height:auto!important;min-height:0!important;padding:22px 32px!important}
+      #loginView .brand-lockup{margin-bottom:18px!important}
+      #loginView .brand-lockup img{width:134px!important;height:134px!important;padding:12px!important;border-radius:26px!important}
+      #loginView #loginForm{margin:0!important;padding:0!important;display:flex!important;flex-direction:column!important;gap:0!important}
+      #loginView #loginForm>label{margin:0!important;padding:0!important}
+      #loginView #loginForm>label:has(#password){margin-top:32px!important}
+      #loginView .bamco-verification-wrap{margin:32px 0 0!important;padding:0!important;direction:rtl!important;text-align:right!important}
+      #loginView .bamco-verification-title{margin:0 0 6px!important;padding:0!important;font-weight:700!important;font-size:14px!important;line-height:1.45!important;text-align:right!important;direction:rtl!important}
+      #loginView .bamco-verification{height:auto!important;min-height:0!important;margin:0!important;padding:7px 9px!important;border:1px solid #d4e0db!important;border-radius:10px!important;background:#f6faf8!important}
+      #loginView .primary.wide{margin:12px 0 0!important}
+      #loginView .form-error:empty,#loginView .bamco-code-error:empty{display:none!important}
+      #loginView .bamco-auth-field{position:relative!important;display:block!important;width:100%!important}
+      #loginView .bamco-auth-field>#email,#loginView .bamco-auth-field>#password{width:100%!important;box-sizing:border-box!important;background-image:none!important;padding-left:50px!important}
+      #loginView .bamco-password-field>#password{padding-right:50px!important}
+      #loginView .bamco-auth-leading-icon{position:absolute!important;left:15px!important;top:50%!important;transform:translateY(-50%)!important;width:23px!important;height:23px!important;display:flex!important;align-items:center!important;justify-content:center!important;color:#7b8683!important;pointer-events:none!important;z-index:8!important}
+      #loginView .bamco-auth-leading-icon svg,#loginView .bamco-password-toggle svg{width:23px!important;height:23px!important;display:block!important;fill:currentColor!important}
+      #loginView .bamco-password-toggle{position:absolute!important;right:14px!important;top:50%!important;transform:translateY(-50%)!important;width:30px!important;height:30px!important;padding:0!important;margin:0!important;border:0!important;background:transparent!important;color:#7b8683!important;display:flex!important;align-items:center!important;justify-content:center!important;cursor:pointer!important;z-index:9!important}
+      #loginView .bamco-code-row{display:grid!important;grid-template-columns:112px minmax(0,1fr) 34px!important;gap:7px!important;align-items:center!important;height:40px!important}
+      #loginView .bamco-code-box{height:40px!important;display:grid!important;place-items:center!important;border:1px dashed #8eaaa0!important;border-radius:8px!important;background:#fff!important;font-family:"Times New Roman",Times,serif!important;font-size:20px!important;font-weight:700!important;letter-spacing:5px!important;direction:ltr!important;color:#174f3e!important;user-select:none!important}
+      #loginView .bamco-code-input-wrap{position:relative!important;height:40px!important;display:flex!important;align-items:center!important;justify-content:center!important}
+      #loginView #loginVerifyCode{position:absolute!important;inset:0!important;width:100%!important;height:40px!important;border:0!important;background:transparent!important;color:transparent!important;caret-color:transparent!important;opacity:.02!important;direction:ltr!important;z-index:3!important;padding:0!important}
+      #loginView .bamco-code-slots{display:grid!important;grid-template-columns:repeat(4,36px)!important;gap:7px!important;direction:ltr!important;justify-content:center!important;pointer-events:none!important}
+      #loginView .bamco-code-slot{width:36px!important;height:40px!important;border:1px solid #bdcdc6!important;border-radius:8px!important;background:#fff!important;display:grid!important;place-items:center!important;font-family:"Times New Roman",Times,serif!important;font-size:18px!important;font-weight:700!important;color:#174f3e!important}
+      #loginView .bamco-code-input-wrap:focus-within .bamco-code-slot{border-color:#218764!important;box-shadow:0 0 0 2px #21876412!important}
+      #loginView .bamco-refresh-code{height:34px!important;width:34px!important;border:1px solid #cad8d2!important;border-radius:8px!important;background:#fff!important;color:#176b4d!important;cursor:pointer!important;padding:0!important}
+      #loginView .bamco-code-error{min-height:0!important;margin:0!important;padding:0!important;color:#b42318!important;text-align:right!important;font-size:12px!important;line-height:1.35!important}
+      #loginView .bamco-code-error:not(:empty){display:block!important;margin-top:4px!important}
+    `;
+  }
+
+  function wrapInput(input,kind,iconSvg){
+    if(!input)return null;
+    let wrap=input.closest('.bamco-auth-field');
+    if(!wrap){wrap=document.createElement('div');wrap.className=`bamco-auth-field bamco-${kind}-field`;input.parentNode.insertBefore(wrap,input);wrap.appendChild(input)}
+    else wrap.classList.add(`bamco-${kind}-field`);
+    if(!wrap.querySelector('.bamco-auth-leading-icon')){const icon=document.createElement('span');icon.className='bamco-auth-leading-icon';icon.setAttribute('aria-hidden','true');icon.innerHTML=iconSvg;wrap.appendChild(icon)}
+    return wrap;
+  }
+
+  function installPasswordToggle(wrap,input){
+    if(!wrap||!input||wrap.querySelector('.bamco-password-toggle'))return;
+    const btn=document.createElement('button');btn.type='button';btn.className='bamco-password-toggle';btn.title='نمایش رمز عبور';btn.setAttribute('aria-label','نمایش رمز عبور');btn.innerHTML=EYE_ICON;
+    btn.addEventListener('click',()=>{const showing=input.type==='text';input.type=showing?'password':'text';btn.innerHTML=showing?EYE_ICON:EYE_OFF_ICON;btn.title=showing?'نمایش رمز عبور':'مخفی کردن رمز عبور';btn.setAttribute('aria-label',btn.title);try{input.focus({preventScroll:true})}catch{}});
+    wrap.appendChild(btn);
+  }
+
   const toLatinDigits=v=>String(v||'').replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d));
   const makeCode=()=>String(Math.floor(1000+Math.random()*9000));
-  function installVerification(){const form=q('#loginForm');if(!form)return;let wrap=q('#loginVerificationWrap'),box=q('#loginVerification');if(!wrap){wrap=document.createElement('div');wrap.id='loginVerificationWrap';wrap.className='bamco-verification-wrap bamco-fa';wrap.innerHTML=`<div class="bamco-verification-title bamco-fa">تأیید عددی</div><div id="loginVerification" class="bamco-verification"><div class="bamco-code-row"><div id="loginVerifyDisplay" class="bamco-code-box" aria-label="کد تأیید"></div><div class="bamco-code-input-wrap"><input id="loginVerifyCode" type="text" inputmode="numeric" autocomplete="off" maxlength="4" pattern="[0-9۰-۹٠-٩]{4}" aria-label="کد را وارد نمایید"><div class="bamco-code-slots" aria-hidden="true"><span class="bamco-code-slot"></span><span class="bamco-code-slot"></span><span class="bamco-code-slot"></span><span class="bamco-code-slot"></span></div></div><button type="button" id="refreshLoginVerify" class="bamco-refresh-code" title="ساخت کد جدید" aria-label="ساخت کد جدید">↻</button></div><div id="loginVerifyError" class="bamco-code-error bamco-fa"></div></div>`;const submit=form.querySelector('button[type="submit"],.primary.wide');if(submit)form.insertBefore(wrap,submit);else form.appendChild(wrap);box=q('#loginVerification')}if(!box)return;const display=q('#loginVerifyDisplay'),input=q('#loginVerifyCode'),error=q('#loginVerifyError'),refresh=q('#refreshLoginVerify'),slots=[...box.querySelectorAll('.bamco-code-slot')];const paint=()=>{const value=toLatinDigits(input?.value).replace(/\D/g,'').slice(0,4);slots.forEach((slot,i)=>slot.textContent=value[i]||'')};const renew=(clearError=true)=>{box.dataset.code=makeCode();if(display)display.textContent=box.dataset.code;if(input)input.value='';paint();if(clearError&&error)error.textContent=''};if(!box.dataset.code)renew();else paint();if(refresh&&!refresh.dataset.bound){refresh.dataset.bound='1';refresh.addEventListener('click',()=>{renew(true);input?.focus()})}if(input&&!input.dataset.bound){input.dataset.bound='1';input.addEventListener('input',()=>{input.value=toLatinDigits(input.value).replace(/\D/g,'').slice(0,4);paint();if(error)error.textContent=''})}if(!form.dataset.enterBound){form.dataset.enterBound='1';form.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.ctrlKey&&!e.altKey&&!e.metaKey){const target=e.target;if(target&&target.tagName==='TEXTAREA')return;e.preventDefault();if(typeof form.requestSubmit==='function')form.requestSubmit();else form.querySelector('button[type="submit"],.primary.wide')?.click()}})}if(!form.dataset.verifyBound){form.dataset.verifyBound='1';form.addEventListener('submit',e=>{const entered=toLatinDigits(input?.value).replace(/\D/g,'');if(entered!==box.dataset.code){e.preventDefault();e.stopImmediatePropagation();renew(false);if(error)error.textContent='کد تأیید صحیح نیست. کد جدید را وارد کنید.';setTimeout(()=>input?.focus(),0)}},true)}}
-  function applyPersianFonts(root=document){const persian=/[\u0600-\u06FF]/;const nodes=root.querySelectorAll?root.querySelectorAll('body *'):[];nodes.forEach(el=>{if(el.closest('.english,.english-ui,.en-text,[dir="ltr"]'))return;if(el.matches('input[type="email"],input[type="url"],input[type="password"]'))return;const direct=[...el.childNodes].some(n=>n.nodeType===Node.TEXT_NODE&&persian.test(n.nodeValue||''));const attrs=[el.getAttribute('placeholder'),el.getAttribute('title'),el.getAttribute('aria-label')].filter(Boolean).some(v=>persian.test(v));if(direct||attrs)el.classList.add('bamco-fa')})}
+
+  function installVerification(){
+    const form=q('#loginForm');if(!form)return;
+    let wrap=q('#loginVerificationWrap'),box=q('#loginVerification');
+    if(!wrap){
+      wrap=document.createElement('div');wrap.id='loginVerificationWrap';wrap.className='bamco-verification-wrap bamco-fa';
+      wrap.innerHTML=`<div class="bamco-verification-title bamco-fa">تأیید عددی</div><div id="loginVerification" class="bamco-verification"><div class="bamco-code-row"><div id="loginVerifyDisplay" class="bamco-code-box" aria-label="کد تأیید"></div><div class="bamco-code-input-wrap"><input id="loginVerifyCode" type="text" inputmode="numeric" autocomplete="off" maxlength="4" pattern="[0-9۰-۹٠-٩]{4}" aria-label="کد را وارد نمایید"><div class="bamco-code-slots" aria-hidden="true"><span class="bamco-code-slot"></span><span class="bamco-code-slot"></span><span class="bamco-code-slot"></span><span class="bamco-code-slot"></span></div></div><button type="button" id="refreshLoginVerify" class="bamco-refresh-code" title="ساخت کد جدید" aria-label="ساخت کد جدید">↻</button></div><div id="loginVerifyError" class="bamco-code-error bamco-fa"></div></div>`;
+      const submit=form.querySelector('button[type="submit"],.primary.wide');if(submit)form.insertBefore(wrap,submit);else form.appendChild(wrap);box=q('#loginVerification');
+    }
+    if(!box)return;
+    const display=q('#loginVerifyDisplay'),input=q('#loginVerifyCode'),error=q('#loginVerifyError'),refresh=q('#refreshLoginVerify'),slots=[...box.querySelectorAll('.bamco-code-slot')];
+    const paint=()=>{const value=toLatinDigits(input?.value).replace(/\D/g,'').slice(0,4);slots.forEach((slot,i)=>slot.textContent=value[i]||'')};
+    const renew=(clearError=true)=>{box.dataset.code=makeCode();if(display)display.textContent=box.dataset.code;if(input)input.value='';paint();if(clearError&&error)error.textContent=''};
+    if(!box.dataset.code)renew();else paint();
+    if(refresh&&!refresh.dataset.bound){refresh.dataset.bound='1';refresh.addEventListener('click',()=>{renew(true);input?.focus()})}
+    if(input&&!input.dataset.bound){input.dataset.bound='1';input.addEventListener('input',()=>{input.value=toLatinDigits(input.value).replace(/\D/g,'').slice(0,4);paint();if(error)error.textContent=''})}
+    if(!form.dataset.enterBound){form.dataset.enterBound='1';form.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.ctrlKey&&!e.altKey&&!e.metaKey){if(e.target?.tagName==='TEXTAREA')return;e.preventDefault();if(typeof form.requestSubmit==='function')form.requestSubmit();else form.querySelector('button[type="submit"],.primary.wide')?.click()}})}
+    if(!form.dataset.verifyBound){form.dataset.verifyBound='1';form.addEventListener('submit',e=>{const entered=toLatinDigits(input?.value).replace(/\D/g,'');if(entered!==box.dataset.code){e.preventDefault();e.stopImmediatePropagation();renew(false);if(error)error.textContent='کد تأیید صحیح نیست. کد جدید را وارد کنید.';setTimeout(()=>input?.focus(),0)}},true)}
+  }
+
+  function applyPersianFonts(root=document){
+    const persian=/[\u0600-\u06FF]/;const nodes=root.querySelectorAll?root.querySelectorAll('body *'):[];
+    nodes.forEach(el=>{if(el.closest('.english,.english-ui,.en-text,[dir="ltr"]'))return;if(el.matches('input[type="email"],input[type="url"],input[type="password"]'))return;const direct=[...el.childNodes].some(n=>n.nodeType===Node.TEXT_NODE&&persian.test(n.nodeValue||''));const attrs=[el.getAttribute('placeholder'),el.getAttribute('title'),el.getAttribute('aria-label')].filter(Boolean).some(v=>persian.test(v));if(direct||attrs)el.classList.add('bamco-fa')});
+  }
+
   function install(){injectStyle();const email=q('#email'),password=q('#password');wrapInput(email,'email',USER_ICON);const passWrap=wrapInput(password,'password',LOCK_ICON);installPasswordToggle(passWrap,password);installVerification();applyPersianFonts(document)}
   function boot(){install();[100,350,900,1600].forEach(ms=>setTimeout(install,ms));const login=q('#loginView');if(login&&!login.dataset.loginControlsObserved){login.dataset.loginControlsObserved='1';let queued=false;new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;install()})}).observe(login,{childList:true,subtree:true})}if(document.body&&!document.body.dataset.bamcoPersianFontObserved){document.body.dataset.bamcoPersianFontObserved='1';let queued=false;new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;applyPersianFonts(document)})}).observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['placeholder','title','aria-label']})}}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
