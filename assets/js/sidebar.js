@@ -18,11 +18,17 @@
     q('#bamcoVisualEditor')?.remove();
     q('#bamcoVisualEditorStyles')?.remove();
     q('#bamcoVisualEditorScript')?.remove();
+    qa('script[data-bamco-layout-editor],link[data-bamco-layout-editor]').forEach(x=>x.remove());
     const sels=['.side-brand img','.header-system-title','.header-tools','.header-tools .account','.header-tools .account .avatar','.header-tools .account-copy strong','.header-tools .account-copy small','#logoutBtn','#notificationBell','#headerSettingsBtn','#nav','.nav-group','.nav-group-toggle','.nav-group-items'];
     qa(sels.join(',')).forEach(el=>{
       ['translate','transform','z-index','position','width','height','font-size','text-align','padding','margin'].forEach(p=>el.style.removeProperty(p));
       delete el.dataset.bveX;delete el.dataset.bveY;
     });
+  }
+
+  function blockProductionEditor(){
+    const remove=()=>{q('#bamcoVisualEditor')?.remove();q('#bamcoVisualPanel')?.remove();document.documentElement.classList.remove('bve-design-access','bamco-visual-editing')};
+    remove();new MutationObserver(remove).observe(document.documentElement,{childList:true,subtree:true});
   }
 
   function addVehicleViews(){
@@ -132,7 +138,7 @@
   function removeSubtitle(){const p=q('#viewSubtitle');if(p){p.textContent='';p.style.display='none'}}
   function forceNormalScale(){document.documentElement.style.setProperty('zoom','1');document.body.style.setProperty('zoom','1')}
 
-  const boot=()=>{forceNormalScale();installHeaderStyles();clearEditorOverrides();installGroupedNav();installHeaderTools();installCollapseButton();installTaskTools();removeSubtitle();requestAnimationFrame(clearEditorOverrides)};
+  const boot=()=>{forceNormalScale();blockProductionEditor();installHeaderStyles();clearEditorOverrides();installGroupedNav();installHeaderTools();installCollapseButton();installTaskTools();removeSubtitle();requestAnimationFrame(clearEditorOverrides)};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
 
@@ -148,4 +154,5 @@
   };
   load('assets/js/phase1-workflow.js','phase1Workflow');
   load('assets/js/phase2-message-engine.js','phase2MessageEngine');
+  load('assets/js/phase3-response-tracking.js','phase3ResponseTracking');
 })();
