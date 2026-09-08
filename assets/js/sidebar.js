@@ -4,6 +4,15 @@
   const qa=s=>[...document.querySelectorAll(s)];
   const STICKER_KEYS=['01_happy_female','01_happy_male','02_reminder_female','02_reminder_male','03_concerned_female','03_concerned_male','04_serious_female','04_serious_male','05_urgent_female','05_urgent_male'];
 
+  function installHeaderStyles(){
+    if(q('#bamcoHeaderRefreshStyles'))return;
+    const link=document.createElement('link');
+    link.id='bamcoHeaderRefreshStyles';
+    link.rel='stylesheet';
+    link.href='assets/css/header-refresh.css?v=20260908-header-refresh';
+    document.head.appendChild(link);
+  }
+
   function addVehicleViews(){
     const workspace=q('.workspace');
     if(!workspace||q('#vehiclePermanentView'))return;
@@ -224,6 +233,7 @@
 
   const boot=()=>{
     forceNormalScale();
+    installHeaderStyles();
     installGroupedNav();
     installHeaderTools();
     installCollapseButton();
