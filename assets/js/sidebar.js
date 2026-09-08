@@ -6,9 +6,9 @@
   function installHeaderStyles(){
     if(q('#bamcoHeaderRefreshStyles'))return;
     const link=document.createElement('link');
-    link.id='bamcoHeaderRefreshStyles';
+    link.id='bamcoVerticalSidebarStyles';
     link.rel='stylesheet';
-    link.href='assets/css/header-refresh.css?v=20260908-clean-grid';
+    link.href='assets/css/vertical-sidebar.css?v=20260909-1';
     document.head.appendChild(link);
   }
 
@@ -38,15 +38,9 @@
   }
 
   function positionDropdown(group){
-    const toggle=group?.querySelector('.nav-group-toggle'),items=group?.querySelector('.nav-group-items');
-    if(!toggle||!items)return;
-    const r=toggle.getBoundingClientRect();
-    const width=258;
-    let left=Math.round(r.right-width);
-    left=Math.max(8,Math.min(left,window.innerWidth-width-8));
-    const top=Math.round(r.bottom+8);
-    items.style.setProperty('left',left+'px','important');
-    items.style.setProperty('top',top+'px','important');
+    const items=group?.querySelector('.nav-group-items');
+    if(!items)return;
+    items.style.removeProperty('left');items.style.removeProperty('top');
   }
 
   function makeGroup(title,key,views,icon){
@@ -82,7 +76,7 @@
     nav.append(permanent,temporary);qa('#nav>.nav-divider').forEach(x=>x.remove());
     const task=makeGroup('مدیریت وظایف','tasks',['kanban','archive','taskTimeline','approvals','requestHistory','approvalChains'],'☑');
     const people=makeGroup('مدیریت افراد','people',['people'],'♙');
-    const email=makeGroup('مدیریت پیام','messages',['messages','sentMessages','templates','stickers'],'✉');
+    const email=makeGroup('مدیریت پیام','messages',['messageCenter','sentMessages','messages','templates','stickers'],'✉');
     const vehicle=makeGroup('مدیریت خودرو','vehicle',['vehiclePermanent','vehicleTemporary'],'◇');
     const reports=makeGroup('گزارش‌ها','reports',['dashboard'],'▦');
     const configuration=makeGroup('تنظیمات','configuration',['systemOptions'],'⚙');
@@ -105,7 +99,6 @@
     document.addEventListener('click',e=>{if(!e.target.closest('#nav .nav-group'))closeAllGroups()});
     document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAllGroups()});
     window.addEventListener('resize',()=>qa('#nav .nav-group.open').forEach(positionDropdown));
-    window.addEventListener('scroll',()=>qa('#nav .nav-group.open').forEach(positionDropdown),true);
   }
 
   function installHeaderTools(){
@@ -117,7 +110,7 @@
     tools.append(bell,settingsProxy);sidebar.appendChild(tools);
 
     const logout=q('#logoutBtn');
-    if(logout){logout.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5"></path><path d="M14 8l4 4-4 4"></path><path d="M18 12H9"></path></svg>`;logout.title='خروج';logout.setAttribute('aria-label','خروج')}
+    if(logout){logout.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5"></path><path d="M14 8l4 4-4 4"></path><path d="M18 12H9"></path></svg>`;logout.title='خروج';logout.setAttribute('aria-label','خروج');tools.appendChild(logout)}
 
     const syncBell=()=>{const badge=q('#messageBadge'),count=bell.querySelector('.header-notification-count'),value=(badge?.textContent||'').trim();count.textContent=value;bell.classList.toggle('has-unread',!!value);bell.setAttribute('aria-label',value?`پیام‌ها، ${value} پیام خوانده‌نشده`:'پیام‌ها')};
     const bindMessageBadge=()=>{const badge=q('#messageBadge');if(!badge||badge.dataset.headerBellBound==='1')return false;badge.dataset.headerBellBound='1';new MutationObserver(syncBell).observe(badge,{childList:true,characterData:true,subtree:true,attributes:true});syncBell();return true};
@@ -126,7 +119,12 @@
     settingsProxy.addEventListener('click',()=>{closeAllGroups();const source=q('#nav button[data-view="settings"]');if(source)source.click();else if(typeof showView==='function')showView('settings')});
   }
 
-  function installCollapseButton(){const btn=q('#collapseBtn');if(btn){btn.hidden=true;btn.setAttribute('aria-hidden','true')}}
+  function installCollapseButton(){
+    const btn=q('#collapseBtn'),sidebar=q('#sidebar');if(!btn||!sidebar)return;
+    btn.hidden=false;btn.removeAttribute('aria-hidden');btn.innerHTML='‹';
+    const sync=()=>{const closed=sidebar.classList.contains('collapsed');btn.innerHTML=closed?'›':'‹';btn.setAttribute('aria-label',closed?'باز کردن منو':'بستن منو');btn.title=closed?'باز کردن منو':'بستن منو'};
+    btn.addEventListener('click',()=>requestAnimationFrame(sync));sync();
+  }
   function installTaskTools(){
     const add=q('#addTaskBtn'),kanbanToolbar=q('#kanbanView .task-toolbar');if(add&&kanbanToolbar&&!kanbanToolbar.contains(add)){add.textContent='＋ افزودن وظیفه';kanbanToolbar.prepend(add)}
     [['kanban','#kanbanSearch'],['archive','#archiveSearch']].forEach(([scope,searchSel])=>{const toolbar=q(`#${scope}View .task-toolbar`),input=q(searchSel);if(!toolbar||!input||toolbar.querySelector('.task-search-toggle'))return;const toggle=document.createElement('button');toggle.type='button';toggle.className='ghost task-search-toggle';toggle.textContent='⌕';toggle.title='جست‌وجو';toggle.setAttribute('aria-label','باز کردن جست‌وجو');input.classList.add('toolbar-search');toolbar.insertBefore(toggle,toolbar.firstChild?.nextSibling||null);toolbar.insertBefore(input,toggle.nextSibling);toggle.addEventListener('click',()=>{const open=input.classList.toggle('search-open');toggle.classList.toggle('active',open);if(open)setTimeout(()=>input.focus(),20)});input.addEventListener('keydown',e=>{if(e.key==='Escape'){input.classList.remove('search-open');toggle.classList.remove('active');input.blur()}})});
@@ -138,12 +136,16 @@
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
 
-/* Load phase-one workflow after the stable legacy document has initialized. */
+/* Load additive workflow modules without modifying the large legacy document. */
 (()=>{
-  if(document.querySelector('script[data-phase1-workflow]'))return;
-  const script=document.createElement('script');
-  script.src='assets/js/phase1-workflow.js';
-  script.defer=true;
-  script.dataset.phase1Workflow='';
-  document.head.appendChild(script);
+  const load=(src,key)=>{
+    if(document.querySelector(`script[data-${key}]`))return;
+    const script=document.createElement('script');
+    script.src=src;
+    script.defer=true;
+    script.dataset[key]='';
+    document.head.appendChild(script);
+  };
+  load('assets/js/phase1-workflow.js','phase1Workflow');
+  load('assets/js/phase2-message-engine.js','phase2MessageEngine');
 })();
