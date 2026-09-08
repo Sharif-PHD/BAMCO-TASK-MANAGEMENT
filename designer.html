@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>طراح ظاهر BAMCO</title>
+<style>
+:root{--green:#174f3e;--green2:#1f6b52;--bg:#edf3f0;--line:#c9d8d1;--text:#243e35;--muted:#6d8179;--panel:350px}
+*{box-sizing:border-box}html,body{height:100%;margin:0;font-family:"B Nazanin",Tahoma,Arial,sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+button,input,select{font:inherit}.app{height:100%;display:grid;grid-template-rows:58px 1fr}.topbar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#fff;border-bottom:1px solid var(--line);z-index:20;box-shadow:0 2px 14px #173e3320}.brand{display:flex;align-items:center;gap:8px;min-width:190px}.brand-mark{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--green);color:#fff;font-weight:800}.brand b{font-size:15px}.brand small{display:block;color:var(--muted);font-size:10px}.toolbar{display:flex;align-items:center;gap:6px;flex:1;flex-wrap:wrap}.btn{border:1px solid var(--line);background:#fff;color:var(--text);min-height:36px;border-radius:10px;padding:6px 10px;cursor:pointer}.btn:hover{background:#f5f8f6}.btn.active,.btn.primary{background:var(--green);border-color:var(--green);color:#fff}.btn.danger{color:#9b2c2c}.spacer{flex:1}.status{font-size:11px;color:var(--muted);white-space:nowrap}.main{display:grid;grid-template-columns:var(--panel) 1fr;min-height:0}.side{background:#fff;border-left:1px solid var(--line);overflow:auto;padding:12px}.canvas-wrap{overflow:auto;padding:18px;display:flex;justify-content:center;align-items:flex-start;background:linear-gradient(45deg,#e8efeb 25%,transparent 25%),linear-gradient(-45deg,#e8efeb 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#e8efeb 75%),linear-gradient(-45deg,transparent 75%,#e8efeb 75%);background-size:24px 24px;background-position:0 0,0 12px,12px -12px,-12px 0}.device{background:#fff;border:1px solid #b8c9c1;border-radius:14px;box-shadow:0 14px 45px #183d3224;transition:.2s;width:1440px;min-width:320px;overflow:hidden;position:relative}.device.tablet{width:820px}.device.mobile{width:390px}.frame{display:block;width:100%;height:calc(100vh - 96px);border:0;background:#fff}.section{border:1px solid #dce6e1;border-radius:12px;margin-bottom:10px;overflow:hidden}.section h3{font-size:13px;margin:0;padding:9px 11px;background:#f6f9f7;border-bottom:1px solid #e1e9e5}.body{padding:10px}.empty{font-size:12px;color:var(--muted);line-height:1.9}.selected-name{font-size:12px;background:#eef6f2;border:1px solid #d2e1da;border-radius:10px;padding:8px;margin-bottom:8px;word-break:break-all}.crumbs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}.crumbs button{font-size:11px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:4px 7px;cursor:pointer}.grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.field{display:grid;gap:4px}.field.full{grid-column:1/-1}.field label{font-size:11px;color:#577067}.field input,.field select{width:100%;height:34px;border:1px solid var(--line);border-radius:8px;padding:4px 7px;background:#fff}.field input[type=color]{padding:2px}.actions{display:flex;gap:6px;flex-wrap:wrap}.actions .btn{flex:1 1 auto;font-size:11px;min-height:32px}.hint{font-size:11px;line-height:1.9;color:var(--muted)}.kbd{display:inline-block;padding:1px 5px;border:1px solid #ccd8d3;border-bottom-width:2px;border-radius:5px;background:#fff;font-family:Arial;font-size:10px}.switchline{display:flex;align-items:center;justify-content:space-between;gap:10px}.switch{position:relative;width:42px;height:24px;background:#cdd9d4;border-radius:999px;cursor:pointer}.switch:after{content:"";position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:3px;right:3px;box-shadow:0 1px 4px #0003;transition:.2s}.switch.on{background:var(--green2)}.switch.on:after{right:21px}.layers{max-height:180px;overflow:auto}.layer{display:flex;align-items:center;gap:6px;width:100%;text-align:right;border:0;border-bottom:1px solid #edf2ef;background:#fff;padding:7px;cursor:pointer;font-size:11px}.layer:hover{background:#f4f8f6}.layer span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.toast{position:fixed;left:18px;bottom:18px;background:#173f33;color:#fff;border-radius:10px;padding:9px 13px;font-size:12px;opacity:0;transform:translateY(8px);pointer-events:none;transition:.2s;z-index:100}.toast.show{opacity:1;transform:translateY(0)}
+@media(max-width:900px){:root{--panel:300px}.brand{display:none}.status{display:none}.topbar{overflow:auto;flex-wrap:nowrap}.main{grid-template-columns:1fr}.side{position:fixed;top:58px;right:0;bottom:0;width:min(350px,92vw);z-index:30;transform:translateX(105%);transition:.2s;box-shadow:-10px 0 35px #0002}.side.open{transform:translateX(0)}.canvas-wrap{padding:8px}.frame{height:calc(100vh - 76px)}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="topbar">
+  <div class="brand"><div class="brand-mark">B</div><div><b>طراح ظاهر BAMCO</b><small>ویرایش بصری بدون دست‌کاری منطق برنامه</small></div></div>
+  <div class="toolbar">
+    <button class="btn primary" id="modeBtn">✦ حالت ویرایش</button>
+    <button class="btn" data-device="desktop">دسکتاپ</button>
+    <button class="btn" data-device="tablet">تبلت</button>
+    <button class="btn" data-device="mobile">موبایل</button>
+    <button class="btn" id="undoBtn" title="Undo">↶</button>
+    <button class="btn" id="redoBtn" title="Redo">↷</button>
+    <button class="btn" id="exportCssBtn">خروجی CSS</button>
+    <button class="btn" id="exportJsonBtn">خروجی طرح</button>
+    <label class="btn" style="position:relative;overflow:hidden">ورود طرح<input id="importInput" type="file" accept="application/json" style="position:absolute;inset:0;opacity:0;cursor:pointer"></label>
+    <div class="spacer"></div>
+    <span class="status" id="status">در حال بارگذاری پیش‌نمایش…</span>
+    <button class="btn" id="panelBtn">پنل تنظیمات</button>
+  </div>
+</header>
+<div class="main">
+  <aside class="side" id="side">
+    <div class="section"><h3>عنصر انتخاب‌شده</h3><div class="body">
+      <div class="selected-name" id="selectedName">هنوز چیزی انتخاب نشده.</div>
+      <div class="crumbs"><button id="parentBtn">↑ والد</button><button id="childBtn">↓ اولین فرزند</button><button id="prevBtn">→ قبلی</button><button id="nextBtn">← بعدی</button></div>
+      <div class="actions"><button class="btn" id="resetSelected">بازنشانی همین عنصر</button><button class="btn danger" id="hideSelected">مخفی/نمایان</button></div>
+    </div></div>
+
+    <div class="section"><h3>اندازه و موقعیت</h3><div class="body"><div class="grid">
+      <div class="field"><label>عرض</label><input data-prop="width" placeholder="مثلاً 300px یا 80%"></div>
+      <div class="field"><label>ارتفاع</label><input data-prop="height" placeholder="مثلاً 120px یا auto"></div>
+      <div class="field"><label>جابجایی افقی X</label><input id="tx" type="number" step="1"></div>
+      <div class="field"><label>جابجایی عمودی Y</label><input id="ty" type="number" step="1"></div>
+      <div class="field"><label>حداکثر عرض</label><input data-prop="max-width" placeholder="none / 900px"></div>
+      <div class="field"><label>حداقل ارتفاع</label><input data-prop="min-height" placeholder="0 / 50px"></div>
+      <div class="field"><label>لایه (z-index)</label><input data-prop="z-index" type="number"></div>
+      <div class="field"><label>شفافیت</label><input data-prop="opacity" type="number" min="0" max="1" step="0.05"></div>
+    </div></div></div>
+
+    <div class="section"><h3>فاصله‌ها</h3><div class="body"><div class="grid">
+      <div class="field"><label>Padding بالا</label><input data-prop="padding-top"></div><div class="field"><label>Padding راست</label><input data-prop="padding-right"></div>
+      <div class="field"><label>Padding پایین</label><input data-prop="padding-bottom"></div><div class="field"><label>Padding چپ</label><input data-prop="padding-left"></div>
+      <div class="field"><label>Margin بالا</label><input data-prop="margin-top"></div><div class="field"><label>Margin راست</label><input data-prop="margin-right"></div>
+      <div class="field"><label>Margin پایین</label><input data-prop="margin-bottom"></div><div class="field"><label>Margin چپ</label><input data-prop="margin-left"></div>
+      <div class="field"><label>فاصله بین اجزا</label><input data-prop="gap"></div>
+    </div></div></div>
+
+    <div class="section"><h3>ظاهر</h3><div class="body"><div class="grid">
+      <div class="field"><label>رنگ زمینه</label><input data-color="background-color" type="color" value="#ffffff"></div>
+      <div class="field"><label>رنگ متن</label><input data-color="color" type="color" value="#000000"></div>
+      <div class="field"><label>رنگ کادر</label><input data-color="border-color" type="color" value="#cccccc"></div>
+      <div class="field"><label>ضخامت کادر</label><input data-prop="border-width" placeholder="0 / 1px"></div>
+      <div class="field"><label>نوع کادر</label><select data-prop="border-style"><option value="">—</option><option>solid</option><option>dashed</option><option>dotted</option><option>none</option></select></div>
+      <div class="field"><label>گردی گوشه</label><input data-prop="border-radius" placeholder="مثلاً 18px"></div>
+      <div class="field full"><label>سایه</label><input data-prop="box-shadow" placeholder="مثلاً 0 8px 24px #0002"></div>
+    </div></div></div>
+
+    <div class="section"><h3>متن</h3><div class="body"><div class="grid">
+      <div class="field"><label>اندازه فونت</label><input data-prop="font-size" placeholder="13px"></div>
+      <div class="field"><label>ضخامت</label><select data-prop="font-weight"><option value="">—</option><option>400</option><option>500</option><option>600</option><option>700</option><option>800</option></select></div>
+      <div class="field"><label>ارتفاع خط</label><input data-prop="line-height" placeholder="1.8 / 24px"></div>
+      <div class="field"><label>تراز متن</label><select data-prop="text-align"><option value="">—</option><option value="right">راست</option><option value="center">وسط</option><option value="left">چپ</option><option value="justify">دوطرفه</option></select></div>
+      <div class="field full"><label>فونت</label><input data-prop="font-family" placeholder="B Nazanin"></div>
+    </div></div></div>
+
+    <div class="section"><h3>چیدمان داخلی</h3><div class="body"><div class="grid">
+      <div class="field"><label>Display</label><select data-prop="display"><option value="">—</option><option>block</option><option>flex</option><option>grid</option><option>inline-flex</option><option>inline-block</option><option>none</option></select></div>
+      <div class="field"><label>جهت Flex</label><select data-prop="flex-direction"><option value="">—</option><option value="row">ردیفی</option><option value="row-reverse">ردیفی معکوس</option><option value="column">ستونی</option><option value="column-reverse">ستونی معکوس</option></select></div>
+      <div class="field"><label>چیدمان افقی</label><select data-prop="justify-content"><option value="">—</option><option>flex-start</option><option>center</option><option>flex-end</option><option>space-between</option><option>space-around</option><option>space-evenly</option></select></div>
+      <div class="field"><label>چیدمان عمودی</label><select data-prop="align-items"><option value="">—</option><option>stretch</option><option>flex-start</option><option>center</option><option>flex-end</option></select></div>
+      <div class="field"><label>Grid columns</label><input data-prop="grid-template-columns" placeholder="1fr 1fr"></div>
+      <div class="field"><label>Object fit تصویر</label><select data-prop="object-fit"><option value="">—</option><option>contain</option><option>cover</option><option>fill</option><option>none</option></select></div>
+    </div></div></div>
+
+    <div class="section"><h3>لایه‌های نزدیک</h3><div class="body layers" id="layers"><div class="empty">بعد از انتخاب عنصر، والد و فرزندان نزدیک اینجا دیده می‌شوند.</div></div></div>
+
+    <div class="section"><h3>مدیریت طرح</h3><div class="body">
+      <div class="actions"><button class="btn" id="resetPage">بازنشانی صفحه جاری</button><button class="btn danger" id="resetAll">پاک کردن کل طرح</button></div>
+      <p class="hint">در حالت <b>ویرایش</b> روی اجزای داخل سایت کلیک کن. در حالت <b>تعامل</b> دکمه‌ها، ورود و تب‌ها عادی کار می‌کنند. برای جابه‌جایی سریع عنصر انتخاب‌شده از کلیدهای جهت‌دار استفاده کن؛ با <span class="kbd">Shift</span> حرکت ۱۰ پیکسلی می‌شود.</p>
+    </div></div>
+  </aside>
+  <main class="canvas-wrap"><div class="device" id="device"><iframe id="preview" class="frame" src="index.html?bamcoDesignerPreview=1"></iframe></div></main>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+(()=>{
+'use strict';
+const KEY='bamco.designer.layout.v2';
+const frame=document.getElementById('preview'),device=document.getElementById('device'),side=document.getElementById('side');
+const status=document.getElementById('status'),selectedName=document.getElementById('selectedName'),layers=document.getElementById('layers');
+let editMode=true,selected=null,selector='',layout=loadLayout(),undo=[],redo=[],overlay=null,observer=null;
+function loadLayout(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch{return {}}}
+function saveLayout(){localStorage.setItem(KEY,JSON.stringify(layout));applyOverrides();status.textContent='ذخیره خودکار انجام شد.'}
+function toast(t){const e=document.getElementById('toast');e.textContent=t;e.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('show'),1800)}
+function esc(s){return CSS.escape(s)}
+function cleanClasses(el){return [...el.classList].filter(c=>!c.startsWith('bamco-designer-')&&!['selected','active','hidden','open','show'].includes(c)).slice(0,3)}
+function unique(sel,doc){try{return doc.querySelectorAll(sel).length===1}catch{return false}}
+function makeSelector(el){const doc=el.ownerDocument;if(el.id&&unique('#'+esc(el.id),doc))return '#'+esc(el.id);for(const a of ['data-view','data-tab','data-section','data-page','name','aria-label']){const v=el.getAttribute&&el.getAttribute(a);if(v){const s=el.tagName.toLowerCase()+'['+a+'="'+CSS.escape(v)+'"]';if(unique(s,doc))return s}}
+ const cs=cleanClasses(el);if(cs.length){const s=el.tagName.toLowerCase()+'.'+cs.map(esc).join('.');if(unique(s,doc))return s}
+ const parts=[];let n=el;while(n&&n.nodeType===1&&n!==doc.body){let p=n.tagName.toLowerCase();if(n.id){p='#'+esc(n.id);parts.unshift(p);break}const cls=cleanClasses(n);if(cls.length)p+='.'+cls.map(esc).join('.');const parent=n.parentElement;if(parent){const same=[...parent.children].filter(x=>x.tagName===n.tagName);if(same.length>1)p+=':nth-of-type('+(same.indexOf(n)+1)+')'}parts.unshift(p);const joined=parts.join(' > ');if(unique(joined,doc))return joined;n=parent}return 'body > '+parts.join(' > ')}
+function cssText(){let out='';for(const [sel,props] of Object.entries(layout)){const entries=Object.entries(props||{}).filter(([,v])=>v!==''&&v!=null);if(!entries.length)continue;out+=sel+'{'+entries.map(([k,v])=>k+':'+v+' !important').join(';')+'}\n'}return out}
+function applyOverrides(){let doc;try{doc=frame.contentDocument}catch{return}if(!doc)return;let st=doc.getElementById('bamcoDesignerOverrides');if(!st){st=doc.createElement('style');st.id='bamcoDesignerOverrides';doc.head.appendChild(st)}st.textContent=cssText();refreshOverlay()}
+function pushUndo(){undo.push(JSON.stringify(layout));if(undo.length>80)undo.shift();redo=[]}
+function restore(json){try{layout=JSON.parse(json)||{};localStorage.setItem(KEY,JSON.stringify(layout));applyOverrides();syncInputs();}catch{}}
+function undoDo(){if(!undo.length)return;redo.push(JSON.stringify(layout));restore(undo.pop())}
+function redoDo(){if(!redo.length)return;undo.push(JSON.stringify(layout));restore(redo.pop())}
+function props(){if(!selector)return null;return layout[selector]||(layout[selector]={})}
+function setProp(k,v,skipUndo=false){if(!selected||!selector)return;if(!skipUndo)pushUndo();const p=props();if(v===''||v==null)delete p[k];else p[k]=v;if(!Object.keys(p).length)delete layout[selector];saveLayout();syncInputs()}
+function computed(prop){if(!selected)return'';return getComputedStyle(selected).getPropertyValue(prop).trim()}
+function normalizeColor(v){const m=(v||'').match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);if(!m)return '#ffffff';return '#'+[m[1],m[2],m[3]].map(x=>(+x).toString(16).padStart(2,'0')).join('')}
+function syncInputs(){document.querySelectorAll('[data-prop]').forEach(i=>{if(!selected){i.value='';return}const k=i.dataset.prop;i.value=(layout[selector]&&layout[selector][k])||computed(k)||''});document.querySelectorAll('[data-color]').forEach(i=>{if(!selected)return;const k=i.dataset.color;i.value=normalizeColor((layout[selector]&&layout[selector][k])||computed(k))});const tr=((layout[selector]||{}).transform||'').match(/translate\((-?\d+(?:\.\d+)?)px,\s*(-?\d+(?:\.\d+)?)px\)/);document.getElementById('tx').value=tr?tr[1]:0;document.getElementById('ty').value=tr?tr[2]:0;}
+function describe(el){if(!el)return'هنوز چیزی انتخاب نشده.';let s=el.tagName.toLowerCase();if(el.id)s+='#'+el.id;else{const c=cleanClasses(el);if(c.length)s+='.'+c.join('.')}const txt=(el.innerText||el.getAttribute?.('alt')||'').trim().replace(/\s+/g,' ').slice(0,55);return s+(txt?' — '+txt:'')}
+function select(el){if(!el||el===el.ownerDocument.documentElement||el===el.ownerDocument.body)return;selected=el;selector=makeSelector(el);selectedName.textContent=describe(el)+'\n'+selector;syncInputs();renderLayers();createOverlay();status.textContent='عنصر انتخاب شد.'}
+function renderLayers(){if(!selected){layers.innerHTML='<div class="empty">عنصری انتخاب نشده.</div>';return}const arr=[];let p=selected.parentElement;for(let i=0;p&&i<3&&p.tagName!=='HTML';i++,p=p.parentElement)arr.unshift(p);arr.push(selected,...[...selected.children].slice(0,8));layers.innerHTML='';arr.forEach(el=>{const b=document.createElement('button');b.className='layer';b.innerHTML='<span>'+describe(el).replace(/</g,'&lt;')+'</span>';if(el===selected)b.style.fontWeight='700';b.onclick=()=>select(el);layers.appendChild(b)})}
+function removeOverlay(){overlay?.remove();overlay=null}
+function createOverlay(){removeOverlay();if(!selected||!editMode)return;const doc=selected.ownerDocument;overlay=doc.createElement('div');overlay.className='bamco-designer-overlay';Object.assign(overlay.style,{position:'absolute',border:'2px solid #16865f',boxShadow:'0 0 0 1px #fff8',zIndex:'2147483646',pointerEvents:'none'});const tag=doc.createElement('div');tag.textContent='✥ جابه‌جایی';Object.assign(tag.style,{position:'absolute',right:'-2px',top:'-28px',height:'26px',lineHeight:'26px',padding:'0 8px',background:'#16865f',color:'#fff',fontSize:'11px',borderRadius:'7px 7px 0 0',pointerEvents:'auto',cursor:'move',userSelect:'none',fontFamily:'Tahoma'});overlay.appendChild(tag);const h=doc.createElement('div');Object.assign(h.style,{position:'absolute',left:'-7px',bottom:'-7px',width:'14px',height:'14px',background:'#16865f',border:'2px solid #fff',borderRadius:'50%',pointerEvents:'auto',cursor:'nwse-resize'});overlay.appendChild(h);doc.body.appendChild(overlay);positionOverlay();dragHandle(tag);resizeHandle(h)}
+function positionOverlay(){if(!overlay||!selected||!selected.isConnected)return;const r=selected.getBoundingClientRect(),doc=selected.ownerDocument,win=doc.defaultView;overlay.style.left=(r.left+win.scrollX)+'px';overlay.style.top=(r.top+win.scrollY)+'px';overlay.style.width=Math.max(0,r.width)+'px';overlay.style.height=Math.max(0,r.height)+'px'}
+function refreshOverlay(){requestAnimationFrame(positionOverlay)}
+function currentTranslate(){const m=((layout[selector]||{}).transform||'').match(/translate\((-?\d+(?:\.\d+)?)px,\s*(-?\d+(?:\.\d+)?)px\)/);return m?[+m[1],+m[2]]:[0,0]}
+function setTranslate(x,y,skip=false){setProp('transform','translate('+Math.round(x)+'px, '+Math.round(y)+'px)',skip);document.getElementById('tx').value=Math.round(x);document.getElementById('ty').value=Math.round(y)}
+function dragHandle(handle){handle.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();pushUndo();const [sx,sy]=currentTranslate(),x0=e.clientX,y0=e.clientY;handle.setPointerCapture(e.pointerId);const mv=ev=>setTranslate(sx+(ev.clientX-x0),sy+(ev.clientY-y0),true);const up=()=>{handle.removeEventListener('pointermove',mv);handle.removeEventListener('pointerup',up);saveLayout()};handle.addEventListener('pointermove',mv);handle.addEventListener('pointerup',up)})}
+function resizeHandle(handle){handle.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();pushUndo();const r=selected.getBoundingClientRect(),x0=e.clientX,y0=e.clientY;handle.setPointerCapture(e.pointerId);const mv=ev=>{const p=props();p.width=Math.max(8,r.width+(ev.clientX-x0))+'px';p.height=Math.max(8,r.height+(ev.clientY-y0))+'px';saveLayout()};const up=()=>{handle.removeEventListener('pointermove',mv);handle.removeEventListener('pointerup',up);syncInputs()};handle.addEventListener('pointermove',mv);handle.addEventListener('pointerup',up)})}
+function bindPreview(){const doc=frame.contentDocument,win=frame.contentWindow;if(!doc)return;applyOverrides();doc.addEventListener('click',e=>{if(!editMode)return;e.preventDefault();e.stopPropagation();select(e.target)},true);doc.addEventListener('mouseover',e=>{if(!editMode||selected===e.target)return;e.target.style.outline='1px dashed #1f8a6644'},true);doc.addEventListener('mouseout',e=>{if(!editMode||selected===e.target)return;e.target.style.outline=''},true);win.addEventListener('scroll',refreshOverlay,true);win.addEventListener('resize',refreshOverlay);observer=new MutationObserver(()=>{applyOverrides();refreshOverlay()});observer.observe(doc.body,{childList:true,subtree:true});status.textContent='پیش‌نمایش آماده است. روی هر جزء کلیک کن.'}
+frame.addEventListener('load',()=>{selected=null;selector='';removeOverlay();setTimeout(bindPreview,250)});
+function toggleMode(){editMode=!editMode;const b=document.getElementById('modeBtn');b.classList.toggle('primary',editMode);b.textContent=editMode?'✦ حالت ویرایش':'☝ حالت تعامل';if(editMode){if(selected)createOverlay();status.textContent='حالت ویرایش: کلیک برای انتخاب.'}else{removeOverlay();status.textContent='حالت تعامل: ورود و تب‌ها عادی کار می‌کنند.'}}
+document.getElementById('modeBtn').onclick=toggleMode;document.querySelectorAll('[data-device]').forEach(b=>b.onclick=()=>{device.className='device '+(b.dataset.device==='desktop'?'':b.dataset.device);document.querySelectorAll('[data-device]').forEach(x=>x.classList.toggle('active',x===b));setTimeout(refreshOverlay,250)});document.querySelector('[data-device="desktop"]').classList.add('active');
+document.querySelectorAll('[data-prop]').forEach(i=>i.addEventListener('change',()=>setProp(i.dataset.prop,i.value.trim())));document.querySelectorAll('[data-color]').forEach(i=>i.addEventListener('input',()=>setProp(i.dataset.color,i.value)));
+function xy(){if(!selected)return;const x=+document.getElementById('tx').value||0,y=+document.getElementById('ty').value||0;setTranslate(x,y)}document.getElementById('tx').onchange=xy;document.getElementById('ty').onchange=xy;
+document.getElementById('parentBtn').onclick=()=>selected?.parentElement&&selected.parentElement.tagName!=='BODY'&&select(selected.parentElement);document.getElementById('childBtn').onclick=()=>selected?.firstElementChild&&select(selected.firstElementChild);document.getElementById('prevBtn').onclick=()=>selected?.previousElementSibling&&select(selected.previousElementSibling);document.getElementById('nextBtn').onclick=()=>selected?.nextElementSibling&&select(selected.nextElementSibling);
+document.getElementById('resetSelected').onclick=()=>{if(!selector)return;pushUndo();delete layout[selector];saveLayout();syncInputs();toast('این عنصر بازنشانی شد')};document.getElementById('hideSelected').onclick=()=>{if(!selected)return;const p=props();setProp('display',p.display==='none'?'': 'none')};
+document.getElementById('resetPage').onclick=()=>{if(!confirm('تغییرات همین صفحه/تب بازنشانی شود؟'))return;pushUndo();const doc=frame.contentDocument;for(const s of Object.keys(layout)){try{const el=doc.querySelector(s);if(el&&el.offsetParent!==null)delete layout[s]}catch{}}saveLayout();toast('صفحه جاری بازنشانی شد')};document.getElementById('resetAll').onclick=()=>{if(!confirm('کل طرح ذخیره‌شده پاک شود؟'))return;pushUndo();layout={};saveLayout();syncInputs();toast('کل طرح پاک شد')};
+document.getElementById('undoBtn').onclick=undoDo;document.getElementById('redoBtn').onclick=redoDo;
+function dl(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:type||'text/plain'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+document.getElementById('exportCssBtn').onclick=()=>dl('bamco-visual-overrides.css',cssText(),'text/css');document.getElementById('exportJsonBtn').onclick=()=>dl('bamco-layout.json',JSON.stringify({version:2,createdAt:new Date().toISOString(),layout},null,2),'application/json');document.getElementById('importInput').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{const j=JSON.parse(await f.text());pushUndo();layout=j.layout||j||{};saveLayout();syncInputs();toast('طرح وارد شد')}catch{alert('فایل طرح معتبر نیست.')}e.target.value=''};
+document.getElementById('panelBtn').onclick=()=>side.classList.toggle('open');
+window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?redoDo():undoDo();return}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='y'){e.preventDefault();redoDo();return}if(!selected||!editMode)return;const step=e.shiftKey?10:1;let [x,y]=currentTranslate();if(e.key==='ArrowLeft')x-=step;else if(e.key==='ArrowRight')x+=step;else if(e.key==='ArrowUp')y-=step;else if(e.key==='ArrowDown')y+=step;else return;e.preventDefault();setTranslate(x,y)});
+})();
+</script>
+</body>
+</html>
