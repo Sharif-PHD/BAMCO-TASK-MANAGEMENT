@@ -44,6 +44,11 @@
   function installGroupedNav(){
     const nav=q('#nav');if(!nav||nav.dataset.grouped==='1')return;
     nav.dataset.grouped='1';addVehicleViews();
+    const sidebar=q('#sidebar'),brand=q('.side-brand'),systemTitle=brand?.querySelector('strong');
+    if(sidebar&&systemTitle&&!systemTitle.classList.contains('header-system-title')){
+      systemTitle.classList.add('header-system-title');
+      sidebar.appendChild(systemTitle);
+    }
     const settings=q('#nav button[data-view="settings"]');
     if(settings){
       settings.classList.add('nav-settings-root');
