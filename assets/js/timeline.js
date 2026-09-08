@@ -15,7 +15,9 @@
   function activeTasks(){const s=appState();return (s?.tasks||[]).filter(t=>!t.archived)}
   function ownerNameLocal(t){try{return typeof ownerName==='function'?ownerName(t):(appState()?.profiles||[]).find(p=>p.id===t.owner_id)?.full_name||'—'}catch{return'—'}}
   function taskId(t){try{return typeof displayId==='function'?displayId(t):(t.legacy_id||t.id)}catch{return t.legacy_id||t.id}}
-  function colorFor(t){return priorityColors[String(t.priority||'').trim()]||'#6f8f84'}
+  function isWaiting(t){return String(t.status||'').trim()==='منتظر پاسخ'}
+  function temporalState(t){if(isWaiting(t)||!t.due_date||t.status==='انجام شده')return 'فاقد شرایط دیرکرد';const now=new Date().toISOString().slice(0,10);if(t.due_date<now)return 'دیرکرد';const limit=new Date();limit.setDate(limit.getDate()+Math.max(0,Number(t.reminder_days)||0));return t.due_date<=limit.toISOString().slice(0,10)?'هشدار':'عادی'}
+  function colorFor(t){return isWaiting(t)?'#8b949e':priorityColors[String(t.priority||'').trim()]||'#6f8f84'}
   function toParts(iso){try{return typeof persianParts==='function'?persianParts(iso):null}catch{return null}}
   function isoFor(y,m,d){try{return typeof jalaliToISO==='function'?jalaliToISO(y,m,d):null}catch{return null}}
   function daysInMonth(y,m){try{return typeof daysInJalaliMonth==='function'?daysInJalaliMonth(y,m):(m<=6?31:m<=11?30:29)}catch{return m<=6?31:m<=11?30:29}}
@@ -37,7 +39,7 @@
     const archive=q('#nav button[data-view="archive"]'),nav=q('#nav'),workspace=q('.workspace');if(!nav||!workspace)return;
     const btn=document.createElement('button');btn.dataset.view='taskTimeline';btn.className=archive?.className||'';btn.innerHTML='<b>▦</b><span>تقویم و گانت</span>';
     archive?.parentNode?archive.insertAdjacentElement('afterend',btn):nav.appendChild(btn);
-    workspace.insertAdjacentHTML('beforeend',`<section id="taskTimelineView" class="view hidden"><div class="task-timeline-shell"><div class="tt-head"><div><h3>تقویم و گانت وظایف</h3><small>نمایش زمان‌بندی وظایف جاری بر اساس تقویم شمسی و اولویت</small></div><div class="tt-switch"><button type="button" class="tt-mode active" data-mode="calendar">▦ نمای تقویمی</button><button type="button" class="tt-mode" data-mode="gantt">▥ نمای گانت</button></div></div><div class="tt-toolbar"><div class="tt-month"><button type="button" id="ttPrev" class="ghost">‹</button><button type="button" id="ttToday" class="ghost">امروز</button><strong id="ttMonthLabel"></strong><button type="button" id="ttNext" class="ghost">›</button></div><div class="tt-filters"><select id="ttOwner"><option value="">همه متولیان</option></select><select id="ttStatus"><option value="">همه وضعیت‌ها</option></select><select id="ttPriority"><option value="">همه اولویت‌ها</option></select><input id="ttSearch" class="search" placeholder="جست‌وجو در وظایف…"></div></div><div id="ttBody"></div><div class="tt-legend"><span><i style="--c:#ef5350"></i>فوری</span><span><i style="--c:#f2a93b"></i>متوسط</span><span><i style="--c:#39a96b"></i>کم</span><span><i style="--c:#6f8f84"></i>سایر</span></div></div></section>`);
+    workspace.insertAdjacentHTML('beforeend',`<section id="taskTimelineView" class="view hidden"><div class="task-timeline-shell"><div class="tt-head"><div><h3>تقویم و گانت وظایف</h3><small>نمایش زمان‌بندی وظایف جاری بر اساس تقویم شمسی و اولویت</small></div><div class="tt-switch"><button type="button" id="ttUnscheduled" class="ghost">بدون زمان‌بندی: <b>۰</b></button><button type="button" class="tt-mode active" data-mode="calendar">▦ نمای تقویمی</button><button type="button" class="tt-mode" data-mode="gantt">▥ نمای گانت</button></div></div><aside id="ttUnscheduledPanel" class="tt-unscheduled-panel hidden"><div class="panel-head"><h3>کارهای بدون زمان‌بندی</h3><button type="button" id="ttCloseUnscheduled" class="ghost">بستن</button></div><div id="ttUnscheduledList"></div></aside><div class="tt-toolbar"><div class="tt-month"><button type="button" id="ttPrev" class="ghost">‹</button><button type="button" id="ttToday" class="ghost">امروز</button><strong id="ttMonthLabel"></strong><button type="button" id="ttNext" class="ghost">›</button></div><div class="tt-filters"><select id="ttOwner"><option value="">همه متولیان</option></select><select id="ttStatus"><option value="">همه وضعیت‌ها</option></select><select id="ttPriority"><option value="">همه اولویت‌ها</option></select><input id="ttSearch" class="search" placeholder="جست‌وجو در وظایف…"></div></div><div id="ttBody"></div><div class="tt-legend"><span><i style="--c:#ef5350"></i>فوری</span><span><i style="--c:#f2a93b"></i>متوسط</span><span><i style="--c:#39a96b"></i>کم</span><span><i style="--c:#8b949e"></i>منتظر پاسخ</span><span class="tt-overdue-key">!</span> دیرکرد</div></div></section>`);
     /* Timeline styles are maintained in bamco-unified.css. */
     q('#taskTimelineStyles')?.remove();
     /*
@@ -50,6 +52,7 @@
     */
     btn.addEventListener('click',openView);
     q('#ttPrev').onclick=()=>shiftMonth(-1);q('#ttNext').onclick=()=>shiftMonth(1);q('#ttToday').onclick=()=>{month=currentMonth();render()};
+    q('#ttUnscheduled').onclick=()=>q('#ttUnscheduledPanel').classList.toggle('hidden');q('#ttCloseUnscheduled').onclick=()=>q('#ttUnscheduledPanel').classList.add('hidden');
     qa('.tt-mode').forEach(b=>b.onclick=()=>{mode=b.dataset.mode;qa('.tt-mode').forEach(x=>x.classList.toggle('active',x===b));renderBody()});
     q('#ttOwner').onchange=e=>{filters.owner=e.target.value;renderBody()};q('#ttStatus').onchange=e=>{filters.status=e.target.value;renderBody()};q('#ttPriority').onchange=e=>{filters.priority=e.target.value;renderBody()};q('#ttSearch').oninput=e=>{filters.search=e.target.value;renderBody()};
   }
@@ -58,7 +61,7 @@
     const s=appState(),tasks=activeTasks();
     const owners=(s?.profiles||[]).filter(p=>tasks.some(t=>t.owner_id===p.id));
     const owner=q('#ttOwner'),status=q('#ttStatus'),priority=q('#ttPriority');
-    owner.innerHTML='<option value="">همه متولیان</option>'+owners.map(p=>`<option value="${esc(p.id)}">${esc(p.full_name||p.email)}</option>`).join('');owner.value=filters.owner;
+    owner.innerHTML='<option value="">همه متولیان</option>'+owners.map(p=>`<option value="${esc(p.id)}">${esc(p.full_name||p.email)}</option>`).join('');owner.value=filters.owner;owner.classList.toggle('hidden',!(typeof isManager==='function'&&isManager()));
     const statuses=[...new Set(tasks.map(t=>String(t.status||'')).filter(Boolean))];status.innerHTML='<option value="">همه وضعیت‌ها</option>'+statuses.map(v=>`<option>${esc(v)}</option>`).join('');status.value=filters.status;
     const priorities=[...new Set(tasks.map(t=>String(t.priority||'')).filter(Boolean))];priority.innerHTML='<option value="">همه اولویت‌ها</option>'+priorities.map(v=>`<option>${esc(v)}</option>`).join('');priority.value=filters.priority;
   }
@@ -69,7 +72,8 @@
     const title=q('#viewTitle'),sub=q('#viewSubtitle'),add=q('#addTaskBtn');if(title)title.textContent='تقویم و گانت';if(sub)sub.textContent='نمای زمان‌بندی وظایف جاری';if(add)add.classList.add('hidden');
     if(!month)month=currentMonth();fillFilters();render();
   }
-  function render(){if(!month)month=currentMonth();q('#ttMonthLabel').textContent=`${monthNames[month.m-1]} ${faNum(month.y)}`;renderBody()}
+  function render(){if(!month)month=currentMonth();q('#ttMonthLabel').textContent=`${monthNames[month.m-1]} ${faNum(month.y)}`;renderUnscheduled();renderBody()}
+  function renderUnscheduled(){const rows=filtered().filter(t=>!t.start_date||(!t.due_date&&!isWaiting(t))),button=q('#ttUnscheduled b'),list=q('#ttUnscheduledList');if(button)button.textContent=faNum(rows.length);if(list)list.innerHTML=rows.map(t=>`<button type="button" data-task="${t.id}"><b>${faNum(taskId(t))}</b><span>${esc(t.title)}</span><small>${isWaiting(t)?'منتظر پاسخ بدون تاریخ شروع':t.status==='ثبت شده'?'ثبت‌شده':'بدون تاریخ شروع یا پایان'}</small></button>`).join('')||'<div class="tt-empty">وظیفه بدون زمان‌بندی وجود ندارد.</div>';qa('[data-task]',list||document).forEach(b=>b.onclick=()=>{const t=activeTasks().find(x=>String(x.id)===b.dataset.task);if(t)openKanban(t)})}
   function renderBody(){mode==='gantt'?renderGantt():renderCalendar()}
   function renderCalendar(){
     const body=q('#ttBody'),tasks=filtered(),days=daysInMonth(month.y,month.m),firstIso=isoFor(month.y,month.m,1),firstDay=firstIso?new Date(firstIso+'T12:00:00').getDay():6,offset=(firstDay+1)%7,today=currentMonth();
@@ -91,7 +95,7 @@
     let html=`<div class="tt-gantt-wrap"><div class="tt-gantt"><div class="tt-gantt-head"><div>شناسه</div><div>عنوان فعالیت</div><div>متولی</div><div class="tt-timeline-head"><div class="tt-days" style="grid-template-columns:repeat(${max},${dayW}px)">${days.map(d=>`<div class="tt-dayhead">${faNum(d)}</div>`).join('')}</div></div></div>`;
     for(const t of rows){
       const a=t.start_date||t.due_date,b=t.due_date||t.start_date,as=Math.max(startMs,new Date(a+'T12:00:00').getTime()),bs=Math.min(endMs,new Date(b+'T12:00:00').getTime()),start=Math.max(0,Math.round((as-startMs)/86400000)),span=Math.max(1,Math.round((bs-as)/86400000)+1);
-      html+=`<div class="tt-gantt-row"><div>${faNum(taskId(t))}</div><div title="${esc(t.title)}">${esc(t.title)}</div><div>${esc(ownerNameLocal(t))}</div><div class="tt-track" style="width:${max*dayW}px">${todayIndex!==null?`<i class="tt-today-line" style="right:${todayIndex*dayW+dayW/2}px"></i>`:''}<button class="tt-bar" data-task="${t.id}" style="--c:${colorFor(t)};right:${start*dayW+2}px;width:${Math.max(28,span*dayW-4)}px" title="#${esc(taskId(t))} — ${esc(t.title)}\n${esc(t.priority)}">${faNum(taskId(t))}</button></div></div>`;
+      const wait=isWaiting(t),late=temporalState(t)==='دیرکرد';html+=`<div class="tt-gantt-row"><div>${faNum(taskId(t))}</div><div title="${esc(t.title)}">${esc(t.title)}</div><div>${esc(ownerNameLocal(t))}</div><div class="tt-track" style="width:${max*dayW}px">${todayIndex!==null?`<i class="tt-today-line" style="right:${todayIndex*dayW+dayW/2}px"></i>`:''}<button class="tt-bar ${wait?'waiting-open':''} ${late?'overdue':''}" data-task="${t.id}" style="--c:${colorFor(t)};right:${start*dayW+2}px;width:${Math.max(28,span*dayW-4)}px" title="#${esc(taskId(t))} — ${esc(t.title)}\n${esc(t.priority)}">${faNum(taskId(t))}${wait?' …':''}${late?' !':''}</button></div></div>`;
     }
     html+='</div></div>';body.innerHTML=html;qa('.tt-bar',body).forEach(b=>b.onclick=()=>{const t=activeTasks().find(x=>String(x.id)===b.dataset.task);if(t)openKanban(t)});
   }
