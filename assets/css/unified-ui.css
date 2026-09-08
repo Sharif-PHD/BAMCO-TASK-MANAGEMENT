@@ -1,0 +1,44 @@
+/* BAMCO unified UI: one visual contract for all modules. */
+#appView .view{direction:rtl;text-align:right}
+#appView .view>.panel,#appView .view>.vehicle-panel,#appView .view>.desktop-sticker-page{
+  border:1px solid #b8c8c1;border-radius:18px;background:#f8faf9;box-shadow:0 7px 22px #123f330a
+}
+#appView .panel-head,#appView .vehicle-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#appView .panel-head h3,#appView .vehicle-panel-head h3{color:#145741;margin:0}
+#appView .toolbar,#appView .vehicle-toolbar,#appView .table-toolbar{
+  display:flex!important;align-items:center!important;gap:10px!important;direction:rtl!important;flex-wrap:wrap!important
+}
+#appView .toolbar button,#appView .vehicle-toolbar button,#appView .table-toolbar button{min-height:38px;white-space:nowrap}
+#appView .table-wrap,#appView .vehicle-table-wrap{
+  border:1px solid #b8c8c1!important;border-radius:16px!important;background:#fff!important;box-shadow:0 7px 22px #123f330a!important
+}
+#appView table{direction:rtl;background:#fff}
+#appView table thead tr:first-child th{background:#dfe9e4!important;color:#17362d!important;text-align:center!important;border-color:#b8c8c1!important}
+#appView table tbody td{border-color:#d1ddd8!important;text-align:right;vertical-align:top}
+#appView table tbody tr:nth-child(even) td{background:#fafcfa}
+#appView table tbody tr:hover td{background:#edf6f1!important}
+#appView table tbody tr.task-selected td,#appView table tbody tr.vehicle-selected td{background:#dfeee7!important;outline:1px solid #4e917a;outline-offset:-1px}
+#appView .unified-select-head,#appView .unified-select-cell,#appView .unified-select-filter{width:58px!important;min-width:58px!important;max-width:58px!important;text-align:center!important}
+#appView .unified-select-head input,#appView .unified-select-cell input{width:18px!important;height:18px!important;accent-color:#176b4d;cursor:pointer}
+#appView .column-filters th,#appView .vehicle-filters th{background:#edf3f0!important;padding:5px!important}
+#appView .column-filters select,#appView .vehicle-filters select{height:34px!important;border:1px solid #b8c8c1!important;border-radius:8px!important;background:#fff!important;direction:rtl!important;text-align:right!important}
+#appView .empty{padding:34px 16px!important;text-align:center!important;color:#62766f!important}
+#taskDialog{width:min(980px,95vw)!important}
+#taskDialog .form-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;max-height:65vh!important;overflow:auto!important;padding:2px!important}
+#taskDialog label{display:flex!important;flex-direction:column!important;gap:5px!important;text-align:right!important}
+#taskDialog label.span-2{grid-column:1/-1!important}
+#taskDialog input,#taskDialog select,#taskDialog textarea{width:100%!important;box-sizing:border-box!important}
+#taskDialog textarea{min-height:95px}
+#taskDialog .date-field{display:grid!important;grid-template-columns:1fr 44px!important;gap:7px!important}
+#taskDialog .calendar-btn{border:1px solid #cad9d3!important;background:#eef5f2!important;border-radius:11px!important;color:#176b4d!important}
+#stickersView .desktop-sticker-page{padding:18px}
+#stickersView .sticker-empty-state{display:grid;place-items:center;min-height:260px;border:1px dashed #9db8ad;border-radius:16px;background:#fff;text-align:center;padding:24px;color:#506860}
+#stickersView .sticker-empty-state b{display:block;color:#145741;font-size:20px;margin-bottom:8px}
+@media(max-width:760px){
+  #appView .toolbar,#appView .vehicle-toolbar,#appView .table-toolbar{flex-wrap:nowrap!important;overflow-x:auto!important;padding-bottom:5px!important}
+  #appView .toolbar>* ,#appView .vehicle-toolbar>* ,#appView .table-toolbar>*{flex:0 0 auto!important}
+  #appView .panel,#appView .vehicle-panel{padding:12px!important;border-radius:14px!important}
+  #taskDialog .form-grid{grid-template-columns:1fr!important;max-height:70vh!important}
+  #taskDialog label.span-2{grid-column:auto!important}
+  #appView .table-wrap,#appView .vehicle-table-wrap{border-radius:12px!important}
+}
