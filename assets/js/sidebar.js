@@ -137,3 +137,13 @@
   const boot=()=>{forceNormalScale();installHeaderStyles();clearEditorOverrides();installGroupedNav();installHeaderTools();installCollapseButton();installTaskTools();removeSubtitle();requestAnimationFrame(clearEditorOverrides)};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
+
+/* Load phase-one workflow after the stable legacy document has initialized. */
+(()=>{
+  if(document.querySelector('script[data-phase1-workflow]'))return;
+  const script=document.createElement('script');
+  script.src='assets/js/phase1-workflow.js';
+  script.defer=true;
+  script.dataset.phase1Workflow='';
+  document.head.appendChild(script);
+})();
