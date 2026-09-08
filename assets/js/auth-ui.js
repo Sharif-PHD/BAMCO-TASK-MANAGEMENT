@@ -7,18 +7,20 @@
   const EYE_OFF_ICON=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.3 2 18.7 18.7-1.3 1.3-3.4-3.4A11.8 11.8 0 0 1 12 20C6.8 20 2.7 15.4 1.5 13.9a1.4 1.4 0 0 1 0-1.8 20.5 20.5 0 0 1 4.1-4.2L2 3.3 3.3 2Zm3.8 7.4A18.5 18.5 0 0 0 3.5 13c1.1 1.6 4.5 5 8.5 5 1.3 0 2.6-.4 3.7-1l-1.8-1.8a4 4 0 0 1-5.1-5.1L7.1 9.4ZM12 6c5.2 0 9.3 4.6 10.5 6.1a1.4 1.4 0 0 1 0 1.8 18.2 18.2 0 0 1-2.2 2.4l-1.4-1.4a17.2 17.2 0 0 0 1.6-1.9c-1.1-1.6-4.5-5-8.5-5-.8 0-1.5.1-2.2.3L8.2 6.7A12 12 0 0 1 12 6Z"/></svg>`;
   function injectStyle(){let style=q('#bamcoLoginControlsStyle');if(!style){style=document.createElement('style');style.id='bamcoLoginControlsStyle';document.head.appendChild(style)}style.textContent=`
     .bamco-fa{font-family:BamcoPersian,"B Nazanin",BNazanin,"B Nazanin Regular",Tahoma,sans-serif!important}
-    #loginView .login-card{height:auto!important;min-height:0!important;padding-bottom:14px!important}
-    #loginView #loginForm{margin-bottom:0!important;padding-bottom:0!important}
-    #loginView .brand-lockup{margin-bottom:15px!important}
-    #loginView .brand-lockup img{width:122px!important;height:122px!important;padding:12px!important;border-radius:24px!important}
+    #loginView .login-card{height:auto!important;min-height:0!important;padding:22px 32px!important}
+    #loginView #loginForm{margin:0!important;padding:0!important}
+    #loginView #loginForm>label{margin:0!important}
+    #loginView #loginForm>label+label{margin-top:12px!important}
+    #loginView .brand-lockup{margin-bottom:18px!important}
+    #loginView .brand-lockup img{width:134px!important;height:134px!important;padding:12px!important;border-radius:26px!important}
     #loginView .bamco-auth-field{position:relative!important;display:block!important;width:100%!important}
     #loginView .bamco-auth-field>#email,#loginView .bamco-auth-field>#password{width:100%!important;box-sizing:border-box!important;background-image:none!important;padding-left:50px!important}
     #loginView .bamco-password-field>#password{padding-right:50px!important}
     #loginView .bamco-auth-leading-icon{position:absolute!important;left:15px!important;top:50%!important;transform:translateY(-50%)!important;width:23px!important;height:23px!important;display:flex!important;align-items:center!important;justify-content:center!important;color:#7b8683!important;pointer-events:none!important;z-index:8!important}
     #loginView .bamco-auth-leading-icon svg,#loginView .bamco-password-toggle svg{width:23px!important;height:23px!important;display:block!important;fill:currentColor!important}
     #loginView .bamco-password-toggle{position:absolute!important;right:14px!important;top:50%!important;transform:translateY(-50%)!important;width:30px!important;height:30px!important;padding:0!important;margin:0!important;border:0!important;background:transparent!important;color:#7b8683!important;display:flex!important;align-items:center!important;justify-content:center!important;cursor:pointer!important;z-index:9!important}
-    #loginView .bamco-verification-wrap{margin-top:7px!important;margin-bottom:0!important;direction:rtl!important;text-align:right!important}
-    #loginView .bamco-verification-title{display:block!important;position:static!important;margin:0 0 4px!important;padding:0!important;background:transparent!important;color:#17352d!important;font-weight:700!important;font-size:14px!important;line-height:1.45!important;text-align:right!important;direction:rtl!important}
+    #loginView .bamco-verification-wrap{margin-top:12px!important;margin-bottom:0!important;direction:rtl!important;text-align:right!important}
+    #loginView .bamco-verification-title{display:block!important;position:static!important;margin:0 0 6px!important;padding:0!important;background:transparent!important;color:#17352d!important;font-weight:700!important;font-size:14px!important;line-height:1.45!important;text-align:right!important;direction:rtl!important}
     #loginView .bamco-verification{height:auto!important;min-height:0!important;max-height:none!important;margin:0!important;padding:7px 9px!important;border:1px solid #d4e0db!important;border-radius:10px!important;background:#f6faf8!important;direction:rtl!important;overflow:visible!important}
     #loginView .bamco-code-row{display:grid!important;grid-template-columns:112px minmax(0,1fr) 34px!important;gap:7px!important;align-items:center!important;height:40px!important;min-height:40px!important}
     #loginView .bamco-code-box{height:40px!important;display:grid!important;place-items:center!important;border:1px dashed #8eaaa0!important;border-radius:8px!important;background:#fff!important;font-family:"Times New Roman",Times,serif!important;font-size:20px!important;font-weight:700!important;letter-spacing:5px!important;direction:ltr!important;color:#174f3e!important;user-select:none!important}
@@ -31,7 +33,7 @@
     #loginView .bamco-code-error{min-height:0!important;height:auto!important;margin:0!important;padding:0!important;color:#b42318!important;text-align:right!important;font-size:12px!important;line-height:1.35!important}
     #loginView .bamco-code-error:empty{display:none!important}
     #loginView .bamco-code-error:not(:empty){display:block!important;margin-top:4px!important}
-    #loginView .primary.wide{margin-top:7px!important;margin-bottom:0!important}
+    #loginView .primary.wide{margin-top:12px!important;margin-bottom:0!important}
     #loginView .form-error:empty{display:none!important}
   `}
   function wrapInput(input,kind,iconSvg){if(!input)return null;let wrap=input.closest('.bamco-auth-field');if(!wrap){wrap=document.createElement('div');wrap.className=`bamco-auth-field bamco-${kind}-field`;input.parentNode.insertBefore(wrap,input);wrap.appendChild(input)}else wrap.classList.add(`bamco-${kind}-field`);if(!wrap.querySelector('.bamco-auth-leading-icon')){const icon=document.createElement('span');icon.className='bamco-auth-leading-icon';icon.setAttribute('aria-hidden','true');icon.innerHTML=iconSvg;wrap.appendChild(icon)}return wrap}
