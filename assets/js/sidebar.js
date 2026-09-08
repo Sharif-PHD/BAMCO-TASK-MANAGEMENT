@@ -13,23 +13,6 @@
     document.head.appendChild(link);
   }
 
-  function installVisualEditorAssets(){
-    document.documentElement.classList.add('bve-design-access');
-    if(!q('#bamcoVisualEditorStyles')){
-      const link=document.createElement('link');
-      link.id='bamcoVisualEditorStyles';
-      link.rel='stylesheet';
-      link.href='assets/css/layout-editor.css?v=20260908-manual-edit';
-      document.head.appendChild(link);
-    }
-    if(q('#bamcoVisualEditorScript')||window.BAMCOVisualEditor)return;
-    const script=document.createElement('script');
-    script.id='bamcoVisualEditorScript';
-    script.src='assets/js/layout-editor-v2.js?v=20260908-manual-edit';
-    script.defer=true;
-    document.head.appendChild(script);
-  }
-
   function addVehicleViews(){
     const workspace=q('.workspace');
     if(!workspace||q('#vehiclePermanentView'))return;
@@ -86,13 +69,15 @@
     const temporary=document.createElement('button');temporary.dataset.view='vehicleTemporary';temporary.className='manager-only';temporary.innerHTML='<b>▤</b><span>تحویل موقت</span>';
     nav.append(permanent,temporary);qa('#nav>.nav-divider').forEach(x=>x.remove());
 
-    const task=makeGroup('مدیریت وظایف','tasks',['kanban','archive','taskTimeline','dashboard','approvals','requestHistory'],'☑');
-    const people=makeGroup('مدیریت افراد و نقش‌ها','people',['people','systemOptions'],'♙');
+    const task=makeGroup('مدیریت وظایف','tasks',['kanban','archive','taskTimeline','approvals','requestHistory','approvalChains'],'☑');
+    const people=makeGroup('مدیریت افراد','people',['people'],'♙');
     const email=makeGroup('مدیریت پیام','messages',['messages','sentMessages','templates','stickers'],'✉');
     const vehicle=makeGroup('مدیریت خودرو','vehicle',['vehiclePermanent','vehicleTemporary'],'◇');
+    const reports=makeGroup('گزارش‌ها','reports',['dashboard'],'▦');
+    const configuration=makeGroup('تنظیمات','configuration',['systemOptions'],'⚙');
     if(settings)nav.appendChild(settings);
 
-    const groups=[task,people,email,vehicle];
+    const groups=[task,email,people,vehicle,reports,configuration];
     const refreshVisibility=()=>groups.forEach(g=>{
       if(!g)return;
       const visible=[...g.querySelectorAll('.nav-group-items>button')].some(b=>!b.classList.contains('hidden'));
@@ -256,7 +241,6 @@
     installCollapseButton();
     installTaskTools();
     removeSubtitle();
-    installVisualEditorAssets();
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
