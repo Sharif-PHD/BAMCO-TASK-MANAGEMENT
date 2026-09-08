@@ -27,7 +27,7 @@ end $$;
 create or replace function public.submit_change_request(
  p_request_type text,p_task_id bigint,p_proposed_data jsonb,p_note text default null
 ) returns bigint language plpgsql security definer set search_path='' as $$
-declare rid bigint; owned boolean;
+declare rid bigint; owned boolean; before_snapshot jsonb;
 begin
  if p_request_type not in ('create','update','status','priority','description','complete','delete','due_date') then raise exception 'نوع درخواست نامعتبر است'; end if;
  if p_request_type='create' then
@@ -36,9 +36,9 @@ begin
   select exists(select 1 from public.tasks where id=p_task_id and owner_id=auth.uid()) into owned;
   if not owned and not (select private.is_manager()) then raise exception 'این وظیفه متعلق به شما نیست'; end if;
  end if;
+ if p_task_id is not null then select to_jsonb(t) into before_snapshot from public.tasks t where t.id=p_task_id; end if;
  insert into public.change_requests(task_id,request_type,before_data,proposed_data,requested_by,request_status,requester_note)
- select p_task_id,p_request_type,case when p_task_id is null then null else to_jsonb(t) end,coalesce(p_proposed_data,'{}'::jsonb),auth.uid(),'pending',p_note
- from (select * from public.tasks where id=p_task_id union all select null::public.tasks where p_task_id is null) t limit 1 returning id into rid;
+ values(p_task_id,p_request_type,before_snapshot,coalesce(p_proposed_data,'{}'::jsonb),auth.uid(),'pending',p_note) returning id into rid;
  insert into public.change_request_events(request_id,actor_id,event_type,note,snapshot) values(rid,auth.uid(),'submitted',p_note,p_proposed_data);
  perform private.route_change_request(rid);
  return rid;
