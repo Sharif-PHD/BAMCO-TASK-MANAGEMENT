@@ -10,7 +10,7 @@
     #loginView .login-card{height:auto!important;min-height:0!important;padding:22px 32px!important}
     #loginView #loginForm{margin:0!important;padding:0!important}
     #loginView #loginForm>label{margin:0!important}
-    #loginView #loginForm>label+label{margin-top:24px!important}
+    #loginView #loginForm>label:has(#password){margin-top:48px!important}
     #loginView .brand-lockup{margin-bottom:18px!important}
     #loginView .brand-lockup img{width:134px!important;height:134px!important;padding:12px!important;border-radius:26px!important}
     #loginView .bamco-auth-field{position:relative!important;display:block!important;width:100%!important}
@@ -19,7 +19,7 @@
     #loginView .bamco-auth-leading-icon{position:absolute!important;left:15px!important;top:50%!important;transform:translateY(-50%)!important;width:23px!important;height:23px!important;display:flex!important;align-items:center!important;justify-content:center!important;color:#7b8683!important;pointer-events:none!important;z-index:8!important}
     #loginView .bamco-auth-leading-icon svg,#loginView .bamco-password-toggle svg{width:23px!important;height:23px!important;display:block!important;fill:currentColor!important}
     #loginView .bamco-password-toggle{position:absolute!important;right:14px!important;top:50%!important;transform:translateY(-50%)!important;width:30px!important;height:30px!important;padding:0!important;margin:0!important;border:0!important;background:transparent!important;color:#7b8683!important;display:flex!important;align-items:center!important;justify-content:center!important;cursor:pointer!important;z-index:9!important}
-    #loginView .bamco-verification-wrap{margin-top:24px!important;margin-bottom:0!important;direction:rtl!important;text-align:right!important}
+    #loginView .bamco-verification-wrap{margin-top:48px!important;margin-bottom:0!important;direction:rtl!important;text-align:right!important}
     #loginView .bamco-verification-title{display:block!important;position:static!important;margin:0 0 6px!important;padding:0!important;background:transparent!important;color:#17352d!important;font-weight:700!important;font-size:14px!important;line-height:1.45!important;text-align:right!important;direction:rtl!important}
     #loginView .bamco-verification{height:auto!important;min-height:0!important;max-height:none!important;margin:0!important;padding:7px 9px!important;border:1px solid #d4e0db!important;border-radius:10px!important;background:#f6faf8!important;direction:rtl!important;overflow:visible!important}
     #loginView .bamco-code-row{display:grid!important;grid-template-columns:112px minmax(0,1fr) 34px!important;gap:7px!important;align-items:center!important;height:40px!important;min-height:40px!important}
