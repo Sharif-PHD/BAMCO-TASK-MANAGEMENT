@@ -13,6 +13,23 @@
     document.head.appendChild(link);
   }
 
+  function installVisualEditorAssets(){
+    document.documentElement.classList.add('bve-design-access');
+    if(!q('#bamcoVisualEditorStyles')){
+      const link=document.createElement('link');
+      link.id='bamcoVisualEditorStyles';
+      link.rel='stylesheet';
+      link.href='assets/css/layout-editor.css?v=20260908-manual-edit';
+      document.head.appendChild(link);
+    }
+    if(q('#bamcoVisualEditorScript')||window.BAMCOVisualEditor)return;
+    const script=document.createElement('script');
+    script.id='bamcoVisualEditorScript';
+    script.src='assets/js/layout-editor-v2.js?v=20260908-manual-edit';
+    script.defer=true;
+    document.head.appendChild(script);
+  }
+
   function addVehicleViews(){
     const workspace=q('.workspace');
     if(!workspace||q('#vehiclePermanentView'))return;
@@ -239,6 +256,7 @@
     installCollapseButton();
     installTaskTools();
     removeSubtitle();
+    installVisualEditorAssets();
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
