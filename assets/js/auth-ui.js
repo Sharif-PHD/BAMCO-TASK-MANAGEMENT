@@ -10,14 +10,16 @@
     let style=q('#bamcoLoginControlsStyle');
     if(!style){style=document.createElement('style');style.id='bamcoLoginControlsStyle';document.head.appendChild(style)}
     style.textContent=`
+      #loginView .brand-lockup img{width:122px!important;height:122px!important;padding:12px!important;border-radius:24px!important}
       #loginView .bamco-auth-field{position:relative!important;display:block!important;width:100%!important}
       #loginView .bamco-auth-field>#email,#loginView .bamco-auth-field>#password{width:100%!important;box-sizing:border-box!important;background-image:none!important;padding-left:50px!important}
       #loginView .bamco-password-field>#password{padding-right:50px!important}
       #loginView .bamco-auth-leading-icon{position:absolute!important;left:15px!important;top:50%!important;transform:translateY(-50%)!important;width:23px!important;height:23px!important;display:flex!important;align-items:center!important;justify-content:center!important;color:#7b8683!important;pointer-events:none!important;z-index:8!important}
       #loginView .bamco-auth-leading-icon svg,#loginView .bamco-password-toggle svg{width:23px!important;height:23px!important;display:block!important;fill:currentColor!important}
       #loginView .bamco-password-toggle{position:absolute!important;right:14px!important;top:50%!important;transform:translateY(-50%)!important;width:30px!important;height:30px!important;padding:0!important;margin:0!important;border:0!important;background:transparent!important;color:#7b8683!important;display:flex!important;align-items:center!important;justify-content:center!important;cursor:pointer!important;z-index:9!important}
-      #loginView .bamco-verification{margin-top:12px!important;padding:10px!important;border:1px solid #d4e0db!important;border-radius:10px!important;background:#f6faf8!important}
-      #loginView .bamco-verification-title{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;margin-bottom:7px!important;font-weight:700!important;color:#31584b!important}
+      #loginView .bamco-verification{margin-top:12px!important;padding:10px!important;border:1px solid #d4e0db!important;border-radius:10px!important;background:#f6faf8!important;direction:rtl!important;text-align:right!important}
+      #loginView .bamco-verification-title{display:block!important;margin-bottom:7px!important;font-weight:700!important;color:#31584b!important;text-align:right!important;direction:rtl!important}
+      #loginView .bamco-verification-title span{display:block!important;width:100%!important;text-align:right!important}
       #loginView .bamco-code-row{display:grid!important;grid-template-columns:112px 1fr 34px!important;gap:7px!important;align-items:center!important}
       #loginView .bamco-code-box{height:40px!important;display:grid!important;place-items:center!important;border:1px dashed #8eaaa0!important;border-radius:8px!important;background:#fff!important;font-family:"Times New Roman",Times,serif!important;font-size:20px!important;font-weight:700!important;letter-spacing:5px!important;direction:ltr!important;color:#174f3e!important;user-select:none!important}
       #loginView #loginVerifyCode{height:40px!important;text-align:center!important;direction:ltr!important;font-family:"Times New Roman",Times,serif!important;font-size:16px!important;letter-spacing:3px!important;padding:6px 8px!important}
@@ -49,9 +51,12 @@
     let box=q('#loginVerification');
     if(!box){
       box=document.createElement('div');box.id='loginVerification';box.className='bamco-verification';
-      box.innerHTML=`<div class="bamco-verification-title"><span>تأیید عددی</span><small>کد چهاررقمی را وارد کنید.</small></div><div class="bamco-code-row"><div id="loginVerifyDisplay" class="bamco-code-box" aria-label="کد تأیید"></div><input id="loginVerifyCode" type="text" inputmode="numeric" autocomplete="off" maxlength="4" pattern="[0-9۰-۹٠-٩]{4}" placeholder="کد"><button type="button" id="refreshLoginVerify" class="bamco-refresh-code" title="ساخت کد جدید" aria-label="ساخت کد جدید">↻</button></div><div id="loginVerifyError" class="bamco-code-error"></div>`;
+      box.innerHTML=`<div class="bamco-verification-title"><span>کد را وارد کنید</span></div><div class="bamco-code-row"><div id="loginVerifyDisplay" class="bamco-code-box" aria-label="کد تأیید"></div><input id="loginVerifyCode" type="text" inputmode="numeric" autocomplete="off" maxlength="4" pattern="[0-9۰-۹٠-٩]{4}" placeholder="کد"><button type="button" id="refreshLoginVerify" class="bamco-refresh-code" title="ساخت کد جدید" aria-label="ساخت کد جدید">↻</button></div><div id="loginVerifyError" class="bamco-code-error"></div>`;
       const submit=form.querySelector('button[type="submit"],.primary.wide');
       if(submit)form.insertBefore(box,submit);else form.appendChild(box);
+    }else{
+      const title=box.querySelector('.bamco-verification-title');
+      if(title)title.innerHTML='<span>کد را وارد کنید</span>';
     }
     const display=q('#loginVerifyDisplay'),input=q('#loginVerifyCode'),error=q('#loginVerifyError'),refresh=q('#refreshLoginVerify');
     const renew=(clearError=true)=>{box.dataset.code=makeCode();if(display)display.textContent=box.dataset.code;if(input)input.value='';if(clearError&&error)error.textContent=''};
