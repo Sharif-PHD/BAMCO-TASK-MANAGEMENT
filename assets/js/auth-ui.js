@@ -29,8 +29,7 @@
   function wrapInput(input,kind,iconSvg){
     if(!input)return null;
     let wrap=input.closest('.bamco-auth-field');
-    if(!wrap){wrap=document.createElement('div');wrap.className=`bamco-auth-field bamco-${kind}-field`;input.parentNode.insertBefore(wrap,input);wrap.appendChild(input)}
-    else wrap.classList.add(`bamco-${kind}-field`);
+    if(!wrap){wrap=document.createElement('div');wrap.className=`bamco-auth-field bamco-${kind}-field`;input.parentNode.insertBefore(wrap,input);wrap.appendChild(input)}else wrap.classList.add(`bamco-${kind}-field`);
     if(!wrap.querySelector('.bamco-auth-leading-icon')){const icon=document.createElement('span');icon.className='bamco-auth-leading-icon';icon.setAttribute('aria-hidden','true');icon.innerHTML=iconSvg;wrap.appendChild(icon)}
     return wrap;
   }
@@ -55,9 +54,9 @@
       if(submit)form.insertBefore(box,submit);else form.appendChild(box);
     }
     const display=q('#loginVerifyDisplay'),input=q('#loginVerifyCode'),error=q('#loginVerifyError'),refresh=q('#refreshLoginVerify');
-    const renew=()=>{box.dataset.code=makeCode();if(display)display.textContent=box.dataset.code;if(input)input.value='';if(error)error.textContent=''};
+    const renew=(clearError=true)=>{box.dataset.code=makeCode();if(display)display.textContent=box.dataset.code;if(input)input.value='';if(clearError&&error)error.textContent=''};
     if(!box.dataset.code)renew();
-    if(refresh&&!refresh.dataset.bound){refresh.dataset.bound='1';refresh.addEventListener('click',renew)}
+    if(refresh&&!refresh.dataset.bound){refresh.dataset.bound='1';refresh.addEventListener('click',()=>renew(true))}
     if(input&&!input.dataset.bound){input.dataset.bound='1';input.addEventListener('input',()=>{input.value=toLatinDigits(input.value).replace(/\D/g,'').slice(0,4);if(error)error.textContent=''})}
     if(!form.dataset.verifyBound){
       form.dataset.verifyBound='1';
@@ -65,29 +64,15 @@
         const entered=toLatinDigits(input?.value).replace(/\D/g,'');
         if(entered!==box.dataset.code){
           e.preventDefault();e.stopImmediatePropagation();
-          if(error)error.textContent='کد تأیید صحیح نیست. دوباره وارد کنید.';
-          renew();
+          renew(false);
+          if(error)error.textContent='کد تأیید صحیح نیست. کد جدید را وارد کنید.';
           setTimeout(()=>input?.focus(),0);
         }
       },true);
     }
   }
 
-  function install(){
-    injectStyle();
-    const email=q('#email'),password=q('#password');
-    wrapInput(email,'email',USER_ICON);
-    const passWrap=wrapInput(password,'password',LOCK_ICON);
-    installPasswordToggle(passWrap,password);
-    installVerification();
-  }
-
-  function boot(){
-    install();
-    [100,350,900,1600].forEach(ms=>setTimeout(install,ms));
-    const login=q('#loginView');
-    if(login&&!login.dataset.loginControlsObserved){login.dataset.loginControlsObserved='1';let queued=false;new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;install()})}).observe(login,{childList:true,subtree:true})}
-  }
-
+  function install(){injectStyle();const email=q('#email'),password=q('#password');wrapInput(email,'email',USER_ICON);const passWrap=wrapInput(password,'password',LOCK_ICON);installPasswordToggle(passWrap,password);installVerification()}
+  function boot(){install();[100,350,900,1600].forEach(ms=>setTimeout(install,ms));const login=q('#loginView');if(login&&!login.dataset.loginControlsObserved){login.dataset.loginControlsObserved='1';let queued=false;new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;install()})}).observe(login,{childList:true,subtree:true})}}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
