@@ -1,268 +1,313 @@
-/* BAMCO horizontal header refresh — 2026-09-08 */
-#appView.app{--app-header-h:156px}
+/* BAMCO clean horizontal header — single source of truth */
+#appView.app{--app-header-h:158px}
 
 #appView .sidebar,
 #appView .sidebar.collapsed{
-  height:var(--app-header-h);
-  background:linear-gradient(100deg,#0b493a 0%,#0d5744 50%,#0b493a 100%);
-  border-bottom:1px solid rgba(255,255,255,.14);
-  box-shadow:0 7px 24px rgba(4,33,25,.18);
+  height:var(--app-header-h)!important;
+  display:grid!important;
+  grid-template-columns:220px minmax(0,1fr) 320px!important;
+  grid-template-rows:96px 62px!important;
+  direction:ltr!important;
+  background:linear-gradient(100deg,#0a4939 0%,#0d5945 52%,#0a4939 100%)!important;
+  border:0!important;
+  border-bottom:1px solid rgba(255,255,255,.13)!important;
+  box-shadow:0 7px 24px rgba(4,33,25,.18)!important;
   overflow:visible!important;
 }
 
-/* Top row: large logo / centered system title / owner identity */
+/* RIGHT — logo gets the whole header height so it can actually be large */
 #appView .side-brand{
-  position:absolute;
-  top:0;
-  right:14px;
-  left:auto;
-  width:278px;
-  height:96px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  overflow:visible;
+  grid-column:3!important;
+  grid-row:1 / 3!important;
+  position:relative!important;
+  inset:auto!important;
+  width:auto!important;
+  height:auto!important;
+  margin:0!important;
+  padding:0 12px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  overflow:visible!important;
+  z-index:5!important;
 }
 #appView .side-brand img{
-  width:252px!important;
-  height:96px!important;
+  width:220px!important;
+  height:164px!important;
   max-width:none!important;
-  object-fit:contain;
-  object-position:center center;
-  transform:scale(1.06);
-  transform-origin:center center;
-  filter:drop-shadow(0 3px 9px rgba(0,0,0,.20));
-}
-#appView .header-system-title{
-  position:absolute!important;
-  top:27px!important;
-  left:50%!important;
-  right:auto!important;
-  transform:translateX(-50%)!important;
-  width:min(720px,49vw)!important;
+  max-height:none!important;
+  object-fit:contain!important;
+  object-position:center!important;
   margin:0!important;
-  color:#fff!important;
-  text-align:center!important;
-  font-size:25px!important;
-  line-height:42px!important;
-  font-weight:900!important;
-  white-space:nowrap!important;
-  letter-spacing:-.15px!important;
-  text-shadow:0 2px 8px rgba(0,0,0,.16)!important;
+  transform:scale(1.12)!important;
+  transform-origin:center center!important;
+  filter:drop-shadow(0 3px 9px rgba(0,0,0,.18))!important;
 }
 
-/* Left block: owner on top, three compact actions aligned with nav tabs below */
+/* CENTER TOP — system title */
+#appView .header-system-title{
+  grid-column:2!important;
+  grid-row:1!important;
+  position:relative!important;
+  inset:auto!important;
+  transform:translateY(7px)!important;
+  width:auto!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0 20px!important;
+  align-self:center!important;
+  justify-self:stretch!important;
+  color:#fff!important;
+  text-align:center!important;
+  direction:rtl!important;
+  font-size:26px!important;
+  line-height:1.35!important;
+  font-weight:900!important;
+  white-space:nowrap!important;
+  letter-spacing:-.2px!important;
+  text-shadow:0 2px 8px rgba(0,0,0,.14)!important;
+  z-index:4!important;
+}
+
+/* LEFT — owner in row one, actions centered below */
 #appView .header-tools{
-  position:absolute;
-  top:5px;
-  left:16px;
-  z-index:250;
-  width:190px;
-  height:145px;
-  display:block;
-  direction:rtl;
-  overflow:visible;
+  grid-column:1!important;
+  grid-row:1 / 3!important;
+  position:relative!important;
+  inset:auto!important;
+  width:auto!important;
+  height:auto!important;
+  margin:0!important;
+  padding:0 12px!important;
+  display:grid!important;
+  grid-template-columns:1fr 44px 44px 44px 1fr!important;
+  grid-template-rows:96px 62px!important;
+  column-gap:8px!important;
+  align-items:center!important;
+  overflow:visible!important;
+  direction:ltr!important;
+  z-index:30!important;
 }
 #appView .header-tools .account{
-  position:absolute!important;
-  top:0!important;
-  left:0!important;
-  right:0!important;
-  width:190px!important;
-  height:72px!important;
-  display:flex!important;
-  direction:rtl;
-  align-items:center;
-  justify-content:center;
-  gap:9px!important;
+  grid-column:1 / -1!important;
+  grid-row:1!important;
+  position:relative!important;
+  inset:auto!important;
+  width:auto!important;
+  height:auto!important;
+  min-height:0!important;
   margin:0!important;
   padding:0!important;
+  display:flex!important;
+  flex-direction:row!important;
+  direction:rtl!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:10px!important;
   overflow:visible!important;
 }
 #appView .header-tools .account-copy{
   display:grid!important;
-  min-width:0;
-  line-height:1.35;
-  text-align:right;
+  min-width:0!important;
+  max-width:130px!important;
+  text-align:right!important;
+  direction:rtl!important;
+  line-height:1.35!important;
 }
 #appView .header-tools .account-copy strong,
 #appView .header-tools .account-copy small{
-  max-width:118px;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
+  max-width:130px!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
 }
-#appView .header-tools .account-copy strong{font-size:13px;color:#fff;font-weight:900}
-#appView .header-tools .account-copy small{font-size:11px;color:#c8ddd5}
+#appView .header-tools .account-copy strong{font-size:14px!important;font-weight:900!important;color:#fff!important}
+#appView .header-tools .account-copy small{font-size:11px!important;font-weight:500!important;color:#c7ddd4!important}
 #appView .header-tools .account .avatar{
+  position:relative!important;
+  inset:auto!important;
   width:48px!important;
   height:48px!important;
   min-width:48px!important;
+  min-height:48px!important;
+  margin:0!important;
   border:1px solid rgba(255,255,255,.38)!important;
-  box-shadow:0 3px 10px rgba(0,0,0,.14)!important;
+  border-radius:50%!important;
+  box-shadow:0 3px 10px rgba(0,0,0,.13)!important;
   font-size:18px!important;
 }
 
-/* The three lower actions */
-#appView .header-tools .account>button,
-#appView .header-tool-btn{
-  position:absolute!important;
-  top:94px!important;
+#appView #logoutBtn,
+#appView #notificationBell,
+#appView #headerSettingsBtn{
+  position:relative!important;
+  inset:auto!important;
+  top:auto!important;
+  right:auto!important;
+  bottom:auto!important;
+  left:auto!important;
   width:44px!important;
   height:44px!important;
   min-width:44px!important;
   min-height:44px!important;
-  display:grid!important;
-  place-items:center;
+  margin:0!important;
   padding:0!important;
+  display:grid!important;
+  place-items:center!important;
   border:1px solid rgba(255,255,255,.22)!important;
   border-radius:11px!important;
-  background:rgba(255,255,255,.07)!important;
+  background:rgba(255,255,255,.075)!important;
   color:#fff!important;
   box-shadow:none!important;
-  cursor:pointer;
-  transition:background .15s ease,border-color .15s ease,transform .15s ease;
-  line-height:1!important;
+  cursor:pointer!important;
+  transform:none!important;
+  transition:background .15s ease,border-color .15s ease,transform .15s ease!important;
 }
-#appView .header-tools .account>button{left:18px!important;right:auto!important}
-#appView #notificationBell{left:73px!important;right:auto!important}
-#appView #headerSettingsBtn{left:128px!important;right:auto!important}
-#appView .header-tools .account>button:hover,
-#appView .header-tool-btn:hover{
-  background:rgba(255,255,255,.15)!important;
-  border-color:rgba(255,255,255,.45)!important;
-  transform:translateY(-1px);
+#appView #logoutBtn{grid-column:2!important;grid-row:2!important}
+#appView #notificationBell{grid-column:3!important;grid-row:2!important}
+#appView #headerSettingsBtn{grid-column:4!important;grid-row:2!important}
+#appView #logoutBtn:hover,
+#appView #notificationBell:hover,
+#appView #headerSettingsBtn:hover{
+  background:rgba(255,255,255,.16)!important;
+  border-color:rgba(255,255,255,.44)!important;
+  transform:translateY(-1px)!important;
 }
+#appView #logoutBtn svg,
 #appView .header-tool-btn svg{
-  width:23px;
-  height:23px;
-  fill:none;
-  stroke:currentColor;
-  stroke-width:1.8;
-  stroke-linecap:round;
-  stroke-linejoin:round;
+  width:23px!important;
+  height:23px!important;
+  display:block!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:1.9!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
 }
-
-/* Replace old logout glyph with a cleaner exit symbol */
-#appView #logoutBtn{
-  font-size:0!important;
-  font-family:Arial,sans-serif!important;
-}
-#appView #logoutBtn::before{
-  content:"⎋";
-  display:block;
-  font-size:27px;
-  line-height:1;
-  font-weight:400;
-  transform:rotate(180deg);
-}
-
 #appView .header-notification-count{
-  position:absolute;
-  top:-5px;
-  right:-5px;
-  min-width:19px;
-  height:19px;
-  padding:0 4px;
-  border:2px solid #0c5140;
-  border-radius:999px;
-  background:#d94343;
-  color:#fff;
-  font:700 10px/15px Tahoma,Arial,sans-serif;
-  display:grid;
-  place-items:center;
-  box-shadow:0 2px 7px rgba(0,0,0,.24);
-}
-#appView .header-notification-count:empty{display:none}
-#appView .header-notification-bell.has-unread:after{
-  content:"";
-  position:absolute;
-  inset:5px;
-  border-radius:9px;
-  border:1px solid rgba(255,255,255,.12);
-  pointer-events:none;
-}
-
-#appView .sidebar nav>.nav-settings-root{display:none!important}
-
-/* Bottom row: tabs, with left reserve for the three actions */
-#appView .sidebar nav{
   position:absolute!important;
-  right:0!important;
-  left:0!important;
-  bottom:0!important;
-  width:100%!important;
-  height:58px!important;
+  top:-5px!important;
+  right:-5px!important;
+  min-width:19px!important;
+  height:19px!important;
+  padding:0 4px!important;
+  border:2px solid #0c5140!important;
+  border-radius:999px!important;
+  background:#d94343!important;
+  color:#fff!important;
+  font:700 10px/15px Tahoma,Arial,sans-serif!important;
+  display:grid!important;
+  place-items:center!important;
+  box-shadow:0 2px 7px rgba(0,0,0,.22)!important;
+}
+#appView .header-notification-count:empty{display:none!important}
+
+/* CENTER BOTTOM — only the horizontal navigation */
+#appView .sidebar nav{
+  grid-column:2!important;
+  grid-row:2!important;
+  position:relative!important;
+  inset:auto!important;
+  width:auto!important;
+  height:62px!important;
+  min-height:62px!important;
+  margin:0!important;
+  padding:7px 10px 9px!important;
   display:flex!important;
+  flex-direction:row!important;
+  direction:rtl!important;
   align-items:center!important;
   justify-content:center!important;
   gap:10px!important;
-  padding:6px 220px 8px 18px!important;
   flex-wrap:nowrap!important;
   overflow:visible!important;
-  border-top:0!important;
+  border:0!important;
   box-shadow:none!important;
+  z-index:20!important;
 }
-#appView .nav-group{position:relative;display:block;flex:0 0 auto;overflow:visible!important}
+#appView .sidebar nav>.nav-settings-root{display:none!important}
+#appView .nav-group{
+  position:relative!important;
+  flex:0 1 176px!important;
+  min-width:145px!important;
+  max-width:190px!important;
+  overflow:visible!important;
+}
 #appView .nav-group>.nav-group-toggle,
 #appView .sidebar nav>button:not(.nav-settings-root){
+  width:100%!important;
   height:44px!important;
   min-height:44px!important;
-  min-width:158px!important;
-  padding:7px 14px!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:7px 12px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:8px!important;
   border:1px solid rgba(255,255,255,.20)!important;
   border-radius:11px!important;
-  background:rgba(255,255,255,.055)!important;
+  background:rgba(255,255,255,.06)!important;
   color:#e8f2ee!important;
   box-shadow:none!important;
   font-size:15px!important;
+  line-height:1.2!important;
   font-weight:800!important;
-  justify-content:center!important;
+  white-space:nowrap!important;
+  transform:none!important;
 }
 #appView .nav-group>.nav-group-toggle:hover,
 #appView .nav-group.open>.nav-group-toggle,
 #appView .sidebar nav>button:not(.nav-settings-root):hover{
-  background:rgba(255,255,255,.13)!important;
-  border-color:rgba(255,255,255,.34)!important;
+  background:rgba(255,255,255,.14)!important;
+  border-color:rgba(255,255,255,.35)!important;
   color:#fff!important;
-  transform:none!important;
 }
 #appView .sidebar nav button.active,
 #appView .nav-group-items>button.active{
   background:#218764!important;
   color:#fff!important;
-  border-color:rgba(255,255,255,.34)!important;
+  border-color:rgba(255,255,255,.35)!important;
 }
-#appView .nav-group-icon{font-size:19px!important}
-#appView .nav-chevron{margin-right:auto!important;font-size:17px!important}
+#appView .nav-group-icon{font-size:19px!important;line-height:1!important}
+#appView .nav-chevron{margin-right:auto!important;font-size:15px!important;line-height:1!important}
 
-/* Reliable dropdown: always opens cleanly below its tab and above workspace */
+/* Dropdowns are positioned by JS as fixed overlays, so they can never be clipped by nav */
 #appView .nav-group>.nav-group-items{
-  position:absolute!important;
-  top:49px!important;
-  right:0!important;
-  left:auto!important;
-  z-index:9999!important;
-  min-width:246px!important;
-  max-height:min(420px,calc(100vh - 185px))!important;
+  position:fixed!important;
+  top:0;
+  left:0;
+  right:auto!important;
+  z-index:10000!important;
+  width:258px!important;
+  min-width:258px!important;
+  max-width:258px!important;
+  max-height:min(430px,calc(100vh - 175px))!important;
+  margin:0!important;
+  padding:8px!important;
+  display:none!important;
+  flex-direction:column!important;
+  gap:4px!important;
   overflow-y:auto!important;
   overflow-x:hidden!important;
-  padding:8px!important;
+  border:1px solid rgba(255,255,255,.22)!important;
   border-radius:12px!important;
   background:#073f32!important;
-  border:1px solid rgba(255,255,255,.22)!important;
-  box-shadow:0 18px 38px rgba(0,0,0,.31)!important;
+  box-shadow:0 18px 38px rgba(0,0,0,.30)!important;
   transform:none!important;
 }
-#appView .nav-group:not(.open)>.nav-group-items{display:none!important}
-#appView .nav-group.open>.nav-group-items{display:flex!important;flex-direction:column!important;gap:4px!important}
+#appView .nav-group.open>.nav-group-items{display:flex!important}
 #appView .nav-group-items>button{
   width:100%!important;
+  min-width:0!important;
   height:42px!important;
+  min-height:42px!important;
+  margin:0!important;
   padding:7px 11px!important;
   border-radius:8px!important;
-  font-size:15px!important;
+  font-size:14px!important;
   text-align:right!important;
+  justify-content:flex-start!important;
   flex:0 0 auto!important;
 }
 
@@ -271,44 +316,41 @@
   padding:calc(var(--app-header-h) + 14px) 20px calc(var(--app-footer-h) + 12px)!important;
 }
 
-@media(max-width:1050px){
+@media(max-width:1100px){
   #appView.app{--app-header-h:148px}
-  #appView .side-brand{right:5px;top:1px;width:190px;height:88px}
-  #appView .side-brand img{width:182px!important;height:86px!important;transform:scale(1.04)}
-  #appView .header-system-title{top:25px!important;width:48vw!important;font-size:19px!important;line-height:38px!important}
-  #appView .header-tools{left:7px;top:5px;width:164px;height:138px}
-  #appView .header-tools .account{width:164px!important;height:68px!important}
-  #appView .header-tools .account-copy strong,#appView .header-tools .account-copy small{max-width:92px}
-  #appView .header-tools .account .avatar{width:43px!important;height:43px!important;min-width:43px!important}
-  #appView .header-tools .account>button,#appView .header-tool-btn{top:91px!important;width:40px!important;height:40px!important;min-width:40px!important;min-height:40px!important}
-  #appView .header-tools .account>button{left:10px!important}
-  #appView #notificationBell{left:60px!important}
-  #appView #headerSettingsBtn{left:110px!important}
-  #appView .header-tool-btn svg{width:21px;height:21px}
-  #appView #logoutBtn::before{font-size:24px}
-  #appView .sidebar nav{padding-left:182px!important;justify-content:flex-start!important;gap:8px!important}
-  #appView .nav-group>.nav-group-toggle,#appView .sidebar nav>button:not(.nav-settings-root){min-width:142px!important;font-size:14px!important}
+  #appView .sidebar,#appView .sidebar.collapsed{
+    grid-template-columns:190px minmax(0,1fr) 240px!important;
+    grid-template-rows:90px 58px!important;
+  }
+  #appView .side-brand img{width:185px!important;height:145px!important;transform:scale(1.08)!important}
+  #appView .header-system-title{font-size:20px!important;padding:0 12px!important;transform:translateY(5px)!important}
+  #appView .header-tools{grid-template-columns:1fr 40px 40px 40px 1fr!important;grid-template-rows:90px 58px!important;column-gap:6px!important;padding:0 8px!important}
+  #appView .header-tools .account-copy{max-width:105px!important}
+  #appView .header-tools .account-copy strong,#appView .header-tools .account-copy small{max-width:105px!important}
+  #appView .header-tools .account .avatar{width:43px!important;height:43px!important;min-width:43px!important;min-height:43px!important}
+  #appView #logoutBtn,#appView #notificationBell,#appView #headerSettingsBtn{width:40px!important;height:40px!important;min-width:40px!important;min-height:40px!important}
+  #appView .sidebar nav{height:58px!important;min-height:58px!important;gap:7px!important;padding:7px 6px!important}
+  #appView .nav-group{min-width:126px!important;max-width:165px!important}
+  #appView .nav-group>.nav-group-toggle{height:41px!important;min-height:41px!important;font-size:13px!important;padding:6px 8px!important}
 }
 
-@media(max-width:650px){
+@media(max-width:760px){
   #appView.app{--app-header-h:136px;--app-footer-h:45px}
-  #appView .side-brand{right:2px;top:2px;width:112px;height:70px}
-  #appView .side-brand img{width:108px!important;height:68px!important;transform:none}
-  #appView .header-system-title{top:15px!important;width:45vw!important;font-size:14px!important;line-height:19px!important;white-space:normal!important}
-  #appView .header-tools{left:4px;top:3px;width:128px;height:128px}
-  #appView .header-tools .account{width:128px!important;height:63px!important;gap:5px!important}
+  #appView .sidebar,#appView .sidebar.collapsed{
+    grid-template-columns:148px minmax(0,1fr) 165px!important;
+    grid-template-rows:82px 54px!important;
+  }
+  #appView .side-brand img{width:132px!important;height:118px!important;transform:scale(1.05)!important}
+  #appView .header-system-title{font-size:14px!important;line-height:1.3!important;white-space:normal!important;padding:0 6px!important;transform:translateY(2px)!important}
+  #appView .header-tools{grid-template-columns:1fr 34px 34px 34px 1fr!important;grid-template-rows:82px 54px!important;column-gap:4px!important;padding:0 4px!important}
+  #appView .header-tools .account{gap:5px!important}
   #appView .header-tools .account-copy small{display:none!important}
-  #appView .header-tools .account-copy strong{max-width:72px;font-size:11px!important}
-  #appView .header-tools .account .avatar{width:36px!important;height:36px!important;min-width:36px!important;font-size:14px!important}
-  #appView .header-tools .account>button,#appView .header-tool-btn{top:84px!important;width:34px!important;height:34px!important;min-width:34px!important;min-height:34px!important;border-radius:9px!important}
-  #appView .header-tools .account>button{left:5px!important}
-  #appView #notificationBell{left:47px!important}
-  #appView #headerSettingsBtn{left:89px!important}
-  #appView .header-tool-btn svg{width:18px;height:18px}
-  #appView #logoutBtn::before{font-size:21px}
-  #appView .sidebar nav{height:50px!important;padding:5px 140px 7px 6px!important;justify-content:flex-start!important;gap:7px!important;overflow-x:auto!important;overflow-y:visible!important}
-  #appView .nav-group>.nav-group-toggle,#appView .sidebar nav>button:not(.nav-settings-root){min-width:122px!important;height:36px!important;min-height:36px!important;padding:5px 8px!important;font-size:12px!important}
-  #appView .nav-group>.nav-group-items{top:41px!important;min-width:208px!important}
-  #appView .nav-group-items>button{height:38px!important;font-size:13px!important}
+  #appView .header-tools .account-copy strong{max-width:70px!important;font-size:11px!important}
+  #appView .header-tools .account .avatar{width:35px!important;height:35px!important;min-width:35px!important;min-height:35px!important;font-size:13px!important}
+  #appView #logoutBtn,#appView #notificationBell,#appView #headerSettingsBtn{width:34px!important;height:34px!important;min-width:34px!important;min-height:34px!important;border-radius:9px!important}
+  #appView #logoutBtn svg,#appView .header-tool-btn svg{width:18px!important;height:18px!important}
+  #appView .sidebar nav{height:54px!important;min-height:54px!important;justify-content:flex-start!important;overflow-x:auto!important;overflow-y:hidden!important;gap:6px!important;padding:6px 5px!important}
+  #appView .nav-group{flex:0 0 122px!important;min-width:122px!important;max-width:122px!important}
+  #appView .nav-group>.nav-group-toggle{height:37px!important;min-height:37px!important;font-size:12px!important;padding:5px 7px!important}
   #appView .workspace,#appView.app:has(.sidebar.collapsed) .workspace{padding:calc(var(--app-header-h) + 9px) 9px calc(var(--app-footer-h) + 9px)!important}
 }
