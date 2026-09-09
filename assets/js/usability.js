@@ -1,0 +1,19 @@
+(()=>{
+'use strict';
+const q=s=>document.querySelector(s),months=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+function install(){
+ const dialog=q('#calendarDialog');
+ if(dialog){
+  const board=document.createElement('div');board.className='day-picker';board.innerHTML='<div class="day-picker-nav"><button type="button" data-month="-1" aria-label="ماه قبل">‹</button><strong></strong><button type="button" data-month="1" aria-label="ماه بعد">›</button></div><div class="day-picker-grid"></div>';dialog.querySelector('.calendar-selects').after(board);
+  function render(){const y=Number(q('#calYear').value),m=Number(q('#calMonth').value);if(!y||!m)return;board.querySelector('strong').textContent=months[m-1]+' '+fa(y);const iso=jalaliToISO(y,m,1),offset=(new Date(iso+'T12:00:00').getDay()+1)%7,max=daysInJalaliMonth(y,m),selected=Number(q('#calDay').value);board.querySelector('.day-picker-grid').innerHTML=['ش','ی','د','س','چ','پ','ج'].map(x=>'<span>'+x+'</span>').join('')+'<i></i>'.repeat(offset)+Array.from({length:max},(_,i)=>`<button type="button" data-day="${i+1}" class="${selected===i+1?'selected':''}" aria-label="${fa(i+1)} ${months[m-1]} ${fa(y)}">${fa(i+1)}</button>`).join('')}
+  board.addEventListener('click',e=>{const day=e.target.closest('[data-day]');if(day){q('#calDay').value=day.dataset.day;q('#setDateBtn').click();return}const shift=e.target.closest('[data-month]');if(shift){let y=Number(q('#calYear').value),m=Number(q('#calMonth').value)+Number(shift.dataset.month);if(m<1){m=12;y--}if(m>12){m=1;y++}if(![...q('#calYear').options].some(o=>Number(o.value)===y))q('#calYear').add(new Option(fa(y),String(y)));q('#calYear').value=y;q('#calMonth').value=m;fillCalendarDays();render()}});
+  new MutationObserver(()=>{if(dialog.open)render()}).observe(dialog,{attributes:true,attributeFilter:['open']});
+ }
+ const tip=document.createElement('div');tip.className='task-preview-tip';tip.hidden=true;tip.setAttribute('role','tooltip');document.body.append(tip);
+ function preview(el){const title=el.getAttribute('title')||el.dataset.preview;if(!title)return;el.dataset.preview=title;el.removeAttribute('title');tip.replaceChildren();title.split('\n').forEach((line,i)=>{const part=document.createElement(i?'div':'strong');part.textContent=line;tip.append(part)});tip.hidden=false;const r=el.getBoundingClientRect();tip.style.left=Math.max(8,Math.min(innerWidth-tip.offsetWidth-8,r.left))+'px';tip.style.top=Math.max(8,r.top-tip.offsetHeight-9)+'px'}
+ document.addEventListener('pointerover',e=>{const b=e.target.closest('.tt-dot,.tt-bar');if(b)preview(b)});document.addEventListener('focusin',e=>{if(e.target.matches('.tt-dot,.tt-bar'))preview(e.target)});document.addEventListener('pointerout',e=>{if(e.target.closest('.tt-dot,.tt-bar'))tip.hidden=true});document.addEventListener('focusout',()=>tip.hidden=true);document.addEventListener('click',()=>tip.hidden=true);document.addEventListener('scroll',()=>tip.hidden=true,true);
+ // Use the same close glyph without altering any close handler.
+ const root=q('#appView');const patch=()=>document.querySelectorAll('button[data-close],button[data-vehicle-close],.modal-head>button:not([id])').forEach(b=>{if(b.dataset.cleanClose||(!/^[×✕✖xX]$/.test(b.textContent.trim())&&!b.closest('.modal-head')))return;b.dataset.cleanClose='1';b.classList.add('clean-close');b.setAttribute('aria-label','بستن پنجره');b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>'});patch();let queued=false;new MutationObserver(()=>{if(!queued){queued=true;queueMicrotask(()=>{queued=false;patch()})}}).observe(document.body,{subtree:true,childList:true});
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+})();

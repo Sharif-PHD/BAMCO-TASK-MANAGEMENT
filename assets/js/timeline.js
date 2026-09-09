@@ -28,10 +28,15 @@
     return activeTasks().filter(t=>(!filters.owner||t.owner_id===filters.owner)&&(!filters.status||String(t.status)===filters.status)&&(!filters.priority||String(t.priority)===filters.priority)&&(!term||[taskId(t),t.title,t.description,ownerNameLocal(t),t.status,t.priority].some(v=>String(v??'').toLowerCase().includes(term))));
   }
   function openKanban(t){
-    const s=appState();if(s?.selected)s.selected.kanban=t.id;
-    const btn=q('#nav button[data-view="kanban"]');if(btn)btn.click();
-    try{if(typeof renderTasks==='function')renderTasks(false)}catch{}
-    setTimeout(()=>q(`#kanbanBody tr[data-task-id="${t.id}"]`)?.scrollIntoView({block:'center',behavior:'smooth'}),80);
+    q('#nav button[data-view="kanban"]')?.click();
+    window.bamcoClearTaskSelection?.();
+    if(typeof tableFilters!=='undefined')tableFilters.kanban={};
+    const search=q('#kanbanSearch');if(search){search.value='';search.dispatchEvent(new Event('input',{bubbles:true}))}
+    if(typeof chooseTask==='function')chooseTask('kanban',t.id);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      window.bamcoRevealTask?.(t.id);
+      const row=q(`#kanbanBody tr[data-task-id="${t.id}"]`);row?.scrollIntoView({block:'center',behavior:'smooth'});row?.focus({preventScroll:true});
+    }));
   }
 
   function ensure(){
@@ -39,7 +44,7 @@
     const archive=q('#nav button[data-view="archive"]'),nav=q('#nav'),workspace=q('.workspace');if(!nav||!workspace)return;
     const btn=document.createElement('button');btn.dataset.view='taskTimeline';btn.className=archive?.className||'';btn.innerHTML='<b>▦</b><span>تقویم و گانت</span>';
     archive?.parentNode?archive.insertAdjacentElement('afterend',btn):nav.appendChild(btn);
-    workspace.insertAdjacentHTML('beforeend',`<section id="taskTimelineView" class="view hidden"><div class="task-timeline-shell"><div class="tt-head"><div><h3>تقویم و گانت وظایف</h3><small>نمایش زمان‌بندی وظایف جاری بر اساس تقویم شمسی و اولویت</small></div><div class="tt-switch"><button type="button" id="ttUnscheduled" class="ghost">بدون زمان‌بندی: <b>۰</b></button><button type="button" class="tt-mode active" data-mode="calendar">▦ نمای تقویمی</button><button type="button" class="tt-mode" data-mode="gantt">▥ نمای گانت</button></div></div><aside id="ttUnscheduledPanel" class="tt-unscheduled-panel hidden"><div class="panel-head"><h3>کارهای بدون زمان‌بندی</h3><button type="button" id="ttCloseUnscheduled" class="ghost">بستن</button></div><div id="ttUnscheduledList"></div></aside><div class="tt-toolbar"><div class="tt-month"><button type="button" id="ttPrev" class="ghost">‹</button><button type="button" id="ttToday" class="ghost">امروز</button><strong id="ttMonthLabel"></strong><button type="button" id="ttNext" class="ghost">›</button></div><div class="tt-filters"><select id="ttOwner"><option value="">همه متولیان</option></select><select id="ttStatus"><option value="">همه وضعیت‌ها</option></select><select id="ttPriority"><option value="">همه اولویت‌ها</option></select><input id="ttSearch" class="search" placeholder="جست‌وجو در وظایف…"></div></div><div id="ttBody"></div><div class="tt-legend"><span><i style="--c:#ef5350"></i>فوری</span><span><i style="--c:#f2a93b"></i>متوسط</span><span><i style="--c:#39a96b"></i>کم</span><span><i style="--c:#8b949e"></i>منتظر پاسخ</span><span class="tt-overdue-key">!</span> دیرکرد</div></div></section>`);
+    workspace.insertAdjacentHTML('beforeend',`<section id="taskTimelineView" class="view hidden"><div class="task-timeline-shell"><div class="tt-head"><div><h3>تقویم و گانت وظایف</h3><small>نمایش زمان‌بندی وظایف جاری بر اساس تقویم شمسی و اولویت</small></div><div class="tt-switch"><button type="button" id="ttUnscheduled" class="ghost">بدون زمان‌بندی: <b>۰</b></button><button type="button" class="tt-mode active" data-mode="calendar">▦ نمای تقویمی</button><button type="button" class="tt-mode" data-mode="gantt">▥ نمای گانت</button></div></div><aside id="ttUnscheduledPanel" class="tt-unscheduled-panel hidden"><div class="panel-head"><h3>کارهای بدون زمان‌بندی</h3><button type="button" id="ttCloseUnscheduled" class="ghost">بستن</button></div><div id="ttUnscheduledList"></div></aside><div class="tt-toolbar"><div class="tt-month"><button type="button" id="ttPrev" class="ghost">‹</button><strong id="ttMonthLabel"></strong><button type="button" id="ttNext" class="ghost">›</button></div><div class="tt-filters"><select id="ttOwner"><option value="">همه متولیان</option></select><select id="ttStatus"><option value="">همه وضعیت‌ها</option></select><select id="ttPriority"><option value="">همه اولویت‌ها</option></select><input id="ttSearch" class="search" placeholder="جست‌وجو در وظایف…"></div></div><div id="ttBody"></div><div class="tt-legend"><span><i style="--c:#ef5350"></i>فوری</span><span><i style="--c:#f2a93b"></i>متوسط</span><span><i style="--c:#39a96b"></i>کم</span><span><i style="--c:#8b949e"></i>منتظر پاسخ</span></div></div></section>`);
     /* Timeline styles are maintained in bamco-unified.css. */
     q('#taskTimelineStyles')?.remove();
     /*
@@ -51,7 +56,7 @@
 @media(max-width:900px){.tt-head{align-items:flex-start!important;flex-direction:column!important}.tt-calendar{grid-template-columns:repeat(7,minmax(92px,1fr))!important}.tt-day{min-height:105px!important}.tt-toolbar{align-items:stretch!important;flex-direction:column!important}.tt-filters>*{flex:1 1 180px!important}}
     */
     btn.addEventListener('click',openView);
-    q('#ttPrev').onclick=()=>shiftMonth(-1);q('#ttNext').onclick=()=>shiftMonth(1);q('#ttToday').onclick=()=>{month=currentMonth();render()};
+    q('#ttPrev').onclick=()=>shiftMonth(-1);q('#ttNext').onclick=()=>shiftMonth(1);
     q('#ttUnscheduled').onclick=()=>q('#ttUnscheduledPanel').classList.toggle('hidden');q('#ttCloseUnscheduled').onclick=()=>q('#ttUnscheduledPanel').classList.add('hidden');
     qa('.tt-mode').forEach(b=>b.onclick=()=>{mode=b.dataset.mode;qa('.tt-mode').forEach(x=>x.classList.toggle('active',x===b));renderBody()});
     q('#ttOwner').onchange=e=>{filters.owner=e.target.value;renderBody()};q('#ttStatus').onchange=e=>{filters.status=e.target.value;renderBody()};q('#ttPriority').onchange=e=>{filters.priority=e.target.value;renderBody()};q('#ttSearch').oninput=e=>{filters.search=e.target.value;renderBody()};
@@ -82,7 +87,7 @@
     for(let i=0;i<offset;i++)html+='<div class="tt-day other"></div>';
     for(let d=1;d<=days;d++){
       const arr=byDay[d]||[],todayClass=today.y===month.y&&today.m===month.m&&today.d===d?' today':'';
-      html+=`<div class="tt-day${todayClass}"><div class="tt-day-num">${faNum(d)}</div><div class="tt-dots">${arr.slice(0,7).map(t=>`<button class="tt-dot" style="--c:${colorFor(t)}" data-task="${t.id}" title="#${esc(taskId(t))} — ${esc(t.title)}\nمتولی: ${esc(ownerNameLocal(t))}\nاولویت: ${esc(t.priority)}">${faNum(taskId(t))}</button>`).join('')}${arr.length>7?`<span class="tt-more">+${faNum(arr.length-7)}</span>`:''}</div></div>`;
+      html+=`<div class="tt-day${todayClass}"><div class="tt-day-num">${faNum(d)}</div><div class="tt-dots">${arr.map(t=>`<button class="tt-dot" style="--c:${colorFor(t)}" data-task="${t.id}" title="#${esc(taskId(t))} — ${esc(t.title)}\nمتولی: ${esc(ownerNameLocal(t))}\nاولویت: ${esc(t.priority)}">${faNum(taskId(t))}</button>`).join('')}</div></div>`;
     }
     let total=offset+days;while(total%7!==0){html+='<div class="tt-day other"></div>';total++}
     html+='</div>';body.innerHTML=html;qa('.tt-dot',body).forEach(b=>b.onclick=()=>{const t=activeTasks().find(x=>String(x.id)===b.dataset.task);if(t)openKanban(t)});
@@ -102,3 +107,4 @@
   function boot(){ensure();month=currentMonth()}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
+

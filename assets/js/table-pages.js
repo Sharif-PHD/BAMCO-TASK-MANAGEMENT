@@ -22,7 +22,7 @@
    pager.className='table-pagination';pager.setAttribute('role','navigation');pager.setAttribute('aria-label','صفحه‌بندی '+(view.querySelector('h3')?.textContent||'جدول'));
    pager.innerHTML='<span class="page-range" aria-live="polite"></span><div class="page-controls"><label>تعداد ردیف <select aria-label="تعداد ردیف در هر صفحه"><option value="10">۱۰</option><option value="25" selected>۲۵</option><option value="50">۵۰</option><option value="100">۱۰۰</option><option value="200">۲۰۰</option></select></label><button type="button" data-page="first" aria-label="صفحه اول">اول</button><button type="button" data-page="prev">قبل</button><span class="page-position"></span><button type="button" data-page="next">بعد</button><button type="button" data-page="last" aria-label="صفحه آخر">آخر</button></div>';
    pager.querySelectorAll('button,select').forEach(el=>el.setAttribute('aria-controls',table.id));wrap.after(pager);
-   function rows(){return [...(table.tBodies[0]?.rows||[])].filter(row=>!row.hidden&&!row.classList.contains('hidden')&&row.style.display!=='none'&&!(row.cells.length===1&&row.cells[0].colSpan>1))}
+   function rows(){return [...(table.tBodies[0]?.rows||[])].filter(row=>!row.hidden&&!row.classList.contains('hidden')&&!row.classList.contains('suite-filtered-out')&&row.style.display!=='none'&&!(row.cells.length===1&&row.cells[0].colSpan>1))}
    function update(){
     const data=rows(),range=pageWindow(data.length,model.size,model.page);model.page=range.page;
     data.forEach((row,i)=>{const hidden=i<range.start||i>=range.end;if(row.classList.contains('table-page-hidden')!==hidden)row.classList.toggle('table-page-hidden',hidden)});
@@ -34,8 +34,9 @@
    pager.addEventListener('click',e=>{const b=e.target.closest('[data-page]');if(!b||b.disabled)return;const range=update();model.page=({first:1,prev:range.page-1,next:range.page+1,last:range.pages})[b.dataset.page];update();scrollTop(wrap)});
    pager.querySelector('select').addEventListener('change',e=>{model.size=Number(e.target.value);model.page=1;update();scrollTop(wrap)});
    const observer=new MutationObserver(()=>update());observer.observe(table,{childList:true,subtree:true});
-   registry.set(table,{reset(){model.page=1;update();scrollTop(wrap)},observer});update();
+   registry.set(table,{reveal(id){const data=rows(),index=data.findIndex(r=>String(r.dataset.taskId)===String(id));if(index>=0){model.page=Math.floor(index/model.size)+1;update()}},reset(){model.page=1;update();scrollTop(wrap)},observer});update();
   }
+  window.bamcoRevealTask=id=>{const table=document.querySelector('#kanbanView table');registry.get(table)?.reveal(id)};
   function backButton(view){
    const toolbar=view.querySelector('.task-toolbar,.vehicle-toolbar,.prod-toolbar');
    let back=view.querySelector('.content-back');

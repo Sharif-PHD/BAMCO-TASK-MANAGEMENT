@@ -15,7 +15,7 @@ function install(){
  function dataRows(table){return [...(table.tBodies[0]?.rows||[])].filter(r=>!(r.cells.length===1&&r.cells[0].colSpan>1))}
  function clear(){window.bamcoClearTaskSelection?.();window.bamcoClearVehicleSelection?.();root.querySelectorAll('tr.suite-selected').forEach(r=>{r.classList.remove('suite-selected');r.setAttribute('aria-selected','false')})}
  function sort(table,index,direction){
-  const model=settings.get(table);model.sort={index,direction};
+  const model=settings.get(table);if(!model.sort)model.unsorted=dataRows(table);model.sort={index,direction};
   const rows=dataRows(table);rows.sort((a,b)=>direction*compareValues(a.cells[index]?.textContent,b.cells[index]?.textContent));
   rows.forEach(row=>table.tBodies[0].append(row));
   [...table.tHead.rows[0].cells].forEach((th,i)=>{if(i===index)th.setAttribute('aria-sort',direction===1?'ascending':'descending');else th.removeAttribute('aria-sort')});
@@ -41,10 +41,11 @@ function install(){
  }
  function tableOptions(table,model){
   if(model.options?.isConnected)return;
-  const options=document.createElement('details');options.className='suite-table-options';options.innerHTML='<summary>تنظیمات جدول</summary><div class="suite-options-panel"><label><input type="checkbox" class="suite-density"> نمایش فشرده</label><button type="button" class="suite-reset">بازنشانی عرض ستون‌ها</button><div class="suite-columns"></div></div>';
+  const options=document.createElement('details');options.className='suite-table-options';options.innerHTML='<summary>تنظیمات جدول</summary><div class="suite-options-panel"><label><input type="checkbox" class="suite-density"> نمایش فشرده</label><button type="button" class="suite-clear-sort">حذف مرتب‌سازی</button><button type="button" class="suite-reset">بازنشانی عرض ستون‌ها</button><div class="suite-columns"></div></div>';
   const host=table.closest('.focus-scroll')||table.parentElement;host.after(options);model.options=options;
   const heads=[...table.tHead.rows[0].cells];heads.forEach((th,i)=>{const label=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.checked=true;label.append(input,document.createTextNode(th.textContent.trim()));options.querySelector('.suite-columns').append(label);input.addEventListener('change',()=>{model.hiddenColumns=model.hiddenColumns||new Set();if(input.checked)model.hiddenColumns.delete(i);else model.hiddenColumns.add(i);table.querySelectorAll('tr').forEach(row=>row.cells[i]?.classList.toggle('suite-column-hidden',!input.checked));const col=table.querySelector('colgroup')?.children[i];if(col)col.style.display=input.checked?'':'none'})});
   options.querySelector('.suite-density').addEventListener('change',e=>table.classList.toggle('suite-compact',e.target.checked));
+  options.querySelector('.suite-clear-sort').addEventListener('click',()=>{model.sort=null;table.querySelectorAll('[aria-sort]').forEach(th=>th.removeAttribute('aria-sort'));const scope=table.closest('#kanbanView')?'kanban':table.closest('#archiveView')?'archive':null;if(scope){delete window.BAMCO_TASK_SORT[scope];renderTasks(scope==='archive')}else if(model.unsorted?.every(r=>r.isConnected&&r.closest('table')===table)){model.unsorted.forEach(r=>table.tBodies[0].append(r))}});
   options.querySelector('.suite-reset').addEventListener('click',()=>{model.widths={};try{localStorage.removeItem(model.key)}catch{};heads.forEach(th=>{th.style.removeProperty('width');th.style.removeProperty('min-width')});table.querySelectorAll('col').forEach(col=>col.style.removeProperty('width'))});
  }
  function decorate(table){
@@ -63,7 +64,15 @@ function install(){
   const nativeSort=scope&&window.BAMCO_TASK_SORT[scope];if(nativeSort){[...heads.cells].forEach((th,i)=>{if(i===nativeSort.index)th.setAttribute('aria-sort',nativeSort.direction===1?'ascending':'descending');else th.removeAttribute('aria-sort')})}
   else if(model.sort){const fingerprint=dataRows(table).map(r=>r.dataset.taskId||r.dataset.id||r.textContent).join('\n');if(fingerprint!==model.fingerprint)sort(table,model.sort.index,model.sort.direction)}
   if(model.hiddenColumns)table.querySelectorAll('tr').forEach(row=>[...row.cells].forEach((cell,i)=>cell.classList.toggle('suite-column-hidden',model.hiddenColumns.has(i))));
+  addFilters(table,model);
   tableOptions(table,model);
+ }
+ function addFilters(table,model){
+  if(table.tHead.querySelector('.column-filters,.vehicle-filters'))return;
+  model.filters=model.filters||{};let tr=table.tHead.querySelector('.suite-filters');
+  if(!tr){tr=document.createElement('tr');tr.className='suite-filters';table.tHead.append(tr);[...table.tHead.rows[0].cells].forEach((th,i)=>{const cell=document.createElement('th'),select=document.createElement('select');select.setAttribute('aria-label','فیلتر '+th.textContent.trim());select.dataset.filterColumn=i;cell.append(select);tr.append(cell);select.addEventListener('change',()=>{model.filters[i]=select.value;apply();select.dispatchEvent(new Event('input',{bubbles:true}))})})}
+  const rows=dataRows(table);[...tr.cells].forEach((th,i)=>{const select=th.querySelector('select'),values=[...new Set(rows.map(r=>r.cells[i]?.textContent.trim()||''))].filter(Boolean).sort(compareValues);const signature=JSON.stringify(values);if(select.dataset.values!==signature){select.replaceChildren(new Option('همه',''),...values.map(v=>new Option(v,v)));select.dataset.values=signature;select.value=model.filters[i]||''}});
+  function apply(){dataRows(table).forEach(row=>row.classList.toggle('suite-filtered-out',Object.entries(model.filters).some(([i,v])=>v&&row.cells[i]?.textContent.trim()!==v)))}apply();
  }
  function toolbars(){
   root.querySelectorAll('.task-toolbar,.vehicle-toolbar,.prod-toolbar,.panel-head').forEach(bar=>{

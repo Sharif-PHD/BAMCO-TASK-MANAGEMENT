@@ -14,8 +14,8 @@
   },true);
 
   // Excel export: keep the current formatting, but emit Persian digits for Reminder.
-  function exportRowsFaReminder(archived){
-    const XLSX=window.ensureBamcoXLSX();
+  async function exportRowsFaReminder(archived){
+    const XLSX=await window.ensureBamcoXLSX();
     const rows=state.tasks.filter(t=>!!t.archived===archived),headers=['شناسه','عنوان فعالیت','توضیحات','متولی','وضعیت','اولویت','تاریخ شروع','تاریخ انجام','تاریخ پایان','یادآور','آخرین به‌روزرسانی','وضعیت دیرکرد','توضیحات مدیر',...(archived?['تأخیر','تعجیل']:[])];
     const data=rows.map(t=>[displayId(t),t.title,t.description||'',ownerName(t),t.status,t.priority,jalaliText(t.start_date),jalaliText(t.done_date),jalaliText(t.due_date),fa(t.reminder_days),jalaliDateTime(t.last_updated_at),t.due_state||'عادی',t.manager_notes||'',...(archived?[fa(t.delay_days||0),fa(t.advance_days||0)]:[])]);
     const ws=XLSX.utils.aoa_to_sheet([headers,...data]),range=XLSX.utils.decode_range(ws['!ref']);
