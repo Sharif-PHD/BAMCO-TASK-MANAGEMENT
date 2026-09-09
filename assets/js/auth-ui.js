@@ -30,7 +30,7 @@ function buildLogin(){
   form.innerHTML=`<div class="login-fields">
   <label class="login-field" for="email"><span class="login-field-title bamco-fa">نام کاربری</span><span class="login-input-shell"><input id="email" class="english" type="email" autocomplete="username" required placeholder="name@bamco.ir" dir="ltr"><span class="login-leading-icon">${USER_ICON}</span></span></label>
   <label class="login-field" for="password"><span class="login-field-title bamco-fa">رمز عبور</span><span class="login-input-shell"><input id="password" class="english" type="password" autocomplete="current-password" required placeholder="••••••" dir="ltr"><span class="login-leading-icon">${LOCK_ICON}</span><button type="button" class="login-password-toggle" aria-label="نمایش رمز عبور" title="نمایش رمز عبور">${EYE_ICON}</button></span></label>
-  <div class="login-field login-verification-field"><span class="login-field-title bamco-fa">تأیید عددی</span><div id="loginVerification" class="login-verification-box"><div id="loginVerifyDisplay" class="login-code-display" aria-label="کد تأیید"></div><input id="loginVerifyCode" class="login-verify-native english" type="text" inputmode="numeric" pattern="[0-9۰-۹٠-٩]*" autocomplete="off" maxlength="4" aria-label="کد تأیید را وارد نمایید" placeholder="••••"><button type="button" id="refreshLoginVerify" class="login-refresh-code" title="ساخت کد جدید" aria-label="ساخت کد جدید">${REFRESH_ICON}</button></div><div id="loginVerifyError" class="login-code-error bamco-fa" aria-live="polite"></div></div>
+  <div class="login-field login-verification-field"><span class="login-field-title bamco-fa">تأیید عددی</span><div id="loginVerification" class="login-verification-box"><div id="loginVerifyDisplay" class="login-code-display" aria-label="کد تأیید"></div><input id="loginVerifyCode" type="hidden"><div class="verification-digits" role="group" aria-label="کد تأیید چهار رقمی" dir="ltr">${[0,1,2,3].map(i=>`<input class="verification-digit english" type="text" inputmode="numeric" autocomplete="off" maxlength="4" aria-label="رقم ${i+1} کد تأیید" required>`).join('')}</div><button type="button" id="refreshLoginVerify" class="login-refresh-code" title="ساخت کد جدید" aria-label="ساخت کد جدید">${REFRESH_ICON}</button></div><div id="loginVerifyError" class="login-code-error bamco-fa" aria-live="polite"></div></div>
   </div><button class="primary wide login-submit" type="submit">ورود به سامانه</button><p id="loginError" class="form-error" aria-live="polite"></p>`;
   q('#email').value=email;q('#password').value=password;return form;
 }
@@ -66,18 +66,26 @@ function exposeApp(profile){
 }
 
 function install(){
-  injectCss();q('#loginView .brand-lockup img')?.remove();
+  injectCss();const logo=q('#loginView .brand-lockup img');if(logo)logo.src='assets/images/bamco-white.png';
   const form=buildLogin();if(!form)return;
   const password=q('#password'),toggle=q('.login-password-toggle'),box=q('#loginVerification'),display=q('#loginVerifyDisplay'),verify=q('#loginVerifyCode'),verifyError=q('#loginVerifyError'),refreshCode=q('#refreshLoginVerify');
-  const renew=(clear=true)=>{box.dataset.code=makeCode();display.textContent=box.dataset.code;verify.value='';if(clear)verifyError.textContent=''};renew();
+  const digits=[...form.querySelectorAll('.verification-digit')];
+  const focusDigit=()=>digits[0].focus({preventScroll:true});
+  const syncDigits=()=>{verify.value=digits.map(x=>x.value).join('');verifyError.textContent=''};
+  digits.forEach((input,i)=>{
+    input.addEventListener('input',()=>{const value=toLatinDigits(input.value).replace(/\D/g,'');input.value=value.slice(0,1);if(value.length>1){[...value].slice(0,4-i).forEach((d,j)=>digits[i+j].value=d)}syncDigits();if(value&&i<3)digits[Math.min(3,i+value.length)].focus()});
+    input.addEventListener('paste',e=>{e.preventDefault();const value=toLatinDigits(e.clipboardData.getData('text')).replace(/\D/g,'').slice(0,4);if(!value)return;const start=value.length===4?0:i;[...value].slice(0,4-start).forEach((d,j)=>digits[start+j].value=d);syncDigits();digits[Math.min(3,start+value.length)].focus()});
+    input.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!input.value&&i>0){e.preventDefault();digits[i-1].value='';digits[i-1].focus();syncDigits()}else if(e.key==='ArrowLeft'&&i>0){e.preventDefault();digits[i-1].focus()}else if(e.key==='ArrowRight'&&i<3){e.preventDefault();digits[i+1].focus()}});
+  });
+  const renew=(clear=true)=>{box.dataset.code=makeCode();display.textContent=box.dataset.code;verify.value='';digits.forEach(x=>x.value='');if(clear)verifyError.textContent=''};renew();
   const normalize=()=>{const v=toLatinDigits(verify.value).replace(/\D/g,'').slice(0,4);if(verify.value!==v)verify.value=v;return v};
   verify.addEventListener('input',()=>{normalize();verifyError.textContent=''});verify.addEventListener('paste',()=>setTimeout(normalize,0));
-  refreshCode.addEventListener('click',()=>{renew();verify.focus({preventScroll:true})});
+  refreshCode.addEventListener('click',()=>{renew();focusDigit()});
   toggle.addEventListener('click',()=>{const showing=password.type==='text';password.type=showing?'password':'text';toggle.innerHTML=showing?EYE_ICON:EYE_OFF_ICON;toggle.title=showing?'نمایش رمز عبور':'مخفی کردن رمز عبور';toggle.setAttribute('aria-label',toggle.title);password.focus()});
   form.addEventListener('submit',async event=>{
     event.preventDefault();event.stopImmediatePropagation();
     if(form.dataset.busy==='1')return;
-    const entered=normalize();if(entered!==box.dataset.code){renew(false);verifyError.textContent='کد تأیید صحیح نیست. کد جدید را وارد کنید.';verify.focus({preventScroll:true});return}
+    const entered=normalize();if(entered!==box.dataset.code){renew(false);verifyError.textContent='کد تأیید صحیح نیست. کد جدید را وارد کنید.';focusDigit();return}
     const btn=form.querySelector('button[type="submit"]'),error=q('#loginError');
     form.dataset.busy='1';btn.disabled=true;btn.textContent='در حال ورود…';error.textContent='';verifyError.textContent='';
     try{
@@ -93,3 +101,4 @@ function install(){
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
+

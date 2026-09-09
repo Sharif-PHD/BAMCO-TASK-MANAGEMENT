@@ -211,6 +211,7 @@
   }
 
   function showWelcomePage(){
+    if(window.bamcoOpenHomeWelcome){window.bamcoOpenHomeWelcome();return}
     const app=q('#appView');if(!app||app.classList.contains('hidden'))return;
     const view=ensureWelcomeView();if(!view)return;
     qa('.workspace>.view').forEach(v=>v.classList.add('hidden'));
@@ -305,3 +306,4 @@
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
+
