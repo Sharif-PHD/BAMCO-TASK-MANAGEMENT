@@ -24,8 +24,8 @@ Deno.serve(async req=>{
   const {data:{user}}=await userClient.auth.getUser()
   if(!user)return reply({error:'نشست کاربری معتبر نیست.'},401)
   const admin=createClient(url,serviceKey,{auth:{persistSession:false}})
-  const {data:profile}=await admin.from('profiles').select('role').eq('id',user.id).maybeSingle()
-  if(profile?.role!=='manager')return reply({error:'فقط مدیر مجاز به ارسال ایمیل است.'},403)
+  const {data:profile}=await admin.from('profiles').select('role,active').eq('id',user.id).maybeSingle()
+  if(profile?.role!=='manager'||!profile.active)return reply({error:'فقط مدیر فعال مجاز به ارسال ایمیل است.'},403)
   const {batch_id}=await req.json().catch(()=>({}))
   if(!batch_id)return reply({error:'شناسه بسته پیام الزامی است.'},400)
   const {data:deliveries,error}=await admin.from('message_deliveries').select('id,thread_key,attempt_count,message_snapshots(*)').eq('batch_id',batch_id).eq('channel','email').in('status',['queued','failed']).lt('attempt_count',3)
@@ -38,8 +38,8 @@ Deno.serve(async req=>{
       if(!snapshot?.recipient_email)throw new Error('ایمیل گیرنده ثبت نشده است.')
       const trackingText=`شناسه پیگیری: ${delivery.thread_key}`
       const finalText=String(snapshot.final_text||'')
-      const html=`<div dir="rtl" style="font-family:Tahoma;line-height:2"><p>${escapeHtml(finalText).replaceAll('\n','<br>')}</p><hr><small>${escapeHtml(trackingText)}</small></div>`
-      const response=await fetch('https://api.mailerino.com/v1/send',{method:'POST',headers:{Authorization:`Bearer ${mailerinoKey}`,'Content-Type':'application/json'},body:JSON.stringify({from:emailFrom,to:[snapshot.recipient_email],cc:snapshot.cc_emails||[],replyTo,subject:`${snapshot.subject} [${delivery.thread_key}]`,text:`${finalText}\n\n${trackingText}`,html})})
+      const html=`<div dir="rtl" style="font-family:'B Nazanin',Tahoma,sans-serif;line-height:2;text-align:right"><p>${escapeHtml(finalText).replaceAll('\n','<br>')}</p><hr><small>${escapeHtml(trackingText)}</small></div>`
+      const response=await fetch('https://api.mailerino.com/v1/send',{method:'POST',headers:{Authorization:`Bearer ${mailerinoKey}`,'Content-Type':'application/json'},body:JSON.stringify({from:emailFrom,to:snapshot.recipient_email,cc:snapshot.cc_emails||[],replyTo,subject:`${snapshot.subject} [${delivery.thread_key}]`,text:`${finalText}\n\n${trackingText}`,html})})
       const result=await response.json().catch(()=>({}))
       if(!response.ok)throw new Error(result?.message||result?.error||`Mailerino ${response.status}`)
       await admin.from('message_deliveries').update({status:'sent',provider_message_id:result.id||result.messageId||null,sent_at:new Date().toISOString()}).eq('id',delivery.id);sent++

@@ -1,12 +1,13 @@
 /* Live chat UI, using the existing thread/message APIs. Files use a private bucket. */
 (()=>{
 'use strict';
-const LIMIT=5*1024*1024,FILE='BAMCO_ATTACHMENT_V1:',STICKER='BAMCO_STICKER_V1:',esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const qa=(s,r=document)=>[...r.querySelectorAll(s)],LIMIT=5*1024*1024,FILE='BAMCO_ATTACHMENT_V1:',STICKER='BAMCO_STICKER_V1:',esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const avatar='<span class="chat-avatar" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg></span>';
 const fileAllowed=file=>!!file&&file.size>0&&file.size<=LIMIT;
 if(typeof module!=='undefined'&&module.exports)module.exports={fileAllowed,LIMIT};
 if(typeof document==='undefined')return;
 let active=null;
+const directory=async()=>{try{return await rpc('chat_directory_v2',{})}catch{return await rpc('chat_directory',{})}};
 function summary(body){if(body?.startsWith(FILE)){try{return JSON.parse(body.slice(FILE.length)).name}catch{return'فایل'}}if(body?.startsWith(STICKER))return'استیکر';return body||''}
 async function mount(host,{id,title,subtitle=''}){
  if(active)active.close();
@@ -26,17 +27,18 @@ async function mount(host,{id,title,subtitle=''}){
  if(meta.caption){const caption=document.createElement('div');caption.textContent=meta.caption;node.append(caption)}
  }
  async function load(manual=false){
-  if(stateUI.closed)return;try{const [messages,people]=await Promise.all([selectAll('chat_messages',`select=*&thread_id=eq.${encodeURIComponent(id)}&deleted_at=is.null&order=created_at.asc`,200),rpc('chat_directory',{})]);if(stateUI.closed||!host.isConnected)return;
+  if(stateUI.closed)return;try{const [messages,people]=await Promise.all([selectAll('chat_messages',`select=*&thread_id=eq.${encodeURIComponent(id)}&deleted_at=is.null&order=created_at.asc`,200),directory()]);if(stateUI.closed||!host.isConnected)return;
    const nearBottom=box.scrollHeight-box.scrollTop-box.clientHeight<90,oldTop=box.scrollTop,signature=JSON.stringify(messages);if(signature===stateUI.signature)return;stateUI.signature=signature;stateUI.messages=messages;stateUI.urls.forEach(URL.revokeObjectURL);stateUI.urls=[];
-   const names=Object.fromEntries(people.map(p=>[p.id,p.display_name||p.full_name||'کاربر']));box.replaceChildren();let date='';
+   const names=Object.fromEntries(people.map(p=>[p.id,p.display_name||p.full_name||'کاربر'])),profiles=Object.fromEntries(people.map(p=>[p.id,p]));box.replaceChildren();let date='';
    for(const m of messages){const day=new Date(m.created_at).toLocaleDateString('fa-IR');if(day!==date){const divider=document.createElement('div');divider.className='chat-date';divider.textContent=day;box.append(divider);date=day}
     const mine=m.sender_id===state.user.id,item=document.createElement('article');item.className='chat-bubble'+(mine?' mine':'');item.dataset.messageId=m.id;
-    item.innerHTML=`<b class="chat-sender">${esc(names[m.sender_id]||'کاربر')}</b><div class="chat-body"></div><div class="chat-bubble-meta"><time>${new Date(m.created_at).toLocaleTimeString('fa-IR',{hour:'2-digit',minute:'2-digit'})}</time><button type="button" class="message-reply">پاسخ</button>${mine?'<button type="button" class="message-delete">حذف</button>':''}</div>`;
+    item.innerHTML=`<div class="chat-author"><span class="chat-avatar" data-sender-avatar="${esc(m.sender_id)}">${esc((names[m.sender_id]||'ک').slice(0,1))}</span><b class="chat-sender">${esc(names[m.sender_id]||'کاربر')}</b></div><div class="chat-body"></div><div class="chat-bubble-meta"><time>${new Date(m.created_at).toLocaleTimeString('fa-IR',{hour:'2-digit',minute:'2-digit'})}</time><button type="button" class="message-reply">پاسخ</button>${mine?'<button type="button" class="message-delete">حذف</button>':''}</div>`;
     const parent=messages.find(x=>String(x.id)===String(m.reply_to||m.reply_to_id));if(parent){const quote=document.createElement('blockquote');quote.textContent=summary(parent.body).slice(0,180);item.querySelector('.chat-body').before(quote)}
     const body=item.querySelector('.chat-body');body.dir=/[A-Za-z]/.test(m.body||'')&&!/[\u0600-\u06ff]/.test(m.body||'')?'ltr':'rtl';if(m.body?.startsWith(FILE))attach(m,body);else if(m.body?.startsWith(STICKER)){const key=m.body.slice(STICKER.length),src=window.BAMCO_DESKTOP_ASSETS?.[key];if(src){const img=document.createElement('img');img.className='chat-sticker';img.src=src;img.alt='استیکر';body.append(img)}else body.textContent='استیکر'}else body.textContent=m.body||'';
     item.querySelector('.message-reply').onclick=()=>reply(m);const del=item.querySelector('.message-delete');if(del)del.onclick=async()=>{if(!confirm('این پیام حذف شود؟'))return;try{del.disabled=true;const result=await api(`/rest/v1/chat_messages?id=eq.${encodeURIComponent(m.id)}&sender_id=eq.${encodeURIComponent(state.user.id)}`,{method:'PATCH',body:{deleted_at:new Date().toISOString()},prefer:'return=representation'});if(!result?.length)throw Error('مجوز حذف این پیام موجود نیست.');await load(true)}catch(err){error(err.message);del.disabled=false}};
     box.append(item);
    }
+   const avatarIds=[...new Set(messages.map(m=>m.sender_id))];for(const userId of avatarIds){const path=profiles[userId]?.avatar_path;if(!path)continue;try{const res=await storage('authenticated/avatars/'+String(path).split('/').map(encodeURIComponent).join('/'));const url=URL.createObjectURL(await res.blob());stateUI.urls.push(url);qa(`[data-sender-avatar="${CSS.escape(userId)}"]`,box).forEach(el=>{el.style.backgroundImage=`url(${url})`;el.textContent='';el.classList.add('has-image')})}catch{}}
    if(!messages.length)box.innerHTML='<div class="chat-empty">'+avatar+'<strong>گفتگو از اینجا شروع می‌شود</strong><span>پیام، استیکر، عکس یا فایل تا ۵ مگابایت ارسال کنید.</span></div>';
    if(!stateUI.loaded||nearBottom||manual)box.scrollTop=box.scrollHeight;else box.scrollTop=oldTop;stateUI.loaded=true;await rpc('chat_mark_read',{p_thread_id:id});
   }catch(err){error(err.message||'پیام‌ها بارگذاری نشدند.');if(!stateUI.loaded)box.innerHTML='<div class="chat-empty">دریافت پیام‌ها انجام نشد. دکمه تازه‌سازی را بزنید.</div>'}
