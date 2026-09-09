@@ -1,9 +1,9 @@
 (()=>{
   'use strict';
-  const VERSION='20260909-stability-hotfix-2';
+  const VERSION='20260909-safe-completion-1';
   if(window.__bamcoStabilityHotfix===VERSION)return;
   window.__bamcoStabilityHotfix=VERSION;
-  document.documentElement.dataset.navigationComplete='stability-hotfix';
+  document.documentElement.dataset.navigationComplete='safe-completion';
 
   function showBackgroundError(err){
     console.error('BAMCO background refresh failed',err);
@@ -34,10 +34,25 @@
     return true;
   }
 
+  function loadRuntime(){
+    const app=document.querySelector('#appView');
+    if(!app||app.classList.contains('hidden')||window.__bamcoSafeRuntimeLoading)return;
+    window.__bamcoSafeRuntimeLoading=true;
+    const s=document.createElement('script');
+    s.src='assets/js/production-runtime.js?v=20260909-safe-1';
+    s.async=true;
+    s.onload=()=>{window.__bamcoSafeRuntimeLoaded=true};
+    s.onerror=()=>{window.__bamcoSafeRuntimeLoading=false;showBackgroundError(new Error('بارگذاری امکانات تکمیلی انجام نشد.'))};
+    document.head.appendChild(s);
+  }
+
   function install(){
     wrapEnterApp();
-    // Stability mode intentionally leaves the original navigation DOM and
-    // original tab handlers untouched. Do not rebuild or move nav buttons.
+    const app=document.querySelector('#appView');
+    if(!app)return;
+    const sync=()=>{if(!app.classList.contains('hidden'))setTimeout(loadRuntime,0)};
+    new MutationObserver(sync).observe(app,{attributes:true,attributeFilter:['class']});
+    sync();
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
