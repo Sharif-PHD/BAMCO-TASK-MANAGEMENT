@@ -38,6 +38,7 @@
   }
   window.bamcoRevealTask=id=>{const table=document.querySelector('#kanbanView table');registry.get(table)?.reveal(id)};
   function backButton(view){
+   if(window.bamcoInteriorUI){window.bamcoInteriorUI.decorateView(view);return}
    const toolbar=[...view.querySelectorAll('.task-toolbar,.vehicle-toolbar,.prod-toolbar')].find(el=>!el.closest('details,dialog,form'));
    let back=view.querySelector('.content-back');
    if(!back){back=document.createElement('button');back.type='button';back.className='content-back';back.textContent='⌂ بازگشت به خانه';back.addEventListener('click',()=>window.bamcoShowHome?.())}

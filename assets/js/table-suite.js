@@ -80,7 +80,7 @@ function install(){
   let bar=panel.querySelector(':scope>.task-toolbar,:scope>.vehicle-toolbar,:scope>.prod-toolbar,:scope>.people-actions,:scope>.manager-toolbar,:scope>.workspace-actions,:scope>.suite-toolbar');
   if(!bar){bar=document.createElement('div');bar.className='suite-toolbar';head.after(bar)}
   const search=head.querySelector('input.search,input[type=search],.toolbar-search');if(search)bar.append(search);
-  if(!bar.querySelector('.content-back')){const home=document.createElement('button');home.type='button';home.className='content-back ghost';home.textContent='⌂ خانه';home.addEventListener('click',()=>window.bamcoShowHome?.());bar.prepend(home)}
+  if(!window.bamcoInteriorUI&&!bar.querySelector('.content-back')){const home=document.createElement('button');home.type='button';home.className='content-back ghost';home.textContent='⌂ خانه';home.addEventListener('click',()=>window.bamcoShowHome?.());bar.prepend(home)}
   return bar;
  }
  function toolbars(){
