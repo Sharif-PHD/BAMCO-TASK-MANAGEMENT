@@ -58,8 +58,8 @@
   }
   function orderToolbars(){
     const order=(toolbar,selectors)=>{if(!toolbar)return;selectors.forEach(s=>{const el=q(s,toolbar);if(el)toolbar.appendChild(el)})};
-    order(q('#kanbanView .toolbar'),['#addTaskBtn','.search-toggle','#kanbanSearch','[data-import-tasks]','[data-export-tasks]','#kanbanEditBtn','#kanbanArchiveBtn','#kanbanDeleteBtn']);
-    order(q('#archiveView .toolbar'),['.search-toggle','#archiveSearch','[data-import-tasks]','[data-export-tasks]','#archiveEditBtn','#archiveRestoreBtn','#archiveDeleteBtn']);
+    order(q('#kanbanView .task-toolbar'),['#addTaskBtn','.task-search-toggle','#kanbanSearch','#importBtn','#kanbanExportBtn','#kanbanEditBtn','#kanbanArchiveBtn','#kanbanDeleteBtn']);
+    order(q('#archiveView .task-toolbar'),['.task-search-toggle','#archiveSearch','#archiveImportBtn','#archiveExportBtn','#archiveEditBtn','#archiveRestoreBtn','#archiveDeleteBtn']);
     qa('.vehicle-toolbar').forEach(t=>order(t,['.vehicle-add','.vehicle-search-toggle','.vehicle-search','.vehicle-import','.vehicle-export','.vehicle-edit','.vehicle-delete','.vehicle-upload','.vehicle-blank']));
   }
   function normalizeViews(){
