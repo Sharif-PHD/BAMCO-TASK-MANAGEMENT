@@ -20,13 +20,14 @@ function install(){
  new MutationObserver(syncGroups).observe(nav,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});syncGroups();
  // Section headings are non-interactive. Only existing subpage buttons navigate.
  const dialog=document.createElement('dialog');dialog.className='home-welcome-dialog';dialog.setAttribute('aria-labelledby','homeWelcomeTitle');dialog.innerHTML='<button class="welcome-dismiss" type="button" aria-label="بستن خوشامدگویی" autofocus><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button><div class="home-welcome-copy"><p class="welcome-person"></p><h2 id="homeWelcomeTitle">به سامانه مدیریت، پایش و پیگیری امور خوش آمدید</h2></div><img class="home-sticker female" alt="استیکر زن در وضعیت مطلوب"><img class="home-sticker male" alt="استیکر مرد در وضعیت مطلوب">';document.body.append(dialog);
- let welcomeStickerUrls=[];
- async function stickers(){
+ let welcomeStickerUrls=[],welcomeStickerPromise=null,welcomeStickerReady=false;
+ async function loadWelcomeStickers(){
   const fallback=window.BAMCO_DESKTOP_ASSETS?.yellow_happy;for(const gender of ['female','male']){const image=dialog.querySelector('.'+gender);if(fallback&&!image.src)image.src=fallback}
   if(typeof state==='undefined'||!state.token||typeof select!=='function')return;
-  try{const sets=await select('sticker_sets','active=eq.true&select=id&order=created_at.desc&limit=1'),set=sets[0];if(!set)return;const rows=await select('stickers',`set_id=eq.${set.id}&state_key=eq.state1&gender=in.(female,male)&select=gender,storage_path`);if(rows.length<2)return;welcomeStickerUrls.forEach(URL.revokeObjectURL);welcomeStickerUrls=[];for(const row of rows){const path=String(row.storage_path).split('/').map(encodeURIComponent).join('/'),res=await fetch(`${SB_URL}/storage/v1/object/authenticated/stickers/${path}`,{headers:{apikey:SB_KEY,Authorization:`Bearer ${state.token}`},cache:'no-store'});if(!res.ok)continue;const url=URL.createObjectURL(await res.blob());welcomeStickerUrls.push(url);const image=dialog.querySelector('.'+row.gender);if(image)image.src=url}}catch(err){console.error('welcome-stickers',err)}
+  try{const sets=await select('sticker_sets','active=eq.true&select=id&order=created_at.desc&limit=1'),set=sets[0];if(!set)return;const rows=await select('stickers',`set_id=eq.${set.id}&state_key=eq.state1&gender=in.(female,male)&select=gender,storage_path`);if(rows.length<2)return;const loaded=await Promise.all(rows.map(async row=>{const path=String(row.storage_path).split('/').map(encodeURIComponent).join('/'),res=await fetch(`${SB_URL}/storage/v1/object/authenticated/stickers/${path}`,{headers:{apikey:SB_KEY,Authorization:`Bearer ${state.token}`},cache:'force-cache'});if(!res.ok)throw new Error('sticker '+row.gender);return{gender:row.gender,url:URL.createObjectURL(await res.blob())}}));welcomeStickerUrls.forEach(URL.revokeObjectURL);welcomeStickerUrls=loaded.map(x=>x.url);for(const item of loaded){const image=dialog.querySelector('.'+item.gender);if(image)image.src=item.url}welcomeStickerReady=loaded.length>=2}catch(err){console.error('welcome-stickers',err)}
  }
- stickers();window.addEventListener('bamco-stickers-ready',stickers);
+ function stickers(force=false){if(welcomeStickerReady&&!force)return Promise.resolve();if(!welcomeStickerPromise||force)welcomeStickerPromise=loadWelcomeStickers().finally(()=>{welcomeStickerPromise=null});return welcomeStickerPromise}
+ window.bamcoPrepareWelcomeStickers=()=>stickers();stickers();window.addEventListener('bamco-stickers-ready',()=>stickers(true));
  function showHome(){
   if(app.classList.contains('hidden'))return;
   workspace.querySelectorAll(':scope > .view').forEach(v=>v.classList.toggle('hidden',v!==home));
@@ -39,7 +40,7 @@ function install(){
  new MutationObserver(syncMode).observe(home,{attributes:true,attributeFilter:['class']});
  window.bamcoShowHome=showHome;
  let welcomed=false;
- window.bamcoOpenHomeWelcome=()=>{showHome();if(welcomed||app.classList.contains('hidden'))return;if(typeof state!=='undefined'&&state.profile?.must_change_password)return;welcomed=true;dialog.querySelector('.welcome-person').textContent=(q('#userName')?.textContent||'همکار')+' عزیز';stickers();dialog.showModal()};
+ window.bamcoOpenHomeWelcome=async()=>{showHome();if(welcomed||app.classList.contains('hidden'))return;if(typeof state!=='undefined'&&state.profile?.must_change_password)return;welcomed=true;dialog.querySelector('.welcome-person').textContent=(q('#userName')?.textContent||'همکار')+' عزیز';await stickers();dialog.showModal()};
  dialog.querySelector('.welcome-dismiss').addEventListener('click',()=>dialog.close());
  dialog.addEventListener('close',()=>home.querySelector('h2').focus({preventScroll:true}));
  top.querySelector('.home-return').addEventListener('click',()=>{showHome();home.querySelector('h2').focus({preventScroll:true})});

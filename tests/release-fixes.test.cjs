@@ -36,6 +36,8 @@ test('welcome uses the active database sticker pair and home is deduplicated',()
   assert.match(js,/active=eq\.true/);
   assert.match(js,/state_key=eq\.state1/);
   assert.match(js,/const routes=new Set/);
+  assert.match(js,/bamcoPrepareWelcomeStickers/);
+  assert.match(js,/await stickers\(\)/);
 });
 
 test('all data tables default to compact multi-selection behavior',()=>{
@@ -72,9 +74,27 @@ test('chat exposes requested messaging controls',()=>{
 });
 
 test('dashboard and Excel formatting remain responsive and conditional',()=>{
-  assert.match(read('assets/js/app.js'),/Math\.max\(320,canvas\.parentElement\.clientWidth\)/);
+  const app=read('assets/js/app.js');
+  assert.match(app,/Math\.max\(320,canvas\.parentElement\.clientWidth\)/);
+  assert.match(app,/درخواست‌های منتظر بررسی/);
+  assert.match(app,/درخواست تعریف وظیفه/);
+  assert.match(app,/کارهای بدون زمان‌بندی/);
   const excel=read('assets/js/styled-excel.js');
   assert.match(excel,/rightToLeft="1"/);
   assert.match(excel,/conditionalFormatting/);
   assert.match(excel,/B Nazanin/);
+});
+
+test('approval routing skips supervisor self-approval and exposes only the active stage',()=>{
+  const sql=read('supabase/migrations/20260910_request_routing_status.sql');
+  assert.match(sql,/approval_rule='any'/);
+  assert.match(sql,/approver_id=r\.requested_by/);
+  assert.match(sql,/s\.stage_no=r\.current_stage/);
+  assert.match(sql,/request_routing_status/);
+});
+
+test('task history omits field and path columns',()=>{
+  const js=read('assets/js/tab-workspace.js');
+  assert.doesNotMatch(js,/\['زمان','عامل','فیلد'/);
+  assert.doesNotMatch(js,/,'مسیر','درخواست'/);
 });

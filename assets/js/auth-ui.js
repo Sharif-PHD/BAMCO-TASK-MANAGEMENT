@@ -93,6 +93,8 @@ function install(){
       state.token=auth.access_token;state.user=auth.user;
       const profiles=await requestJson(`/rest/v1/profiles?id=eq.${encodeURIComponent(state.user.id)}&select=*`,{auth:true,timeout:12000});
       if(!profiles?.length)throw new Error('پروفایل کاربر پیدا نشد.');
+      state.profile=profiles[0];
+      await window.bamcoPrepareWelcomeStickers?.();
       exposeApp(profiles[0]);
     }catch(err){state.token='';state.user=null;error.textContent=err?.message||'ورود انجام نشد. دوباره تلاش کنید.';renew(false)}
     finally{form.dataset.busy='0';btn.disabled=false;btn.textContent='ورود به سامانه'}
@@ -101,4 +103,3 @@ function install(){
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
-

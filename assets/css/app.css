@@ -99,5 +99,5 @@ html[lang="fa"] [dir="ltr"],
 html[lang="fa"] input[type="email"],
 html[lang="fa"] input[type="url"],
 html[lang="fa"] input[type="password"]{font-family:"Times New Roman",Times,serif!important}
-#loginView .brand-lockup img{display:none!important}
-#loginView .brand-lockup{margin-top:2px;margin-bottom:18px}
+#loginView .brand-lockup img{display:block!important}
+#loginView .brand-lockup{margin-top:0;margin-bottom:18px}
