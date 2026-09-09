@@ -80,3 +80,26 @@ inserted to make these areas look complete.
 No claim of successful live delivery, upload, deletion, or all-tab browser operation
 is made. Keep this branch as a draft until the server and remaining features are
 completed and verified.
+
+## 2026-09-09 follow-up: entry, forms, and password regression checks
+
+- Added a pre-login management selector with company logo, three square cards,
+  and disabled coming-soon process/quality departments.
+- Reduced the date picker to 330px and added expandable status/priority creation
+  forms backed by canonical option tables (live database constraints unverified).
+- People refresh now updates the owner source. Managers see all people; inactive
+  people remain labelled and unavailable for new assignment. Owners remain limited
+  to themselves. This frontend behavior is not an RLS security test.
+- Removed duplicate message/login report navigation entries; equivalent records
+  remain available through Sent messages and Login activity.
+- Fixed password update ordering: Auth must succeed before clearing the required
+  change flag. Captured the form before awaiting so resetting it does not access
+  a cleared event.currentTarget. Mandatory dialog Escape is blocked in the UI.
+- Three behavioral regression tests pass: successful change, failed Auth update,
+  and failed profile update (`node --test tests/password-change.test.cjs`).
+- Six changed JavaScript files passed syntax checking.
+- Opened the public live login in the browser. No authenticated manager/owner
+  session was available; the live site is still main, not this draft branch.
+- No passwords have been reset to 123456. Supabase execution tools are still not
+  exposed. Bulk provisioning, server-enforced first-login password changes,
+  database/storage role tests and every-tab live tests remain blocked/unverified.

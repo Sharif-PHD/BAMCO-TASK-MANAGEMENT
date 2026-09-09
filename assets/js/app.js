@@ -115,7 +115,7 @@ async function enterApp(){
 }
 async function refresh(){
   try{
-    state.profiles=isManager()?await select('profiles','select=id,email,full_name,display_name,gender,excel_name,role,active,default_message_channel&active=eq.true&order=full_name'):[state.profile];
+    state.profiles=isManager()?await select('profiles','select=id,email,full_name,display_name,gender,excel_name,role,active,default_message_channel&order=full_name'):[state.profile];
     state.tasks=await selectAll('task_status_view','select=*&order=id.desc');
     state.requests=await select('change_requests',isManager()?'select=*&request_status=in.(pending,in_review,needs_revision)&order=created_at.asc':'select=*&request_status=in.(pending,in_review,needs_revision)&order=created_at.asc');
     state.requestHistory=await select('change_requests','select=*&request_status=in.(approved,rejected,cancelled)&order=created_at.desc');
@@ -156,7 +156,7 @@ $('#nav').addEventListener('click',e=>{if(window.matchMedia('(max-width:760px)')
 document.addEventListener('pointerdown',e=>{if(!window.matchMedia('(max-width:760px)').matches)return;const sidebar=$('#sidebar');if(!sidebar.classList.contains('collapsed')&&!sidebar.contains(e.target))sidebar.classList.add('collapsed')});
 $('#logoutBtn').addEventListener('click',()=>{showLogin();$('#loginForm').reset();$('#email').focus()});$$('[data-close]').forEach(b=>b.addEventListener('click',()=>document.getElementById(b.dataset.close).close()));
 
-function fillOwners(selected){const sel=$('#taskForm [name=owner_id]');const source=isManager()?state.profiles:[state.profile];sel.innerHTML=source.map(p=>`<option value="${p.id}" ${p.id===selected?'selected':''}>${safe(p.full_name||p.email)}</option>`).join('');sel.disabled=!isManager()}
+function fillOwners(selected){const sel=$('#taskForm [name=owner_id]');const source=isManager()?state.profiles:[state.profile];sel.innerHTML=source.map(p=>`<option value="${p.id}" ${p.id===selected?'selected':''} ${p.active===false&&p.id!==selected?'disabled':''}>${safe(p.display_name||p.full_name||p.email)}${p.active===false?' (غیرفعال)':''}</option>`).join('');sel.disabled=!isManager()}
 function openTask(task=null){
   state.editing=task;
   const f=$('#taskForm');
@@ -239,7 +239,7 @@ async function review(decision){try{const result=await rpc('review_request_stage
 window.reviseRequest=id=>{const r=state.requests.find(x=>String(x.id)===String(id));if(!r)return;state.resubmitting=r;const task=state.tasks.find(t=>String(t.id)===String(r.task_id))||{};openTask({...task,...r.proposed_data,owner_id:state.profile.id})};
 $('#approveBtn').addEventListener('click',()=>review('approved'));$('#rejectBtn').addEventListener('click',()=>review('rejected'));$('#revisionBtn').addEventListener('click',()=>review('needs_revision'));$('#editRequestBtn').addEventListener('click',()=>{const r=state.reviewing,task=state.tasks.find(t=>String(t.id)===String(r.task_id))||{};state.reviewEdit={...r,managerNote:$('#managerNote').value.trim()};$('#reviewDialog').close();openTask({...task,...r.proposed_data,owner_id:r.proposed_data?.owner_id||task.owner_id||r.requested_by})});
 
-$('#passwordForm').addEventListener('submit',async e=>{e.preventDefault();const p=$('#newPassword').value,c=$('#confirmPassword').value,wasRequired=!!state.profile.must_change_password;$('#passwordError').textContent='';if(p!==c){$('#passwordError').textContent='تکرار رمز عبور یکسان نیست.';return}const profileUpdate={must_change_password:false,updated_at:new Date().toISOString()};try{await update('profiles',`id=eq.${state.profile.id}`,profileUpdate);await api('/auth/v1/user',{method:'PUT',body:{password:p}});state.profile.must_change_password=false;e.currentTarget.reset();$('#passwordDialog').close();toast('رمز عبور با موفقیت تغییر کرد.');if(wasRequired)showView('kanban')}catch(err){if(wasRequired)try{await update('profiles',`id=eq.${state.profile.id}`,{must_change_password:true,updated_at:new Date().toISOString()})}catch{}const message=err.message==='New password should be different from the old password.'?'رمز جدید باید با رمز قبلی متفاوت باشد.':err.message;$('#passwordError').textContent=message}});
+$('#passwordForm').addEventListener('submit',async e=>{e.preventDefault();const form=e.currentTarget;const p=$('#newPassword').value,c=$('#confirmPassword').value,wasRequired=!!state.profile.must_change_password;$('#passwordError').textContent='';if(p!==c){$('#passwordError').textContent='تکرار رمز عبور یکسان نیست.';return}const profileUpdate={must_change_password:false,updated_at:new Date().toISOString()};try{await api('/auth/v1/user',{method:'PUT',body:{password:p}});await update('profiles',`id=eq.${state.profile.id}`,profileUpdate);state.profile.must_change_password=false;form.reset();$('#passwordDialog').close();toast('رمز عبور با موفقیت تغییر کرد.');if(wasRequired)showView('kanban')}catch(err){if(wasRequired)try{await update('profiles',`id=eq.${state.profile.id}`,{must_change_password:true,updated_at:new Date().toISOString()})}catch{}const message=err.message==='New password should be different from the old password.'?'رمز جدید باید با رمز قبلی متفاوت باشد.':err.message;$('#passwordError').textContent=message}});
 
 // ورود همیشه باید با تأیید رمز انجام شود؛ نشست قبلی عمداً بازیابی نمی‌شود.
 showLogin();
@@ -802,7 +802,7 @@ showLogin();
 
   refresh=async function(){
     try{
-      const profilesPromise=isManager()?select('profiles','select=id,email,full_name,display_name,gender,excel_name,role,active,default_message_channel&active=eq.true&order=full_name'):Promise.resolve([state.profile]);
+      const profilesPromise=isManager()?select('profiles','select=id,email,full_name,display_name,gender,excel_name,role,active,default_message_channel&order=full_name'):Promise.resolve([state.profile]);
       const tasksPromise=selectAll('task_status_view','select=*&order=id.desc');
       const requestsPromise=selectAll('change_requests','select=*&request_status=in.(pending,in_review,needs_revision)&order=created_at.asc');
       const historyPromise=selectAll('change_requests','select=*&request_status=in.(approved,rejected,cancelled)&order=created_at.desc');
