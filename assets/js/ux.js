@@ -277,10 +277,11 @@
     const view=q(`#${viewId}`);if(!view)return;
     view.querySelectorAll('tbody tr[data-task-id]').forEach(row=>{
       const cells=row.children;
-      if(cells[0])cells[0].textContent=(cells[0].textContent||'').replace(/^\s*#\s*/,'').trim();
-      if(cells[11]){
-        const text=(cells[11].textContent||'').trim();
-        cells[11].textContent=text;
+      const offset=cells[0]?.classList.contains('unified-select-cell')?1:0;
+      if(cells[offset])cells[offset].textContent=(cells[offset].textContent||'').replace(/^\s*#\s*/,'').trim();
+      if(cells[offset+11]){
+        const text=(cells[offset+11].textContent||'').trim();
+        cells[offset+11].textContent=text;
       }
     });
   }
