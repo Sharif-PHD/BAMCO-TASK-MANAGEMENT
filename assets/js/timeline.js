@@ -16,8 +16,8 @@
   function ownerNameLocal(t){try{return typeof ownerName==='function'?ownerName(t):(appState()?.profiles||[]).find(p=>p.id===t.owner_id)?.full_name||'—'}catch{return'—'}}
   function taskId(t){try{return typeof displayId==='function'?displayId(t):(t.legacy_id||t.id)}catch{return t.legacy_id||t.id}}
   function isWaiting(t){return String(t.status||'').trim()==='منتظر پاسخ'}
-  function temporalState(t){if(isWaiting(t)||!t.due_date||t.status==='انجام شده')return 'فاقد شرایط دیرکرد';const now=new Date().toISOString().slice(0,10);if(t.due_date<now)return 'دیرکرد';const limit=new Date();limit.setDate(limit.getDate()+Math.max(0,Number(t.reminder_days)||0));return t.due_date<=limit.toISOString().slice(0,10)?'هشدار':'عادی'}
-  function colorFor(t){return isWaiting(t)?'#8b949e':priorityColors[String(t.priority||'').trim()]||'#6f8f84'}
+  function temporalState(t){if(window.bamcoTaskPresentation)return window.bamcoTaskPresentation(t).temporal;if(isWaiting(t)||!t.due_date||t.status==='انجام شده')return 'فاقد شرایط دیرکرد';const now=new Date().toISOString().slice(0,10);if(t.due_date<now)return 'دیرکرد';const limit=new Date();limit.setDate(limit.getDate()+Math.max(0,Number(t.reminder_days)||0));return t.due_date<=limit.toISOString().slice(0,10)?'هشدار':'عادی'}
+  function colorFor(t){if(window.bamcoTaskPresentation)return window.bamcoTaskPresentation(t).color;return isWaiting(t)?'#8b949e':priorityColors[String(t.priority||'').trim()]||'#6f8f84'}
   function toParts(iso){try{return typeof persianParts==='function'?persianParts(iso):null}catch{return null}}
   function isoFor(y,m,d){try{return typeof jalaliToISO==='function'?jalaliToISO(y,m,d):null}catch{return null}}
   function daysInMonth(y,m){try{return typeof daysInJalaliMonth==='function'?daysInJalaliMonth(y,m):(m<=6?31:m<=11?30:29)}catch{return m<=6?31:m<=11?30:29}}
