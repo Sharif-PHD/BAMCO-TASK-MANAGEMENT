@@ -1,0 +1,120 @@
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const {JSDOM,VirtualConsole,requestInterceptor}=require('jsdom');
+const root=path.join(__dirname,'..');
+const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+async function until(check){for(let i=0;i<100;i++){if(check())return;await pause(30)}assert.fail('Timed out waiting for the actual UI handler');}
+
+// Run the shipped script order against an isolated, in-memory API. No request
+// (including authentication, user deletion or session revocation) reaches a server.
+async function fixture(){
+ const profiles=[{id:'test-manager',full_name:'مدیر آزمایشی',display_name:'مدیر آزمایشی',email:'manager@example.test',role:'manager',active:true},{id:'test-owner',full_name:'متولی آزمایشی',email:'owner@example.test',role:'owner',active:true}];
+ const sessions=[{id:'test-session',user_id:'test-owner',login_at:new Date().toISOString(),last_activity_at:new Date().toISOString()}];
+ const calls=[],errors=[],downloads=[],observers=[],blobs=new Map();let failSave=false;
+ const vc=new VirtualConsole();vc.on('jsdomError',e=>errors.push(e.message));vc.on('error',(...args)=>errors.push(args.map(String).join(' ')));
+ const local=requestInterceptor(request=>{
+  const url=new URL(request.url);if(url.hostname!=='bamco.test')return new Response('',{status:404});
+  if(url.pathname.endsWith('.css'))return new Response('');
+  try{return new Response(fs.readFileSync(path.join(root,url.pathname)),{headers:{'Content-Type':'application/javascript'}})}catch{return new Response('',{status:404})}
+ });
+ const html=fs.readFileSync(path.join(root,'index.html'),'utf8').replace(/<script\b[^>]*src="assets\/js\/(?:auth-ui|department-entry)\.js[^>]*><\/script>/g,'');
+ const dom=new JSDOM(html,{url:'https://bamco.test/',runScripts:'dangerously',resources:{interceptors:[local]},pretendToBeVisual:true,virtualConsole:vc,beforeParse(w){
+  w.Response=Response;w.AbortController=AbortController;w.Blob=Blob;w.TextEncoder=TextEncoder;
+  w.fetch=async(input,init={})=>{
+   const url=new URL(typeof input==='string'?input:input.url,w.location.href),endpoint=url.pathname.split('/').pop(),method=init.method||'GET',body=init.body?JSON.parse(init.body):null;
+   calls.push({endpoint,method,body});let data=[],status=200;
+   if(endpoint==='profiles')data=url.searchParams.has('id')?profiles.filter(p=>'eq.'+p.id===url.searchParams.get('id')):profiles;
+   if(endpoint==='user_sessions')data=sessions;
+   if(endpoint==='admin-users'){
+    if(failSave){status=400;data={error:'خطای آزمایشی ذخیره'}}
+    else if(method==='DELETE'){profiles.splice(profiles.findIndex(p=>p.id===body.user_id),1);data={ok:true}}
+    else{const existing=profiles.find(p=>p.id===body.user_id);if(existing)Object.assign(existing,body);else profiles.push({id:'test-new',...body});data={ok:true}}
+   }
+   if(endpoint==='revoke_user_session'){sessions.find(s=>s.id===body.p_session_id).revoked_at=new Date().toISOString();data=true}
+   if(endpoint==='chat_ensure_public')data='test-room';
+   if(endpoint==='chat_directory')data=profiles;
+   if(endpoint==='session-audit')data={session:{id:'test-current-session'},valid:true};
+   return new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json'}});
+  };
+  const NativeObserver=w.MutationObserver;w.MutationObserver=class extends NativeObserver{constructor(cb){super(cb);observers.push(this)}};
+  w.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}});w.ResizeObserver=class{observe(){}disconnect(){}};
+  w.HTMLDialogElement.prototype.showModal=function(){this.open=true};
+  w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'))};
+  w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({measureText:()=>({width:20}),createLinearGradient:()=>({addColorStop(){}})},{get:(o,k)=>o[k]||(()=>{})});
+  w.HTMLElement.prototype.scrollTo=function(){};w.confirm=()=>true;
+  w.URL.createObjectURL=blob=>{const id='blob:test-'+blobs.size;blobs.set(id,blob);return id};w.URL.revokeObjectURL=()=>{};
+  w.HTMLAnchorElement.prototype.click=function(){downloads.push({name:this.download,blob:blobs.get(this.href)})};
+ }});
+ const w=dom.window,d=w.document;await new Promise(resolve=>w.addEventListener('load',resolve,{once:true}));
+ w.__fixtureProfile=profiles[0];await w.eval("state.token='test-token';state.user={id:'test-manager'};state.profile=window.__fixtureProfile;enterApp()");
+ d.body.classList.remove('department-pending');d.querySelector('#departmentEntry')?.setAttribute('hidden','');w.bamcoShowHome();await pause(250);d.querySelector('.home-welcome-dialog')?.close();
+ return{w,d,profiles,calls,errors,downloads,setFailSave:v=>failSave=v,
+  async open(id){d.querySelector('#nav [data-view="'+id+'"]').click();await until(()=>!d.querySelector('#'+id+'View').classList.contains('hidden'));await pause(120)},
+  async dispose(){observers.forEach(o=>o.disconnect());await pause(50);observers.forEach(o=>o.disconnect());w.close()}
+ };
+}
+
+test('management pages: shipped click handlers, toolbars, Excel downloads and return navigation',async t=>{
+ const f=await fixture(),{w,d}=f;t.after(()=>f.dispose());
+ await t.test('people selection, add, edit, validation feedback, cancel and delete',async()=>{
+  await f.open('people');await until(()=>d.querySelectorAll('#peopleBody tr[data-id]').length===2);
+  assert(d.querySelector('#editPersonBtn').disabled);assert(d.querySelector('#deletePersonBtn').disabled);
+  const row=d.querySelector('#peopleBody [data-id="test-owner"]');row.click();row.click();
+  assert.equal(d.querySelector('#peopleBody [data-id="test-owner"]'),row,'click must preserve the row for double-click editing');
+  assert.equal(row.getAttribute('aria-selected'),'true');assert(!d.querySelector('#editPersonBtn').disabled);
+  row.dispatchEvent(new w.MouseEvent('dblclick',{bubbles:true}));assert(d.querySelector('#personDialog').open);
+  const form=d.querySelector('#personForm');assert.equal(form.elements.full_name.value,'متولی آزمایشی');
+  d.querySelector('[data-person-close]').click();assert(!d.querySelector('#personDialog').open);
+  d.querySelector('#editPersonBtn').click();form.elements.full_name.value='متولی ویرایش‌شده';form.requestSubmit();
+  await until(()=>!d.querySelector('#personDialog').open);await until(()=>d.querySelector('#peopleBody').textContent.includes('متولی ویرایش‌شده'));
+  assert.equal(f.calls.filter(c=>c.endpoint==='admin-users').at(-1).body.user_id,'test-owner');
+  d.querySelector('#addPersonBtn').click();form.elements.full_name.value='فرد جدید';f.setFailSave(true);form.requestSubmit();
+  await until(()=>d.querySelector('#personError').textContent);assert(d.querySelector('#personDialog').open);assert(!form.querySelector('[type=submit]').disabled);
+  f.setFailSave(false);form.requestSubmit();await until(()=>!d.querySelector('#personDialog').open);await until(()=>d.querySelector('#peopleBody [data-id="test-new"]'));
+  assert.equal(f.profiles.find(p=>p.id==='test-new').messaging_enabled,false);
+  d.querySelector('#peopleBody [data-id="test-new"]').click();d.querySelector('#deletePersonBtn').click();
+  await until(()=>!d.querySelector('#peopleBody [data-id="test-new"]'));assert(d.querySelector('#deletePersonBtn').disabled);
+  assert.equal(f.calls.filter(c=>c.endpoint==='admin-users'&&c.method==='DELETE').length,1);
+ });
+ await t.test('one home button and a working full Excel export beside people actions',async()=>{
+  const view=d.querySelector('#peopleView'),back=view.querySelector('.content-back'),exportButton=view.querySelector('[data-management-export]');
+  assert.equal(view.querySelectorAll('.content-back,[data-empty-home]').length,1);assert.equal(view.querySelector('.bamco-page-heading button'),null);
+  assert.equal(back.parentElement,exportButton.parentElement);assert.equal(exportButton.parentElement,d.querySelector('#addPersonBtn').parentElement);
+  assert.equal(view.querySelector('.suite-table-options [data-suite-export]'),null);
+  d.querySelector('#peopleSearch').value='مدیر';d.querySelector('#peopleSearch').dispatchEvent(new w.Event('input',{bubbles:true}));
+  assert.equal(d.querySelectorAll('#peopleBody tr[data-id]').length,1);exportButton.click();await until(()=>f.downloads.length===1);
+  const bytes=await f.downloads[0].blob.arrayBuffer(),book=w.XLSX.read(new Uint8Array(bytes),{type:'array'}),rows=w.XLSX.utils.sheet_to_json(book.Sheets[book.SheetNames[0]],{header:1});
+  assert.equal(rows.length,3,'full export must include users outside the search');assert(rows.flat().includes('متولی ویرایش‌شده'));assert.match(f.downloads[0].name,/\.xlsx$/);
+  back.click();assert(!d.querySelector('#homeView').classList.contains('hidden'));assert(view.classList.contains('hidden'));assert.equal(w.eval('state.view'),'home');
+ });
+ for(const id of ['loginActivity','activeSessions'])await t.test(id+': no metric cards or filtered export; refresh, Excel and home share one toolbar',async()=>{
+  await f.open(id);const view=d.querySelector('#'+id+'View');await until(()=>view.querySelector('table.suite-table'));
+  assert.equal(view.querySelector('.workspace-metrics'),null);assert.equal(view.querySelector('[data-report-export="filtered"],.suite-table-options [data-suite-export]'),null);
+  assert.equal(view.querySelectorAll('.content-back,[data-empty-home]').length,1);assert.equal(view.querySelector('.bamco-page-heading button'),null);
+  const back=view.querySelector('.content-back'),exp=view.querySelector('[data-report-export="all"]'),refresh=view.querySelector('[data-tab-refresh]');
+  assert.equal(back.parentElement,exp.parentElement);assert.equal(refresh.parentElement,exp.parentElement);
+  const count=f.downloads.length;exp.click();await until(()=>f.downloads.length===count+1);assert(f.downloads.at(-1).blob.size>1000);
+  const reads=f.calls.filter(c=>c.endpoint==='user_sessions').length;refresh.click();await until(()=>f.calls.filter(c=>c.endpoint==='user_sessions').length>reads);await until(()=>view.querySelector('table.suite-table'));
+  if(id==='activeSessions'){view.querySelector('[data-end-session]').click();await until(()=>f.calls.some(c=>c.endpoint==='revoke_user_session'));await until(()=>!view.querySelector('[data-end-session]'))}
+  await pause(60);assert.equal(view.querySelectorAll('.content-back,[data-empty-home]').length,1);view.querySelector('.content-back').click();assert(view.classList.contains('hidden'));assert(!d.querySelector('#homeView').classList.contains('hidden'));
+ });
+ await t.test('account password entry opens the same form used for the mandatory first login',async()=>{
+  await f.open('settings');d.querySelector('#changePasswordBtn').click();assert(d.querySelector('#passwordDialog').open);assert(!d.querySelector('#cancelPasswordBtn').classList.contains('hidden'));
+  d.querySelector('#cancelPasswordBtn').click();assert(!d.querySelector('#passwordDialog').open);
+  f.profiles[0].must_change_password=true;await w.eval('enterApp()');assert(d.querySelector('#passwordDialog').open);assert(d.querySelector('#cancelPasswordBtn').classList.contains('hidden'));
+ });
+ assert.deepEqual(f.errors,[],'no JavaScript exceptions during the actual click paths');
+});
+
+test('hidden people view wins over legacy active-nav CSS; account and password sizes are explicit',()=>{
+ const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),dialog=html.match(/<dialog id="passwordDialog"[\s\S]*?<\/dialog>/)[0];
+ const dom=new JSDOM('<main id="appView"><nav id="nav"><button class="active" data-view="people"></button></nav><section id="peopleView" class="view manager-only bamco-interior hidden"></section><section id="settingsView" class="bamco-interior"><div class="manager-form"></div></section></main>'+dialog);
+ const {window:w}=dom;for(const file of ['app.css','unified-ui.css']){const style=w.document.createElement('style');style.textContent=fs.readFileSync(path.join(root,'assets/css',file),'utf8');w.document.head.append(style)}
+ assert.equal(w.getComputedStyle(w.document.querySelector('#peopleView')).display,'none');
+ assert.equal(w.getComputedStyle(w.document.querySelector('#settingsView .manager-form')).maxWidth,'none');
+ const image=w.getComputedStyle(w.document.querySelector('.first-login-brand img'));assert.equal(image.width,'100px');assert.equal(image.height,'64px');
+ assert.equal(w.getComputedStyle(w.document.querySelector('.first-login-fields')).display,'grid');
+ w.document.querySelector('#cancelPasswordBtn').classList.add('hidden');assert.equal(w.getComputedStyle(w.document.querySelector('#cancelPasswordBtn')).display,'none');w.close();
+});
