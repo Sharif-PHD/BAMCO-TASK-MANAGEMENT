@@ -61,3 +61,49 @@ function install(){installNetworkGuard();q('#loginView .brand-lockup img')?.remo
 function boot(){install();const login=q('#loginView');if(login&&!login.dataset.cleanLoginObserved){login.dataset.cleanLoginObserved='1';new MutationObserver(()=>install()).observe(login,{childList:true,subtree:true})}}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
+
+/* Login runtime guard: never block successful authentication on the initial data refresh. */
+(()=>{
+'use strict';
+function installLoginRuntimeGuard(){
+  if(window.__bamcoLoginRuntimeGuard)return;
+  window.__bamcoLoginRuntimeGuard='v2';
+  if(typeof enterApp==='function'&&typeof refresh==='function'){
+    const originalEnterApp=enterApp;
+    const realRefresh=refresh;
+    const fastEnter=async function(){
+      let refreshRequested=false;
+      const deferredRefresh=async()=>{refreshRequested=true};
+      try{
+        refresh=deferredRefresh;
+        window.refresh=deferredRefresh;
+        await originalEnterApp();
+      }finally{
+        refresh=realRefresh;
+        window.refresh=realRefresh;
+      }
+      if(refreshRequested){
+        setTimeout(()=>{
+          Promise.resolve(realRefresh()).catch(err=>{
+            console.error('BAMCO background refresh failed',err);
+            if(typeof toast==='function')toast(err?.message||'بارگذاری اطلاعات سامانه کامل نشد. دوباره تلاش کنید.',true);
+          });
+        },0);
+      }
+    };
+    enterApp=fastEnter;
+    window.enterApp=fastEnter;
+  }
+  const recover=event=>{
+    const login=document.querySelector('#loginView');
+    if(!login||login.classList.contains('hidden'))return;
+    const form=document.querySelector('#loginForm'),btn=form?.querySelector('button[type="submit"]'),error=document.querySelector('#loginError');
+    if(btn){btn.disabled=false;btn.textContent='ورود به سامانه'}
+    if(error&&!error.textContent)error.textContent='خطای اجرای صفحه شناسایی شد. صفحه را تازه‌سازی کرده و دوباره وارد شوید.';
+    console.error('BAMCO login runtime error',event?.reason||event?.error||event);
+  };
+  window.addEventListener('unhandledrejection',recover);
+  window.addEventListener('error',recover);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',installLoginRuntimeGuard,{once:true});else installLoginRuntimeGuard();
+})();
