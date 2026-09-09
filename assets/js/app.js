@@ -119,7 +119,7 @@ async function enterApp(){
 }
 async function refresh(){
   try{
-    state.profiles=isManager()?await select('profiles','select=id,email,full_name,display_name,gender,excel_name,role,active,default_message_channel&order=full_name'):[state.profile];
+    state.profiles=isManager()?await select('profiles','select=id,email,full_name,display_name,gender,excel_name,role,active,default_message_channel,messaging_enabled&order=full_name'):[state.profile];
     state.tasks=await selectAll('task_status_view','select=*&order=id.desc');
     state.requests=await select('change_requests',isManager()?'select=*&request_status=in.(pending,in_review,needs_revision)&order=created_at.asc':'select=*&request_status=in.(pending,in_review,needs_revision)&order=created_at.asc');
     state.requestHistory=await select('change_requests','select=*&request_status=in.(approved,rejected,cancelled)&order=created_at.desc');
@@ -806,7 +806,7 @@ showLogin();
 
   refresh=async function(){
     try{
-      const profilesPromise=isManager()?select('profiles','select=id,email,full_name,display_name,gender,excel_name,role,active,default_message_channel&order=full_name'):Promise.resolve([state.profile]);
+      const profilesPromise=isManager()?select('profiles','select=id,email,full_name,display_name,gender,excel_name,role,active,default_message_channel,messaging_enabled&order=full_name'):Promise.resolve([state.profile]);
       const tasksPromise=selectAll('task_status_view','select=*&order=id.desc');
       const requestsPromise=selectAll('change_requests','select=*&request_status=in.(pending,in_review,needs_revision)&order=created_at.asc');
       const historyPromise=selectAll('change_requests','select=*&request_status=in.(approved,rejected,cancelled)&order=created_at.desc');
@@ -831,4 +831,3 @@ showLogin();
   removeSelectionHeader('kanban');removeSelectionHeader('archive');
   requestAnimationFrame(()=>{installResizableTable('kanban');installResizableTable('archive')});
 })();
-

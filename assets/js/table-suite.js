@@ -45,7 +45,7 @@ function install(){
   const host=table.closest('.focus-scroll')||table.parentElement;host.after(options);model.options=options;
   const heads=[...table.tHead.rows[0].cells];heads.forEach((th,i)=>{const label=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.checked=true;label.append(input,document.createTextNode(th.textContent.trim()));options.querySelector('.suite-columns').append(label);input.addEventListener('change',()=>{model.hiddenColumns=model.hiddenColumns||new Set();if(input.checked)model.hiddenColumns.delete(i);else model.hiddenColumns.add(i);table.querySelectorAll('tr').forEach(row=>row.cells[i]?.classList.toggle('suite-column-hidden',!input.checked));const col=table.querySelector('colgroup')?.children[i];if(col)col.style.display=input.checked?'':'none'})});
   options.querySelectorAll('[data-suite-export]').forEach(b=>b.addEventListener('click',async()=>{try{if(!window.bamcoExportTable)throw Error('امکانات خروجی هنوز بارگذاری نشده است.');await window.bamcoExportTable(table,b.dataset.suiteExport==='filtered')}catch(err){toast(err.message,true)}}));
-  options.querySelector('.suite-density').addEventListener('change',e=>table.classList.toggle('suite-compact',e.target.checked));
+  const density=options.querySelector('.suite-density');density.checked=true;density.addEventListener('change',e=>table.classList.toggle('suite-compact',e.target.checked));
   options.querySelector('.suite-clear-sort').addEventListener('click',()=>{model.sort=null;table.querySelectorAll('[aria-sort]').forEach(th=>th.removeAttribute('aria-sort'));const scope=table.closest('#kanbanView')?'kanban':table.closest('#archiveView')?'archive':null;if(scope){delete window.BAMCO_TASK_SORT[scope];renderTasks(scope==='archive')}else if(model.unsorted?.every(r=>r.isConnected&&r.closest('table')===table)){model.unsorted.forEach(r=>table.tBodies[0].append(r))}});
   options.querySelector('.suite-reset').addEventListener('click',()=>{model.widths={};try{localStorage.removeItem(model.key)}catch{};heads.forEach(th=>{th.style.removeProperty('width');th.style.removeProperty('min-width')});table.querySelectorAll('col').forEach(col=>col.style.removeProperty('width'))});
  }
@@ -54,7 +54,7 @@ function install(){
   // Remove dedicated selection columns; no synthetic record identifiers are introduced.
   const first=heads.cells[0];if(first&&(first.textContent.trim()==='انتخاب'||first.classList.contains('unified-select-head'))){table.querySelectorAll('tr').forEach(row=>{if(row.cells.length>1)row.cells[0].remove()});table.querySelector('colgroup')?.children[0]?.remove()}
   let model=settings.get(table);if(!model){const view=table.closest('.view');const key='bamco.table.widths.v4.'+(view?.id||'table')+'.'+[...view.querySelectorAll('table')].indexOf(table);let widths={};try{widths=JSON.parse(localStorage.getItem(key)||'{}')}catch{}model={key,widths};settings.set(table,model)}
-  table.classList.add('suite-table');table.setAttribute('aria-multiselectable','true');
+  table.classList.add('suite-table','suite-compact');table.setAttribute('aria-multiselectable','true');
   [...heads.cells].forEach((th,i)=>{
    if(!th.querySelector('.suite-resize,.column-resize-handle,.vehicle-col-resize')){const handle=document.createElement('span');handle.className='suite-resize';handle.tabIndex=0;handle.setAttribute('role','separator');handle.setAttribute('aria-orientation','vertical');handle.setAttribute('aria-label','تغییر عرض '+th.textContent.trim());th.append(handle)}
    if(th.tabIndex<0)th.tabIndex=0;th.title='کلیک برای مرتب‌سازی؛ لبه ستون برای تغییر عرض';
@@ -75,8 +75,17 @@ function install(){
   const rows=dataRows(table);[...tr.cells].forEach((th,i)=>{const select=th.querySelector('select'),values=[...new Set(rows.map(r=>r.cells[i]?.textContent.trim()||''))].filter(Boolean).sort(compareValues);const signature=JSON.stringify(values);if(select.dataset.values!==signature){select.replaceChildren(new Option('همه',''),...values.map(v=>new Option(v,v)));select.dataset.values=signature;select.value=model.filters[i]||''}});
   function apply(){dataRows(table).forEach(row=>row.classList.toggle('suite-filtered-out',Object.entries(model.filters).some(([i,v])=>v&&row.cells[i]?.textContent.trim()!==v)))}apply();
  }
+ function ensureTableToolbar(table){
+  const panel=table.closest('.panel,.table-panel'),head=panel?.querySelector(':scope>.panel-head');if(!panel||!head)return null;
+  let bar=panel.querySelector(':scope>.task-toolbar,:scope>.vehicle-toolbar,:scope>.prod-toolbar,:scope>.people-actions,:scope>.manager-toolbar,:scope>.workspace-actions,:scope>.suite-toolbar');
+  if(!bar){bar=document.createElement('div');bar.className='suite-toolbar';head.after(bar)}
+  const search=head.querySelector('input.search,input[type=search],.toolbar-search');if(search)bar.append(search);
+  if(!bar.querySelector('.content-back')){const home=document.createElement('button');home.type='button';home.className='content-back ghost';home.textContent='⌂ خانه';home.addEventListener('click',()=>window.bamcoShowHome?.());bar.prepend(home)}
+  return bar;
+ }
  function toolbars(){
-  root.querySelectorAll('.task-toolbar,.vehicle-toolbar,.prod-toolbar,.panel-head').forEach(bar=>{
+  root.querySelectorAll('.view table').forEach(ensureTableToolbar);
+  root.querySelectorAll('.task-toolbar,.vehicle-toolbar,.prod-toolbar,.people-actions,.manager-toolbar,.workspace-actions,.suite-toolbar').forEach(bar=>{
    if(bar.matches('.panel-head')&&!bar.querySelector('button'))return;
    bar.classList.add('suite-toolbar');
    [...bar.children].forEach(el=>{let rank=80;const t=el.textContent.trim(),id=el.id||'';
@@ -102,7 +111,11 @@ function install(){
   }
   const row=e.target.closest('tbody tr');
   if(row?.closest('table.suite-table')&&!e.target.closest('button,a,input,select,textarea')){
-   if(!row.hasAttribute('data-task-id')&&!row.closest('.vehicle-view')&&!(row.cells.length===1&&row.cells[0].colSpan>1)){const selected=row.classList.toggle('suite-selected');row.setAttribute('aria-selected',String(selected))}return;
+   const table=row.closest('table'),multi=e.ctrlKey||e.metaKey,blank=row.cells.length===1&&row.cells[0].colSpan>1;if(blank)return;
+   if(row.hasAttribute('data-task-id')){if(multi){e.preventDefault();e.stopImmediatePropagation();const selected=row.classList.toggle('suite-selected');row.setAttribute('aria-selected',String(selected));return}table.querySelectorAll('tbody tr').forEach(r=>r.classList.remove('suite-selected'));return}
+   if(row.closest('.vehicle-view')){if(!multi)window.bamcoClearVehicleSelection?.();return}
+   if(!multi)table.querySelectorAll('tbody tr.suite-selected').forEach(r=>{r.classList.remove('suite-selected');r.setAttribute('aria-selected','false')});
+   const selected=row.classList.toggle('suite-selected');row.setAttribute('aria-selected',String(selected));return;
   }
   if(e.target.closest('.content-back,#nav [data-view],#logoutBtn')){clear();return}
   if(!e.target.closest('table,button,a,input,select,textarea,label,dialog,summary,.suite-table-options,.table-pagination,#archivePager,.task-toolbar,.vehicle-toolbar,.prod-toolbar'))clear();

@@ -97,14 +97,13 @@
     const rows=tasks.filter(t=>{const a=t.start_date||t.due_date,b=t.due_date||t.start_date;if(!a||!b)return false;const am=new Date(a+'T12:00:00').getTime(),bm=new Date(b+'T12:00:00').getTime();return bm>=startMs&&am<=endMs}).sort((a,b)=>String(a.due_date||a.start_date).localeCompare(String(b.due_date||b.start_date)));
     if(!rows.length){body.innerHTML='<div class="tt-empty">در این ماه وظیفه زمان‌دار مطابق فیلترها وجود ندارد.</div>';return}
     const today=currentMonth(),todayIndex=today.y===month.y&&today.m===month.m?today.d-1:null,days=Array.from({length:max},(_,i)=>i+1);
-    let html=`<div class="tt-gantt-wrap"><div class="tt-gantt"><div class="tt-gantt-head"><div>شناسه</div><div>عنوان فعالیت</div><div>متولی</div><div class="tt-timeline-head"><div class="tt-days" style="grid-template-columns:repeat(${max},${dayW}px)">${days.map(d=>`<div class="tt-dayhead">${faNum(d)}</div>`).join('')}</div></div></div>`;
+    let html=`<div class="tt-gantt-wrap"><div class="tt-gantt"><div class="tt-gantt-head"><div>شناسه</div><div>عنوان فعالیت</div><div class="tt-timeline-head"><div class="tt-days" style="grid-template-columns:repeat(${max},${dayW}px)">${days.map(d=>`<div class="tt-dayhead">${faNum(d)}</div>`).join('')}</div></div></div>`;
     for(const t of rows){
       const a=t.start_date||t.due_date,b=t.due_date||t.start_date,as=Math.max(startMs,new Date(a+'T12:00:00').getTime()),bs=Math.min(endMs,new Date(b+'T12:00:00').getTime()),start=Math.max(0,Math.round((as-startMs)/86400000)),span=Math.max(1,Math.round((bs-as)/86400000)+1);
-      const wait=isWaiting(t),late=temporalState(t)==='دیرکرد';html+=`<div class="tt-gantt-row"><div>${faNum(taskId(t))}</div><div title="${esc(t.title)}">${esc(t.title)}</div><div>${esc(ownerNameLocal(t))}</div><div class="tt-track" style="width:${max*dayW}px">${todayIndex!==null?`<i class="tt-today-line" style="right:${todayIndex*dayW+dayW/2}px"></i>`:''}<button class="tt-bar ${wait?'waiting-open':''} ${late?'overdue':''}" data-task="${t.id}" style="--c:${colorFor(t)};right:${start*dayW+2}px;width:${Math.max(28,span*dayW-4)}px" title="#${esc(taskId(t))} — ${esc(t.title)}\n${esc(t.priority)}">${faNum(taskId(t))}${wait?' …':''}${late?' !':''}</button></div></div>`;
+      const wait=isWaiting(t),late=temporalState(t)==='دیرکرد';html+=`<div class="tt-gantt-row"><div>${faNum(taskId(t))}</div><div title="${esc(t.title)}">${esc(t.title)}</div><div class="tt-track" style="width:${max*dayW}px">${todayIndex!==null?`<i class="tt-today-line" style="right:${todayIndex*dayW+dayW/2}px"></i>`:''}<button class="tt-bar ${wait?'waiting-open':''} ${late?'overdue':''}" data-task="${t.id}" style="--c:${colorFor(t)};right:${start*dayW+2}px;width:${Math.max(28,span*dayW-4)}px" title="#${esc(taskId(t))} — ${esc(t.title)}\nمتولی: ${esc(ownerNameLocal(t))}\n${esc(t.priority)}">${faNum(taskId(t))}${wait?' …':''}${late?' !':''}</button></div></div>`;
     }
     html+='</div></div>';body.innerHTML=html;qa('.tt-bar',body).forEach(b=>b.onclick=()=>{const t=activeTasks().find(x=>String(x.id)===b.dataset.task);if(t)openKanban(t)});
   }
   function boot(){ensure();month=currentMonth()}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
-

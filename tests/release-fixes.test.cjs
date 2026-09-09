@@ -27,6 +27,38 @@ test('sticker manager is empty-safe and previews both sides together',()=>{
   assert.doesNotMatch(js,/desktopStickerGender/);
   assert.match(js,/sticker-pair/);
   assert.match(js,/نسخه‌ای ثبت نشده است/);
+  assert.match(js,/state1:'وضعیت مطلوب'/);
+  assert.doesNotMatch(js,/وضعیت یک/);
+});
+
+test('welcome uses the active database sticker pair and home is deduplicated',()=>{
+  const js=read('assets/js/card-home.js');
+  assert.match(js,/active=eq\.true/);
+  assert.match(js,/state_key=eq\.state1/);
+  assert.match(js,/const routes=new Set/);
+});
+
+test('all data tables default to compact multi-selection behavior',()=>{
+  const js=read('assets/js/table-suite.js');
+  assert.match(js,/classList\.add\('suite-table','suite-compact'\)/);
+  assert.match(js,/e\.ctrlKey\|\|e\.metaKey/);
+  assert.match(js,/home\.textContent='⌂ خانه'/);
+});
+
+test('people can omit email and never enter an initial password',()=>{
+  const js=read('assets/js/shell.js'),edge=read('supabase/functions/admin-users/index.ts');
+  assert.doesNotMatch(js,/name="initial_password"/);
+  assert.match(js,/ایمیل \(اختیاری\)/);
+  assert.match(js,/messaging_enabled/);
+  assert.match(edge,/password:"123456"/);
+  assert.match(edge,/internalEmail/);
+});
+
+test('gantt hides owner as a column while retaining owner filtering',()=>{
+  const js=read('assets/js/timeline.js');
+  assert.match(js,/id="ttOwner"/);
+  assert.doesNotMatch(js,/<div>متولی<\/div><div class="tt-timeline-head">/);
+  assert.match(js,/title=.*متولی:/s);
 });
 
 test('chat exposes requested messaging controls',()=>{
