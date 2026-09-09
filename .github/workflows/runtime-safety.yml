@@ -7,6 +7,7 @@ on:
       - 'assets/js/production-runtime.js'
       - 'assets/js/navigation-completeness.js'
       - 'assets/js/session-runtime.js'
+      - 'assets/js/completion-ui.js'
       - 'assets/js/sidebar.js'
       - '.github/workflows/runtime-safety.yml'
 
@@ -23,6 +24,7 @@ jobs:
           node --check assets/js/production-runtime.js
           node --check assets/js/navigation-completeness.js
           node --check assets/js/session-runtime.js
+          node --check assets/js/completion-ui.js
           node --check assets/js/sidebar.js
       - name: Additive navigation assertions
         run: |
@@ -31,14 +33,19 @@ jobs:
           rt=Path('assets/js/production-runtime.js').read_text(encoding='utf-8')
           nav=Path('assets/js/navigation-completeness.js').read_text(encoding='utf-8')
           sess=Path('assets/js/session-runtime.js').read_text(encoding='utf-8')
+          ui=Path('assets/js/completion-ui.js').read_text(encoding='utf-8')
           forbidden=["qa('#nav>.nav-group').forEach(x=>x.remove())",'replaceChildren(','.innerHTML=\'\'']
           for x in forbidden:
               assert x not in rt, f'unsafe navigation rebuild found: {x}'
           for view in ['groupChat','directMessages','taskChats','loginActivity','activeSessions','performanceReport','messageReport','responseReport','requestReport','loginReport','systemOptions','alertSettings','emailSettings']:
               assert view in rt, f'missing tested view: {view}'
           assert "production-runtime.js?v=20260909-safe-1" in nav
+          assert "completion-ui.js?v=20260909-1" in nav
           assert "session-runtime.js?v=20260909-1" in nav
           assert "app.classList.contains('hidden')" in nav
           assert "session-audit" in sess and "120000" in sess
+          assert "chat_ensure_task_direct" in ui
+          assert "گفتگو درباره وظیفه" in ui
+          assert "replace(/تسک/g,'وظیفه')" in ui
           print('runtime safety: PASS')
           PY
