@@ -1,0 +1,8 @@
+const {test}=require('node:test');const assert=require('node:assert/strict');const vm=require('node:vm');const fs=require('node:fs');const path=require('node:path');
+const source=fs.readFileSync(path.join(__dirname,'../assets/js/app.js'),'utf8');
+const show=source.split('\n').find(l=>l.startsWith('function showView(view)'));
+const binding=source.split('\n').find(l=>l.startsWith("$('#nav').addEventListener('click',e=>{const button="));
+function setup(){const views={homeView:{hidden:false},sentMessagesView:{hidden:true}};Object.values(views).forEach(v=>v.classList={add(){v.hidden=true},remove(){v.hidden=false}});let click;const state={view:'home'};const context={state,titles:{},document:{getElementById:id=>views[id]},$:s=>s==='#nav'?{addEventListener:(_,fn)=>click=fn}:s==='#viewTitle'?{}:{classList:{toggle(){}}},$$:s=>s==='.view'?Object.values(views):[]};vm.createContext(context);vm.runInContext(show+'\n'+binding,context);return{views,state,context,click:e=>click(e)}}
+test('unknown or missing route leaves current screen visible',()=>{const c=setup();for(const v of [undefined,'missing','bad#id'])c.context.showView(v);assert.equal(c.state.view,'home');assert.equal(c.views.homeView.hidden,false)});
+test('delegated navigation handles a button added after initialization',()=>{const c=setup();c.click({target:{closest:()=>({dataset:{view:'sentMessages'},disabled:false})}});assert.equal(c.state.view,'sentMessages');assert.equal(c.views.sentMessagesView.hidden,false);assert.equal(c.views.homeView.hidden,true)});
+test('disabled navigation does not change screen',()=>{const c=setup();c.click({target:{closest:()=>({dataset:{view:'sentMessages'},disabled:true})}});assert.equal(c.state.view,'home')});

@@ -38,11 +38,11 @@
   }
   window.bamcoRevealTask=id=>{const table=document.querySelector('#kanbanView table');registry.get(table)?.reveal(id)};
   function backButton(view){
-   const toolbar=view.querySelector('.task-toolbar,.vehicle-toolbar,.prod-toolbar');
+   const toolbar=[...view.querySelectorAll('.task-toolbar,.vehicle-toolbar,.prod-toolbar')].find(el=>!el.closest('details,dialog,form'));
    let back=view.querySelector('.content-back');
    if(!back){back=document.createElement('button');back.type='button';back.className='content-back';back.textContent='⌂ بازگشت به خانه';back.addEventListener('click',()=>window.bamcoShowHome?.())}
    if(toolbar){if(back.parentElement!==toolbar)toolbar.prepend(back);view.querySelector(':scope>.content-actions')?.remove()}
-   else if(!view.contains(back)){const bar=document.createElement('div');bar.className='content-actions';bar.append(back);view.prepend(bar)}
+   else{let bar=view.querySelector(':scope>.content-actions');if(!bar){bar=document.createElement('div');bar.className='content-actions';view.prepend(bar)}if(back.parentElement!==bar)bar.append(back)}
   }
   function scan(){
    pending=false;
