@@ -3,21 +3,68 @@
 'use strict';
 function install(){
  const q=s=>document.querySelector(s), app=q('#appView'), workspace=q('.workspace'), nav=q('#nav');
- if(!app||!workspace||!nav)return;
+ if(!app||!workspace||!nav||q('#homeView'))return;
  document.body.classList.add('card-navigation');
  const top=document.createElement('header');top.className='card-topbar';
- top.innerHTML='<img src="assets/images/bamco-white.png" alt="خودروسازان بم"><strong>سامانه مدیریت، پایش و پیگیری امور</strong><button type="button" class="home-return">⌂ خانه</button>';
+ top.innerHTML='<img src="assets/images/bamco-white-cropped.png" width="180" height="86" alt="خودروسازان بم"><strong>سامانه مدیریت، پایش و پیگیری امور</strong><button type="button" class="home-return">⌂ خانه</button>';
  app.prepend(top);const tools=q('.header-tools');if(tools)top.append(tools);
- const home=document.createElement('section');home.id='homeView';home.className='view hidden card-home';home.innerHTML='<div class="home-heading"><span>میز کار شما</span><h2 tabindex="-1">امروز از کدام بخش شروع می‌کنید؟</h2><p>برای مشاهده اطلاعات و جدول‌ها، بخش موردنظر را انتخاب کنید.</p></div>';
+ const home=document.createElement('section');home.id='homeView';home.className='view hidden card-home';home.tabIndex=-1;home.setAttribute('aria-label','میز کار');
  workspace.append(home);home.append(nav);
  nav.querySelector('.nav-login-root')?.remove();
  const footer=document.createElement('footer');footer.id='homeFixedFooter';footer.innerHTML='<a href="https://www.linkedin.com/company/bam-automotive-company/" target="_blank" rel="noopener noreferrer">شرکت خودروسازان بم</a> | واحد توسعه و تکوین محصول | <a href="https://www.linkedin.com/in/shahab-tanhaiyan-b1156a10a/" target="_blank" rel="noopener noreferrer">شهاب‌الدین تنهائیان</a> و <a href="https://www.linkedin.com/in/nazanin-ghaemizadeh/" target="_blank" rel="noopener noreferrer">نازنین قائمی</a>';app.append(footer);
+ // One order, matching the approved three-column RTL reference.
+ const groups=[
+  ['people',['people','loginActivity','activeSessions']],
+  ['messages',['messages','messageCenter','sentMessages','responseTracking','templates','stickers']],
+  ['reports',['dashboard','performanceReport','responseReport','requestReport']],
+  ['configuration',['systemOptions','alertSettings','emailSettings','settings']],
+  ['tasks',['kanban','archive','taskTimeline','approvals','requestHistory','approvalChains']],
+  ['vehicle',['vehiclePermanent','vehicleTemporary']],
+  ['conversations',['groupChat','directMessages','taskChats']]
+ ];
+ // These aliases share the same renderer and data. Keep the pages/data intact;
+ // remove only the duplicate shortcut when its canonical shortcut exists.
+ const aliases={loginReport:'loginActivity',messageReport:'sentMessages'};
+ const groupObserver=new MutationObserver(()=>syncGroups());
  function syncGroups(){
-  const routes=new Set();nav.querySelectorAll('button[data-view]').forEach(button=>{const key=button.dataset.view;if(routes.has(key)){button.remove();return}routes.add(key)});
-  const desired=['people','messages','reports','configuration','tasks','vehicle','conversations'].map(key=>nav.querySelector(`.nav-group[data-group="${key}"]`)).filter(Boolean),current=[...nav.querySelectorAll(':scope>.nav-group')];if(desired.some((group,index)=>current[index]!==group))desired.forEach(group=>nav.append(group));
-  nav.querySelectorAll('.nav-group').forEach(group=>{const visible=[...group.querySelectorAll('[data-view]')].some(b=>!b.classList.contains('hidden'));if(group.classList.contains('hidden')===visible)group.classList.toggle('hidden',!visible);const toggle=group.querySelector('button.nav-group-toggle');if(toggle){const heading=document.createElement('h3');heading.className='nav-group-toggle';heading.innerHTML=toggle.innerHTML;toggle.replaceWith(heading)}})
+  groupObserver.disconnect();
+  try{
+   for(const [alias,target] of Object.entries(aliases)){
+    if(nav.querySelector(`button[data-view="${target}"]`))nav.querySelectorAll(`button[data-view="${alias}"]`).forEach(b=>b.remove());
+   }
+   const routes=new Set(),buttons=new Map();
+   nav.querySelectorAll('button[data-view]').forEach(button=>{
+    const key=button.dataset.view;
+    if(routes.has(key)){
+     const kept=buttons.get(key);
+     // Prefer the original bound element; moving it preserves its handlers.
+     if(!kept.id&&!kept.dataset.runtimeBound&&!kept.onclick&&(button.id||button.dataset.runtimeBound||button.onclick)){kept.remove();buttons.set(key,button)}else button.remove();
+    }else{routes.add(key);buttons.set(key,button)}
+   });
+   let previous=null;
+   for(const [key,ids] of groups){
+    const group=nav.querySelector(`.nav-group[data-group="${key}"]`);if(!group)continue;
+    const next=previous?previous.nextElementSibling:nav.firstElementChild;
+    if(next!==group)nav.insertBefore(group,next);previous=group;
+    const box=group.querySelector('.nav-group-items');if(!box)continue;
+    let previousButton=null;
+    for(const id of ids){
+     const button=buttons.get(id);if(!button)continue;
+     if(button.classList.contains('nav-settings-root'))button.classList.remove('nav-settings-root');
+     const nextButton=previousButton?previousButton.nextElementSibling:box.firstElementChild;
+     if(nextButton!==button)box.insertBefore(button,nextButton);previousButton=button;
+    }
+    const toggle=group.querySelector('button.nav-group-toggle');
+    if(toggle){const heading=document.createElement('h3');heading.className='nav-group-toggle';heading.innerHTML=toggle.innerHTML;toggle.replaceWith(heading)}
+   }
+   // Do not hide or discard a unique route merely because it arrived late.
+   nav.querySelectorAll('.nav-group').forEach(group=>{
+    const visible=[...group.querySelectorAll('[data-view]')].some(b=>!b.classList.contains('hidden'));
+    if(group.classList.contains('hidden')===visible)group.classList.toggle('hidden',!visible);
+   });
+  }finally{groupObserver.observe(nav,{childList:true,subtree:true,attributes:true,attributeFilter:['class']})}
  }
- new MutationObserver(syncGroups).observe(nav,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});syncGroups();
+ syncGroups();
  // Section headings are non-interactive. Only existing subpage buttons navigate.
  const dialog=document.createElement('dialog');dialog.className='home-welcome-dialog';dialog.setAttribute('aria-labelledby','homeWelcomeTitle');dialog.innerHTML='<button class="welcome-dismiss" type="button" aria-label="بستن خوشامدگویی" autofocus><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button><div class="home-welcome-copy"><p class="welcome-person"></p><h2 id="homeWelcomeTitle">به سامانه مدیریت، پایش و پیگیری امور خوش آمدید</h2></div><img class="home-sticker female" alt="استیکر زن در وضعیت مطلوب"><img class="home-sticker male" alt="استیکر مرد در وضعیت مطلوب">';document.body.append(dialog);
  let welcomeStickerUrls=[],welcomeStickerPromise=null,welcomeStickerReady=false;
@@ -42,8 +89,8 @@ function install(){
  let welcomed=false;
  window.bamcoOpenHomeWelcome=async()=>{showHome();if(welcomed||app.classList.contains('hidden'))return;if(typeof state!=='undefined'&&state.profile?.must_change_password)return;welcomed=true;dialog.querySelector('.welcome-person').textContent=(q('#userName')?.textContent||'همکار')+' عزیز';await stickers();dialog.showModal()};
  dialog.querySelector('.welcome-dismiss').addEventListener('click',()=>dialog.close());
- dialog.addEventListener('close',()=>home.querySelector('h2').focus({preventScroll:true}));
- top.querySelector('.home-return').addEventListener('click',()=>{showHome();home.querySelector('h2').focus({preventScroll:true})});
+ dialog.addEventListener('close',()=>home.focus({preventScroll:true}));
+ top.querySelector('.home-return').addEventListener('click',()=>{showHome();home.focus({preventScroll:true})});
  new MutationObserver(()=>{if(app.classList.contains('hidden')){welcomed=false;if(dialog.open)dialog.close();document.body.classList.remove('card-home-active','content-only')}}).observe(app,{attributes:true,attributeFilter:['class']});
  if(!app.classList.contains('hidden'))window.bamcoOpenHomeWelcome();
 }

@@ -1,20 +1,77 @@
-/* Single final layout for the post-welcome home. Loaded last by design. */
-html body.card-home-active{overflow:hidden!important;background:#f3f7f5!important}
-html body.card-home-active #appView.app{height:100dvh!important;min-height:0!important;display:flex!important;flex-direction:column!important;padding:0 0 var(--home-footer-height,42px)!important}
-html body.card-home-active #appView .card-topbar{flex:0 0 92px!important;min-height:92px!important;box-sizing:border-box!important}
-html body.card-home-active #appView .workspace{flex:1 1 auto!important;height:auto!important;min-height:0!important;width:100%!important;margin:0!important;padding:8px 12px!important;overflow:hidden!important;box-sizing:border-box!important}
-html body.card-home-active #homeView{height:100%!important;min-height:0!important;display:flex!important;flex-direction:column!important;overflow:hidden!important}
-html body.card-home-active #homeView .home-heading{display:none!important}
-html body.card-home-active #homeView .home-heading>span,html body.card-home-active #homeView .home-heading>p{display:none!important}
-html body.card-home-active #homeView .home-heading h2{margin:0!important;font-size:19px!important;line-height:1.35!important;color:#164d3b!important;text-align:center!important;text-align-last:center!important}
-html body.card-home-active #appView #homeView #nav{flex:1 1 auto!important;min-height:0!important;width:100%!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:repeat(3,minmax(0,1fr))!important;grid-auto-flow:row!important;gap:8px!important;overflow:hidden!important}
-html body.card-home-active #appView #homeView #nav>.nav-group{min-width:0!important;min-height:0!important;height:auto!important;margin:0!important;padding:8px!important;display:flex!important;flex-direction:column!important;gap:5px!important;border:1px solid #d4e2da!important;border-radius:13px!important;background:#fff!important;box-shadow:0 3px 12px rgba(20,75,55,.05)!important;overflow:hidden!important}
-html body.card-home-active #appView #homeView #nav>.nav-group.hidden{display:none!important}
-html body.card-home-active #appView #homeView #nav .nav-group-toggle{flex:0 0 28px!important;height:28px!important;min-height:28px!important;margin:0!important;padding:0 3px!important;display:flex!important;align-items:center!important;gap:7px!important;font-size:17px!important;line-height:1.2!important;text-align:right!important}
-html body.card-home-active #appView #homeView #nav .nav-group-icon{width:27px!important;height:27px!important;min-width:27px!important;display:grid!important;place-items:center!important}
-html body.card-home-active #appView #homeView #nav .nav-group-items{flex:1 1 auto!important;min-height:0!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-auto-rows:minmax(25px,1fr)!important;align-content:stretch!important;gap:4px!important;overflow:hidden!important}
-html body.card-home-active #appView #homeView #nav [data-view]{min-width:0!important;height:auto!important;min-height:25px!important;max-height:none!important;margin:0!important;padding:2px 6px!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:5px!important;border-radius:7px!important;font-size:14px!important;line-height:1.25!important;text-align:right!important;text-align-last:right!important;overflow:hidden!important}
-html body.card-home-active #appView #homeView #nav [data-view]>b{width:16px!important;min-width:16px!important;font-size:14px!important}
-html body.card-home-active #appView #homeView #nav [data-view]>span{min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
-html body.card-home-active #homeFixedFooter{min-height:42px!important;box-sizing:border-box!important;text-align:center!important;text-align-last:center!important}
-@media(max-width:900px){html body.card-home-active #appView #homeView #nav{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:repeat(4,minmax(0,1fr))!important}html body.card-home-active #appView #homeView #nav [data-view]{font-size:13px!important}}
+/* Single source of truth for the approved home. Shared table/login styles stay separate. */
+html body.card-home-active{height:100dvh;overflow:hidden!important;background:#f3f7f5!important}
+html body.card-home-active #appView.app{--home-footer-height:42px;--home-row-height:clamp(26px,4vh,34px);height:100dvh!important;min-height:0!important;display:flex!important;flex-direction:column!important;padding:0 0 var(--home-footer-height)!important;overflow:hidden!important}
+html body.card-home-active #appView.app .workspace,html body.card-home-active #appView.app:has(.sidebar.collapsed) .workspace{flex:1 1 0!important;width:100%!important;height:auto!important;min-height:0!important;max-width:none!important;margin:0!important;padding:10px 16px!important;overflow:hidden!important;transition:none!important}
+html body.card-home-active #appView .workspace>header{display:none!important}
+html body.card-navigation #appView #homeView{min-height:0!important;height:100%!important;margin:0!important;padding:0!important;outline:none}
+html body.card-home-active #appView #homeView{display:flex!important;flex-direction:column!important}
+html body.card-navigation #appView #homeView.hidden{display:none!important}
+
+/* Right logo, centered title, compact account on the left. */
+html body.card-navigation #appView .card-topbar{position:relative!important;inset:auto!important;display:grid!important;direction:rtl!important;grid-template-columns:200px minmax(0,1fr) 200px!important;align-items:center!important;flex:0 0 100px!important;width:100%!important;height:100px!important;min-height:100px!important;gap:20px!important;margin:0!important;padding:6px 22px!important;border:0!important;background:linear-gradient(110deg,#07513e,#095e46)!important;color:#fff!important;box-sizing:border-box!important;box-shadow:0 1px 0 #bed4c7!important}
+html body.card-navigation #appView .card-topbar>img{grid-column:1!important;grid-row:1!important;width:180px!important;height:86px!important;justify-self:start!important;object-fit:contain!important;object-position:center!important}
+html body.card-navigation #appView .card-topbar>strong{grid-column:2!important;grid-row:1!important;min-width:0!important;margin:0!important;color:#fff!important;font-size:22px!important;line-height:1.6!important;text-align:center!important;text-align-last:center!important}
+html body.card-navigation #appView .card-topbar .header-tools{position:static!important;inset:auto!important;grid-column:3!important;grid-row:1!important;justify-self:end!important;display:grid!important;grid-template-columns:30px 30px 30px 1fr!important;grid-template-rows:50px 28px!important;direction:ltr!important;gap:5px!important;width:200px!important;height:83px!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;transform:none!important}
+html body.card-navigation #appView .card-topbar .header-tools .account{position:static!important;grid-column:1/-1!important;grid-row:1!important;display:flex!important;flex-direction:row!important;direction:ltr!important;align-items:center!important;justify-content:flex-start!important;gap:10px!important;width:100%!important;height:50px!important;min-height:0!important;margin:0!important;padding:0!important;background:transparent!important;border:0!important}
+html body.card-navigation #appView .card-topbar .account .avatar{display:grid!important;place-items:center!important;flex:0 0 48px!important;width:48px!important;height:48px!important;min-width:48px!important;min-height:48px!important;border:2px solid #d4e7dc!important;border-radius:50%!important;overflow:hidden!important;font-size:22px!important;box-shadow:none!important}
+html body.card-navigation #appView .card-topbar .avatar img{width:100%!important;height:100%!important;object-fit:cover!important}
+html body.card-navigation #appView .card-topbar .account-copy{display:grid!important;direction:rtl!important;gap:2px!important;min-width:0!important;max-width:140px!important;text-align:right!important;text-align-last:right!important}
+html body.card-navigation #appView .card-topbar .account-copy strong{max-width:140px!important;color:#fff!important;font-size:16px!important;line-height:1.5!important;text-align:right!important;text-align-last:right!important;white-space:nowrap!important;text-overflow:ellipsis!important;overflow:hidden!important}
+html body.card-navigation #appView .card-topbar .account-copy small{color:#c1dacf!important;font-size:12px!important;line-height:1.5!important;text-align:right!important;text-align-last:right!important}
+html body.card-navigation #appView .card-topbar :is(#logoutBtn,#notificationBell,#headerSettingsBtn){position:relative!important;inset:auto!important;grid-row:2!important;display:grid!important;place-items:center!important;width:30px!important;height:28px!important;min-width:30px!important;min-height:28px!important;padding:0!important;margin:0!important;border:1px solid #ffffff30!important;border-radius:7px!important;background:#ffffff09!important;color:#ecf7f1!important;box-shadow:none!important;cursor:pointer!important}
+html body.card-navigation #appView .card-topbar #logoutBtn{grid-column:1!important}
+html body.card-navigation #appView .card-topbar #notificationBell{grid-column:2!important}
+html body.card-navigation #appView .card-topbar #headerSettingsBtn{grid-column:3!important}
+html body.card-navigation #appView .card-topbar :is(#logoutBtn,#notificationBell,#headerSettingsBtn):hover{background:#ffffff20!important}
+html body.card-navigation #appView .card-topbar :is(#logoutBtn,#notificationBell,#headerSettingsBtn):focus-visible{outline:2px solid #c6e4d4!important;outline-offset:2px!important}
+html body.card-navigation #appView .card-topbar button svg{width:17px!important;height:17px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.8!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+html body.card-navigation #appView .home-return{display:none!important}
+
+/* Seven sections, RTL order in card-home.js; two equal columns within every card. */
+html body.card-navigation #appView #homeView #nav{position:static!important;inset:auto!important;display:grid!important;direction:rtl!important;flex:1 1 0!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:repeat(3,minmax(0,1fr))!important;grid-auto-flow:row!important;gap:12px!important;align-items:stretch!important;width:100%!important;height:100%!important;min-height:0!important;margin:0!important;padding:0!important;background:transparent!important;border:0!important;overflow:visible!important;transform:none!important}
+html body.card-navigation #appView #homeView #nav>.nav-group{position:relative!important;grid-column:auto!important;grid-row:auto!important;display:flex!important;flex-direction:column!important;gap:8px!important;min-width:0!important;min-height:0!important;width:100%!important;height:100%!important;margin:0!important;padding:8px!important;border:1px solid #d9e3de!important;border-radius:15px!important;background:#fff!important;box-shadow:0 2px 6px #103e2903!important;box-sizing:border-box!important}
+html body.card-navigation #appView #homeView #nav .nav-group-toggle{position:static!important;display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;flex:0 0 28px!important;gap:8px!important;width:100%!important;height:28px!important;min-height:28px!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;color:#235941!important;font-size:18px!important;line-height:1.4!important;text-align:right!important;text-align-last:right!important;cursor:default!important}
+html body.card-navigation #appView #homeView #nav .nav-group-icon{display:grid!important;place-items:center!important;flex:0 0 28px!important;width:28px!important;height:28px!important;margin:0!important;border-radius:7px!important;background:#eaf4ee!important;color:#4e8570!important}
+html body.card-navigation #appView #homeView #nav .nav-group-icon svg{width:22px!important;height:22px!important}
+html body.card-navigation #appView #homeView #nav .nav-group-items{position:static!important;inset:auto!important;display:grid!important;direction:rtl!important;flex:0 0 auto!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:none!important;grid-auto-rows:var(--home-row-height,30px)!important;gap:4px!important;align-content:start!important;width:100%!important;height:auto!important;min-width:0!important;min-height:0!important;max-height:none!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;visibility:visible!important;opacity:1!important;overflow:visible!important;transform:none!important}
+html body.card-navigation #appView #homeView #nav [data-view]{display:flex!important;direction:rtl!important;align-items:center!important;justify-content:flex-start!important;gap:6px!important;width:100%!important;height:var(--home-row-height,30px)!important;min-height:var(--home-row-height,30px)!important;margin:0!important;padding:2px 8px!important;border:1px solid transparent!important;border-radius:6px!important;background:#f1f6f3!important;color:#365c4b!important;font-family:var(--fa-font,'B Nazanin','B Zar',Yas,serif)!important;font-size:15px!important;line-height:1.5!important;text-align:right!important;text-align-last:right!important;white-space:nowrap!important;box-sizing:border-box!important;cursor:pointer!important;transform:none!important;transition:background-color .12s,border-color .12s!important}
+html body.card-navigation #appView #homeView #nav [data-view]>b{display:grid!important;place-items:center!important;flex:0 0 18px!important;width:18px!important;height:18px!important;margin:0!important;background:transparent!important;color:#598a76!important}
+html body.card-navigation #appView #homeView #nav [data-view]>b svg{width:16px!important;height:16px!important}
+html body.card-navigation #appView #homeView #nav [data-view]>span{display:block!important;min-width:0!important;opacity:1!important;visibility:visible!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+html body.card-navigation #appView #homeView #nav svg{display:block!important;fill:none!important;stroke:currentColor!important;stroke-width:1.7!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+html body.card-navigation #appView #homeView #nav [data-view]:hover{background:#e5f0e9!important;border-color:#c5dccc!important;transform:none!important}
+html body.card-navigation #appView #homeView #nav [data-view]:focus-visible{outline:2px solid #4b956b!important;outline-offset:1px!important}
+html body.card-navigation #appView #homeView #nav .nav-chevron,html body.card-navigation #appView #homeView #nav .nav-login-root,html body.card-navigation #appView #homeView #nav .hidden{display:none!important}
+
+html body.card-navigation #appView #homeFixedFooter{position:fixed!important;inset:auto 0 0!important;z-index:80!important;display:block!important;min-height:42px!important;margin:0!important;padding:9px 12px!important;border:0!important;background:#f3f7f5!important;color:#6d7f74!important;font-size:12px!important;line-height:1.8!important;text-align:center!important;text-align-last:center!important;box-shadow:none!important}
+html body.card-navigation #appView #homeFixedFooter a{color:inherit!important;text-decoration:none!important}
+html body.card-navigation #appView #homeFixedFooter a:hover{color:#075e43!important;text-decoration:underline!important}
+html body.card-navigation #appView #homeFixedFooter a:focus-visible{outline:2px solid #17734f;outline-offset:2px}
+html body.content-only #appView .card-topbar,html body.content-only #appView #homeFixedFooter{display:none!important}
+
+/* Small screens retain all routes instead of clipping them to the viewport. */
+@media(max-width:1000px),(max-height:620px){
+ html body.card-home-active{height:auto!important;overflow:auto!important}
+ html body.card-home-active #appView.app{height:auto!important;min-height:100dvh!important;padding:0!important;overflow:visible!important}
+ html body.card-home-active #appView.app .workspace,html body.card-home-active #appView.app:has(.sidebar.collapsed) .workspace{flex:1 0 auto!important;overflow:visible!important}
+ html body.card-navigation #appView #homeView #nav{grid-template-rows:none!important;grid-auto-rows:minmax(164px,auto)!important;height:auto!important;flex:1 0 auto!important}
+ html body.card-navigation #appView #homeFixedFooter{position:static!important;flex:none!important}
+}
+@media(max-width:1000px){
+ html body.card-navigation #appView #homeView #nav{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ html body.card-navigation #appView .card-topbar{grid-template-columns:150px minmax(0,1fr) 160px!important;gap:12px!important;padding:6px 14px!important}
+ html body.card-navigation #appView .card-topbar>img{width:150px!important}
+ html body.card-navigation #appView .card-topbar>strong{font-size:19px!important}
+ html body.card-navigation #appView .card-topbar .header-tools{width:160px!important}
+ html body.card-navigation #appView .card-topbar .account-copy strong{font-size:14px!important;max-width:102px!important}
+}
+@media(max-width:620px){
+ html body.card-navigation #appView .card-topbar{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;grid-template-rows:80px auto!important;height:auto!important;min-height:126px!important;flex-basis:auto!important;gap:7px!important;padding:8px 12px!important}
+ html body.card-navigation #appView .card-topbar>img{width:140px!important;height:78px!important}
+ html body.card-navigation #appView .card-topbar>strong{grid-column:1/-1!important;grid-row:2!important;font-size:18px!important}
+ html body.card-navigation #appView .card-topbar .header-tools{grid-column:2!important}
+ html body.card-navigation #appView #homeView #nav{grid-template-columns:1fr!important;gap:10px!important;--home-row-height:36px}
+ html body.card-navigation #appView #homeView #nav .nav-group{padding:10px!important}
+ html body.card-navigation #appView #homeView #nav [data-view]{font-size:16px!important}
+}
+@media(prefers-reduced-motion:reduce){html body.card-navigation #appView #homeView #nav [data-view]{transition:none!important}}

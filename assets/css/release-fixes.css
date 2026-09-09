@@ -2,18 +2,6 @@
 html,body{scroll-behavior:auto!important}
 #departmentEntry header img{width:214px!important;height:128px!important;box-sizing:border-box!important;padding:4px 7px!important;object-fit:contain!important}
 
-/* Home: a predictable two-row desktop grid with no inherited sidebar geometry. */
-html body.card-home-active #appView{--home-footer-height:42px;overflow:hidden!important}
-html body.card-home-active #appView .workspace{padding:8px 12px!important;overflow:hidden!important}
-html body.card-home-active #appView #homeView #nav{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;gap:10px!important;align-items:stretch!important;overflow:hidden!important}
-html body.card-home-active #appView #homeView #nav>.nav-group{height:100%!important;min-height:0!important;padding:12px!important;gap:8px!important;border:1px solid #d3e2da!important;border-radius:16px!important;background:#fff!important;box-shadow:0 6px 22px rgba(14,74,52,.07)!important;overflow:hidden!important}
-html body.card-home-active #appView #homeView #nav .nav-group-toggle{height:36px!important;min-height:36px!important;flex:0 0 36px!important;font-size:19px!important;gap:9px!important;padding:0 2px!important}
-html body.card-home-active #appView #homeView #nav .nav-group-icon{width:34px!important;height:34px!important;min-width:34px!important;border-radius:10px!important;background:#e8f3ed!important;color:#176b4d!important}
-html body.card-home-active #appView #homeView #nav .nav-group-items{display:grid!important;grid-template-columns:1fr!important;grid-auto-rows:minmax(30px,1fr)!important;gap:5px!important;overflow:hidden!important}
-html body.card-home-active #appView #homeView #nav [data-view]{height:auto!important;min-height:30px!important;max-height:none!important;padding:4px 8px!important;border:1px solid transparent!important;border-radius:9px!important;background:#f1f6f3!important;font-size:14px!important;transition:transform .14s ease,background .14s ease,border-color .14s ease!important}
-html body.card-home-active #appView #homeView #nav [data-view]:hover{transform:translateX(-2px)!important;background:#e5f1eb!important;border-color:#c8ddd2!important}
-@media(max-width:1100px){html body.card-home-active #appView #homeView #nav{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:repeat(4,minmax(0,1fr))!important}html body.card-home-active #appView #homeView #nav>.nav-group{padding:7px!important;gap:4px!important}html body.card-home-active #appView #homeView #nav .nav-group-toggle{height:28px!important;min-height:28px!important;flex-basis:28px!important;font-size:16px!important}html body.card-home-active #appView #homeView #nav .nav-group-icon{width:27px!important;height:27px!important;min-width:27px!important}html body.card-home-active #appView #homeView #nav [data-view]{font-size:13px!important;min-height:26px!important;padding:2px 6px!important}}
-
 /* One compact date picker everywhere. */
 html body #calendarDialog{width:min(292px,calc(100vw - 24px))!important;max-height:min(520px,calc(100dvh - 24px))!important;padding:12px!important;border-radius:16px!important}
 html body #calendarDialog .modal-head{margin-bottom:7px!important;padding-bottom:7px!important}
@@ -81,17 +69,6 @@ body #taskTimelineView .tt-gantt-head>div:nth-child(-n+2),body #taskTimelineView
 body #taskTimelineView .tt-gantt-head>div:nth-child(-n+2){background:#e7f0ec!important;z-index:12!important}
 body #taskTimelineView .tt-gantt-head>div:nth-child(1),body #taskTimelineView .tt-gantt-row>div:nth-child(1){right:0!important}
 body #taskTimelineView .tt-gantt-head>div:nth-child(2),body #taskTimelineView .tt-gantt-row>div:nth-child(2){right:70px!important;box-shadow:-3px 0 6px #1a493212!important}
-
-/* Keep the restored home exactly in the reference order and remove the extra heading. */
-html body.card-home-active #homeView .home-heading{display:none!important}
-html body.card-home-active #homeView #nav>.nav-group[data-group=people]{grid-column:1;grid-row:1}
-html body.card-home-active #homeView #nav>.nav-group[data-group=messages]{grid-column:2;grid-row:1}
-html body.card-home-active #homeView #nav>.nav-group[data-group=reports]{grid-column:3;grid-row:1}
-html body.card-home-active #homeView #nav>.nav-group[data-group=configuration]{grid-column:1;grid-row:2}
-html body.card-home-active #homeView #nav>.nav-group[data-group=tasks]{grid-column:2;grid-row:2}
-html body.card-home-active #homeView #nav>.nav-group[data-group=vehicle]{grid-column:3;grid-row:2}
-html body.card-home-active #homeView #nav>.nav-group[data-group=conversations]{grid-column:1;grid-row:3}
-@media(max-width:900px){html body.card-home-active #homeView #nav>.nav-group{grid-column:auto!important;grid-row:auto!important}}
 
 /* Approved login: one centered card, visible brand, stable verification row. */
 html body #loginView.login-shell{display:grid!important;place-items:center!important;min-height:100dvh!important;padding:18px!important;background:radial-gradient(circle at 50% 0,#e5f1ec 0,#f5f9f7 58%,#edf4f1 100%)!important}

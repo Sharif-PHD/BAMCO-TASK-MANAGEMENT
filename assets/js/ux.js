@@ -236,7 +236,7 @@
     if(!src){img.classList.add('is-missing');img.removeAttribute('src');return}
     img.onload=()=>img.classList.remove('is-missing');
     img.onerror=()=>img.classList.add('is-missing');
-    img.src=src;
+    if(img.getAttribute('src')!==src)img.src=src;
   }
 
   function refreshWelcomeStickers(){
@@ -266,8 +266,8 @@
   function polishSearchButtons(){
     const k=q('#kanbanView .task-search-toggle');
     const a=q('#archiveView .task-search-toggle');
-    if(k){k.textContent='جست‌وجو در وظایف';k.title='جست‌وجو در وظایف';k.setAttribute('aria-label','جست‌وجو در وظایف')}
-    if(a){a.textContent='جست‌وجو در آرشیو';a.title='جست‌وجو در آرشیو';a.setAttribute('aria-label','جست‌وجو در آرشیو')}
+    if(k){if(k.textContent!=='جست‌وجو در وظایف')k.textContent='جست‌وجو در وظایف';k.title='جست‌وجو در وظایف';k.setAttribute('aria-label','جست‌وجو در وظایف')}
+    if(a){if(a.textContent!=='جست‌وجو در آرشیو')a.textContent='جست‌وجو در آرشیو';a.title='جست‌وجو در آرشیو';a.setAttribute('aria-label','جست‌وجو در آرشیو')}
     const ki=q('#kanbanSearch'),ai=q('#archiveSearch');
     if(ki)ki.placeholder='جست‌وجو در وظایف…';
     if(ai)ai.placeholder='جست‌وجو در آرشیو…';
@@ -278,10 +278,10 @@
     view.querySelectorAll('tbody tr[data-task-id]').forEach(row=>{
       const cells=row.children;
       const offset=cells[0]?.classList.contains('unified-select-cell')?1:0;
-      if(cells[offset])cells[offset].textContent=(cells[offset].textContent||'').replace(/^\s*#\s*/,'').trim();
+      if(cells[offset]){const text=(cells[offset].textContent||'').replace(/^\s*#\s*/,'').trim();if(cells[offset].textContent!==text)cells[offset].textContent=text;}
       if(cells[offset+11]){
         const text=(cells[offset+11].textContent||'').trim();
-        cells[offset+11].textContent=text;
+        if(cells[offset+11].textContent!==text)cells[offset+11].textContent=text;
       }
     });
   }

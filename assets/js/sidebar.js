@@ -4,7 +4,7 @@
   const qa=s=>[...document.querySelectorAll(s)];
 
   function installHeaderStyles(){
-    if(q('#bamcoHeaderRefreshStyles'))return;
+    if(q('#bamcoVerticalSidebarStyles'))return;
     const link=document.createElement('link');
     link.id='bamcoVerticalSidebarStyles';
     link.rel='stylesheet';
@@ -91,7 +91,7 @@
     const refreshVisibility=()=>groups.forEach(g=>{
       if(!g)return;
       const visible=[...g.querySelectorAll('.nav-group-items>button')].some(b=>!b.classList.contains('hidden'));
-      g.classList.toggle('hidden',!visible);
+      if(g.classList.contains('hidden')===visible)g.classList.toggle('hidden',!visible);
     });
     refreshVisibility();
     new MutationObserver(refreshVisibility).observe(nav,{subtree:true,attributes:true,attributeFilter:['class']});
@@ -141,4 +141,3 @@
   const boot=()=>{forceNormalScale();blockProductionEditor();installHeaderStyles();clearEditorOverrides();installGroupedNav();installHeaderTools();installCollapseButton();installTaskTools();removeSubtitle();requestAnimationFrame(clearEditorOverrides)};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
-
