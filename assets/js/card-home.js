@@ -11,10 +11,10 @@ function install(){
  const home=document.createElement('section');home.id='homeView';home.className='view hidden card-home';home.innerHTML='<div class="home-heading"><span>میز کار شما</span><h2 tabindex="-1">امروز از کدام بخش شروع می‌کنید؟</h2><p>برای مشاهده اطلاعات و جدول‌ها، بخش موردنظر را انتخاب کنید.</p></div>';
  workspace.append(home);home.append(nav);
  nav.querySelector('.nav-login-root')?.remove();
- function syncGroups(){nav.querySelectorAll('.nav-group').forEach(group=>{const visible=[...group.querySelectorAll('[data-view]')].some(b=>!b.classList.contains('hidden'));if(group.classList.contains('hidden')===visible)group.classList.toggle('hidden',!visible);group.querySelector('.nav-group-toggle')?.setAttribute('aria-expanded','true')})}
+ const footer=document.createElement('footer');footer.id='homeFixedFooter';footer.innerHTML='<a href="https://www.linkedin.com/company/bam-automotive-company/" target="_blank" rel="noopener noreferrer">شرکت خودروسازان بم</a> | واحد توسعه و تکوین محصول | <a href="https://www.linkedin.com/in/shahab-tanhaiyan-b1156a10a/" target="_blank" rel="noopener noreferrer">شهاب‌الدین تنهائیان</a> و <a href="https://www.linkedin.com/in/nazanin-ghaemizadeh/" target="_blank" rel="noopener noreferrer">نازنین قائمی</a>';app.append(footer);
+ function syncGroups(){nav.querySelectorAll('.nav-group').forEach(group=>{const visible=[...group.querySelectorAll('[data-view]')].some(b=>!b.classList.contains('hidden'));if(group.classList.contains('hidden')===visible)group.classList.toggle('hidden',!visible);const toggle=group.querySelector('button.nav-group-toggle');if(toggle){const heading=document.createElement('h3');heading.className='nav-group-toggle';heading.innerHTML=toggle.innerHTML;toggle.replaceWith(heading)}})}
  new MutationObserver(syncGroups).observe(nav,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});syncGroups();
- // Group headings open their first permitted page; all subpages remain visible.
- nav.addEventListener('click',e=>{const toggle=e.target.closest('.nav-group-toggle');if(!toggle)return;e.preventDefault();e.stopImmediatePropagation();toggle.closest('.nav-group').querySelector('[data-view]:not(.hidden)')?.click()},true);
+ // Section headings are non-interactive. Only existing subpage buttons navigate.
  const dialog=document.createElement('dialog');dialog.className='home-welcome-dialog';dialog.setAttribute('aria-labelledby','homeWelcomeTitle');dialog.innerHTML='<button class="welcome-dismiss" type="button" aria-label="بستن خوشامدگویی" autofocus>×</button><div class="home-welcome-copy"><p class="welcome-person"></p><h2 id="homeWelcomeTitle">به سامانه مدیریت، پایش و پیگیری امور خوش آمدید</h2><p>همراه شما برای نظم در کارها، پایش پیشرفت و پیگیری به‌موقع امور.</p><p>بخش موردنظر را از کارت‌های میز کار انتخاب کنید.</p></div><img class="home-sticker female" alt="استیکر زن در وضعیت مطلوب"><img class="home-sticker male" alt="استیکر مرد در وضعیت مطلوب">';document.body.append(dialog);
  function stickers(){const assets=window.BAMCO_DESKTOP_ASSETS||{};for(const gender of ['female','male']){const image=dialog.querySelector('.'+gender);const src=assets['01_happy_'+gender];if(src)image.src=src}}
  stickers();window.addEventListener('bamco-stickers-ready',stickers);
@@ -23,15 +23,18 @@ function install(){
   workspace.querySelectorAll(':scope > .view').forEach(v=>v.classList.toggle('hidden',v!==home));
   document.body.classList.remove('welcome-active');document.body.classList.add('card-home-active');
   if(typeof state!=='undefined')state.view='home';
+  document.body.classList.remove('content-only');
   q('#viewTitle').textContent='میز کار';q('#addTaskBtn')?.classList.add('hidden');syncGroups();
  }
- new MutationObserver(()=>document.body.classList.toggle('card-home-active',!home.classList.contains('hidden'))).observe(home,{attributes:true,attributeFilter:['class']});
+ function syncMode(){const loggedIn=!app.classList.contains('hidden'),atHome=!home.classList.contains('hidden');document.body.classList.toggle('card-home-active',loggedIn&&atHome);document.body.classList.toggle('content-only',loggedIn&&!atHome)}
+ new MutationObserver(syncMode).observe(home,{attributes:true,attributeFilter:['class']});
+ window.bamcoShowHome=showHome;
  let welcomed=false;
  window.bamcoOpenHomeWelcome=()=>{showHome();if(welcomed||app.classList.contains('hidden'))return;if(typeof state!=='undefined'&&state.profile?.must_change_password)return;welcomed=true;dialog.querySelector('.welcome-person').textContent=(q('#userName')?.textContent||'همکار')+' عزیز';stickers();dialog.showModal()};
  dialog.querySelector('.welcome-dismiss').addEventListener('click',()=>dialog.close());
  dialog.addEventListener('close',()=>home.querySelector('h2').focus({preventScroll:true}));
  top.querySelector('.home-return').addEventListener('click',()=>{showHome();home.querySelector('h2').focus({preventScroll:true})});
- new MutationObserver(()=>{if(app.classList.contains('hidden')){welcomed=false;if(dialog.open)dialog.close();document.body.classList.remove('card-home-active')}}).observe(app,{attributes:true,attributeFilter:['class']});
+ new MutationObserver(()=>{if(app.classList.contains('hidden')){welcomed=false;if(dialog.open)dialog.close();document.body.classList.remove('card-home-active','content-only')}}).observe(app,{attributes:true,attributeFilter:['class']});
  if(!app.classList.contains('hidden'))window.bamcoOpenHomeWelcome();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
