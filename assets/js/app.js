@@ -28,10 +28,14 @@ async function api(path,{method='GET',body,auth=true,prefer}={}){
   const headers={apikey:SB_KEY,'Content-Type':'application/json',Accept:'application/json'};
   if(auth&&state.token) headers.Authorization=`Bearer ${state.token}`;
   if(prefer) headers.Prefer=prefer;
-  const res=await fetch(SB_URL+path,{method,headers,body:body===undefined?undefined:JSON.stringify(body)});
-  const text=await res.text(); let data=null; try{data=text?JSON.parse(text):null}catch{data=text}
-  if(!res.ok) throw new Error(apiErrorMessage(data,res.status));
-  return data;
+  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),20000);
+  try{
+    const res=await fetch(SB_URL+path,{method,headers,signal:controller.signal,body:body===undefined?undefined:JSON.stringify(body)});
+    const text=await res.text();let data=null;try{data=text?JSON.parse(text):null}catch{data=text}
+    if(!res.ok)throw new Error(apiErrorMessage(data,res.status));
+    return data;
+  }catch(err){if(controller.signal.aborted)throw new Error('ارتباط با سامانه بیش از حد طول کشید. دوباره تلاش کنید.');throw err}
+  finally{clearTimeout(timer)}
 }
 const select=(table,q='select=*')=>api(`/rest/v1/${table}?${q}`);
 async function selectAll(table,q='select=*',pageSize=1000){

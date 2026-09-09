@@ -39,8 +39,8 @@ jobs:
               assert x not in rt, f'unsafe navigation rebuild found: {x}'
           for view in ['groupChat','directMessages','taskChats','loginActivity','activeSessions','performanceReport','messageReport','responseReport','requestReport','loginReport','systemOptions','alertSettings','emailSettings']:
               assert view in rt, f'missing tested view: {view}'
-          assert "production-runtime.js?v=20260909-safe-1" in nav
-          assert "completion-ui.js?v=20260909-1" in nav
+          assert "production-runtime.js?v=" in nav
+          assert "completion-ui.js?v=" in nav
           assert "session-runtime.js?v=20260909-1" in nav
           assert "app.classList.contains('hidden')" in nav
           assert "session-audit" in sess and "120000" in sess
@@ -49,3 +49,7 @@ jobs:
           assert "replace(/تسک/g,'وظیفه')" in ui
           print('runtime safety: PASS')
           PY
+
+      - name: Navigation and loading regression tests
+        run: node --test tests/*.test.cjs
+

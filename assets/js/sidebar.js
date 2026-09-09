@@ -142,18 +142,3 @@
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
 
-/* Load additive workflow modules without modifying the large legacy document. */
-(()=>{
-  const load=(src,key)=>{
-    if(document.querySelector(`script[data-${key}]`))return;
-    const script=document.createElement('script');
-    script.src=src;
-    script.defer=true;
-    script.dataset[key]='';
-    document.head.appendChild(script);
-  };
-  load('assets/js/phase1-workflow.js?v=20260909-tabs-6','phase1Workflow');
-  load('assets/js/phase2-message-engine.js?v=20260909-tabs-6','phase2MessageEngine');
-  load('assets/js/phase3-response-tracking.js?v=20260909-tabs-6','phase3ResponseTracking');
-})();
-
