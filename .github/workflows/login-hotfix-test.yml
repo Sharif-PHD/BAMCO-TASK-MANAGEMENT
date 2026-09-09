@@ -31,8 +31,6 @@ jobs:
           new='<script src="assets/js/auth-ui.js?v=20260909-native-1" data-login-controls></script>'
           if old in s:
               s=s.replace(old,'',1)
-          elif new not in s:
-              raise SystemExit('expected auth-ui tag not found')
           if new not in s:
               marker='  </main>'
               if marker not in s:
