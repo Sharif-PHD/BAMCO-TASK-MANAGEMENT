@@ -23,3 +23,13 @@
   async function sendReminder(){const ids=[...selected].map(Number),items=rows.filter(x=>ids.includes(Number(x.delivery_id))&&x.response_status!=='replied');if(!items.length)return toast('حداقل یک ارسال بدون پاسخ را انتخاب کنید.',true);const recipients=[...new Set(items.map(x=>x.recipient_id))],channelMap=Object.fromEntries(recipients.map(id=>[id,items.find(x=>x.recipient_id===id)?.channel||'portal']));try{const bid=await rpc('prepare_message_batch',{p_recipient_ids:recipients,p_channels:channelMap,p_subject:'یادآوری پاسخ به پیام',p_template_text:'[نام]\n\nلطفاً پاسخ پیام قبلی را در سامانه ثبت فرمایید.',p_kind:'reminder'});await rpc('queue_message_batch',{p_batch_id:bid});if(items.some(x=>x.channel==='email')){const response=await fetch(`${SB_URL}/functions/v1/send-message-queue`,{method:'POST',headers:{apikey:SB_KEY,Authorization:`Bearer ${state.token}`,'Content-Type':'application/json'},body:JSON.stringify({batch_id:bid})});if(!response.ok)throw new Error((await response.json().catch(()=>({}))).error||'ارسال ایمیل یادآوری ناموفق بود.')}await rpc('mark_message_reminders',{p_delivery_ids:items.map(x=>Number(x.delivery_id))});toast(`یادآوری برای ${fa(recipients.length)} نفر ثبت شد.`);selected.clear();await load()}catch(err){toast(err.message,true)}}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();setTimeout(install,600);
 })();
+
+/* Load additive infrastructure runtime only after Phase 3 is available. */
+(()=>{
+  if(document.querySelector('script[data-bamco-infrastructure]'))return;
+  const script=document.createElement('script');
+  script.src='assets/js/infrastructure-runtime.js?v=20260909-1';
+  script.defer=true;
+  script.dataset.bamcoInfrastructure='1';
+  document.head.appendChild(script);
+})();
