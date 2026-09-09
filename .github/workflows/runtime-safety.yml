@@ -1,0 +1,39 @@
+name: Runtime safety checks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'assets/js/production-runtime.js'
+      - 'assets/js/navigation-completeness.js'
+      - 'assets/js/sidebar.js'
+      - '.github/workflows/runtime-safety.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: JavaScript syntax
+        run: |
+          node --check assets/js/production-runtime.js
+          node --check assets/js/navigation-completeness.js
+          node --check assets/js/sidebar.js
+      - name: Additive navigation assertions
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          rt=Path('assets/js/production-runtime.js').read_text(encoding='utf-8')
+          nav=Path('assets/js/navigation-completeness.js').read_text(encoding='utf-8')
+          forbidden=["qa('#nav>.nav-group').forEach(x=>x.remove())",'replaceChildren(','.innerHTML=\'\'']
+          for x in forbidden:
+              assert x not in rt, f'unsafe navigation rebuild found: {x}'
+          for view in ['groupChat','directMessages','taskChats','loginActivity','activeSessions','performanceReport','messageReport','responseReport','requestReport','loginReport','systemOptions','alertSettings','emailSettings']:
+              assert view in rt, f'missing tested view: {view}'
+          assert "production-runtime.js?v=20260909-safe-1" in nav
+          assert "app.classList.contains('hidden')" in nav
+          print('runtime safety: PASS')
+          PY
