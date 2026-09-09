@@ -1,6 +1,6 @@
 (()=>{
   'use strict';
-  const VERSION='20260909-safe-completion-2';
+  const VERSION='20260909-safe-completion-3';
   if(window.__bamcoStabilityHotfix===VERSION)return;
   window.__bamcoStabilityHotfix=VERSION;
   document.documentElement.dataset.navigationComplete='safe-completion';
@@ -47,7 +47,10 @@
   function loadRuntime(){
     const app=document.querySelector('#appView');
     if(!app||app.classList.contains('hidden'))return;
-    addScript('assets/js/production-runtime.js?v=20260909-safe-1','__bamcoSafeRuntimeLoading',()=>{window.__bamcoSafeRuntimeLoaded=true});
+    addScript('assets/js/production-runtime.js?v=20260909-safe-1','__bamcoSafeRuntimeLoading',()=>{
+      window.__bamcoSafeRuntimeLoaded=true;
+      addScript('assets/js/completion-ui.js?v=20260909-1','__bamcoCompletionUiLoading',()=>{window.__bamcoCompletionUiLoaded=true});
+    });
     addScript('assets/js/session-runtime.js?v=20260909-1','__bamcoSessionRuntimeLoading',()=>{window.__bamcoSessionRuntimeLoaded=true});
   }
 
