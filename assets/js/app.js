@@ -634,7 +634,7 @@ showLogin();
   let valueCache=new WeakMap();
   let idleToken=0;
   let archivePage=1;
-  let archivePageSize=200;
+  let archivePageSize=50;
   let archiveQuerySignature='';
 
   function resetRenderCaches(){
@@ -764,7 +764,7 @@ showLogin();
 
   function renderArchivePager(total,start,shown,pageCount){
     const pager=qs('#archivePager');if(!pager)return;
-    pager.innerHTML=`<span>نمایش ${fa(total?start+1:0)} تا ${fa(start+shown)} از ${fa(total)} رکورد</span><div><label>تعداد در صفحه <select id="archivePageSize"><option value="100">۱۰۰</option><option value="200">۲۰۰</option><option value="500">۵۰۰</option></select></label><button type="button" class="ghost" data-archive-page="prev" ${archivePage<=1?'disabled':''}>صفحه قبل</button><strong>صفحه ${fa(archivePage)} از ${fa(pageCount)}</strong><button type="button" class="ghost" data-archive-page="next" ${archivePage>=pageCount?'disabled':''}>صفحه بعد</button></div>`;
+    pager.innerHTML=`<span>نمایش ${fa(total?start+1:0)} تا ${fa(start+shown)} از ${fa(total)} رکورد</span><div><label>تعداد در صفحه <select id="archivePageSize"><option value="50">۵۰</option><option value="100">۱۰۰</option><option value="200">۲۰۰</option></select></label><button type="button" class="ghost" data-archive-page="prev" ${archivePage<=1?'disabled':''}>صفحه قبل</button><strong>صفحه ${fa(archivePage)} از ${fa(pageCount)}</strong><button type="button" class="ghost" data-archive-page="next" ${archivePage>=pageCount?'disabled':''}>صفحه بعد</button></div>`;
     qs('#archivePageSize',pager).value=String(archivePageSize);
   }
 
@@ -775,7 +775,7 @@ showLogin();
   });
   qs('#archivePager')?.addEventListener('change',event=>{
     if(event.target.id!=='archivePageSize')return;
-    archivePageSize=Number(event.target.value)||200;archivePage=1;renderTasks(true);
+    archivePageSize=Number(event.target.value)||50;archivePage=1;renderTasks(true);
   });
 
   chooseTask=function(scope,id){
