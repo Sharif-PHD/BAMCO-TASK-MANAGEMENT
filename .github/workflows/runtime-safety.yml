@@ -4,12 +4,14 @@ on:
   push:
     branches: [main]
     paths:
-      - 'assets/js/production-runtime.js'
+      - 'assets/js/**'
+      - 'assets/css/**'
+      - 'tests/**'
+      - 'package*.json'
       - 'index.html'
-      - 'assets/js/session-runtime.js'
-      - 'assets/js/completion-ui.js'
-      - 'assets/js/sidebar.js'
       - '.github/workflows/runtime-safety.yml'
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: read
@@ -19,6 +21,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install test dependencies
+        run: npm ci
       - name: JavaScript syntax
         run: |
           node --check assets/js/production-runtime.js
@@ -52,4 +60,3 @@ jobs:
 
       - name: Navigation and loading regression tests
         run: node --test tests/*.test.cjs
-

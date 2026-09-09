@@ -1,4 +1,5 @@
 /* BAMCO unified UI: one visual contract for all modules. */
+/* The scoped interior contract below is authoritative for internal pages. */
 html body #appView.app.hidden{display:none!important;visibility:hidden!important}
 #appView .view{direction:rtl;text-align:right}
 #appView .view>.panel,#appView .view>.vehicle-panel,#appView .view>.desktop-sticker-page{
@@ -74,3 +75,203 @@ html body #appView.app.hidden{display:none!important;visibility:hidden!important
   #appView #welcomeView .welcome-content{padding:30px 14px 168px!important}
   #appView #welcomeView img.welcome-sticker{width:122px!important;min-width:122px!important;max-width:122px!important;height:180px!important;min-height:180px!important;max-height:180px!important}
 }
+
+/* Interior contract — vehicle handover is the reference. Every selector is
+   scoped to an interior view or its dialog; the home card grid has no overrides. */
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior{
+ --ui-brand:#145741;--ui-ink:#17362d;--ui-muted:#62766f;--ui-line:#c5d5cc;--ui-head:#e8f1ed;
+ --ui-surface:#fff;--ui-canvas:#f8faf9;--ui-radius:10px;--ui-control:36px;
+ box-sizing:border-box!important;direction:rtl!important;text-align:right!important;text-align-last:right!important;
+ background:var(--ui-canvas)!important;padding:0!important;margin:0!important;width:100%!important;min-width:0!important;
+ font-family:var(--fa-font,'B Nazanin',BamcoPersian,Tahoma,serif)!important;font-size:16px!important;line-height:1.65!important;
+}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior:not(.hidden){display:flex!important;flex-direction:column!important;min-height:100dvh!important;height:auto!important;overflow:visible!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior.focus-table-view:not(.hidden){height:100dvh!important;min-height:0!important;max-height:100dvh!important;overflow:hidden!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .bamco-page-heading{
+ display:flex!important;align-items:center!important;flex:none!important;gap:14px!important;min-height:56px!important;
+ order:-1!important;margin:0!important;padding:9px 12px!important;border:0!important;border-bottom:1px solid var(--ui-line)!important;
+ background:#fff!important;position:relative!important;width:100%!important;box-sizing:border-box!important;
+}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .bamco-page-heading h3{margin:0!important;padding:0!important;font-size:20px!important;line-height:1.6!important;font-weight:700!important;color:var(--ui-brand)!important;text-align:right!important;text-align-last:right!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .bamco-source-title,html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .bamco-empty-heading{display:none!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior>.bamco-page-body{
+ min-width:0!important;min-height:0!important;height:auto!important;max-height:none!important;box-sizing:border-box!important;
+ margin:0!important;padding:16px!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:var(--ui-canvas)!important;
+}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior.focus-table-view>.bamco-page-body{display:flex!important;flex-direction:column!important;flex:1 1 0!important;overflow:hidden!important;padding:0!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .bamco-control-row{
+ display:flex!important;flex-wrap:wrap!important;align-items:center!important;justify-content:flex-start!important;gap:8px!important;
+ min-height:0!important;padding:8px 12px!important;margin:0!important;border:0!important;border-bottom:1px solid var(--ui-line)!important;background:#f5f8f6!important;
+}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .bamco-control-row>div:has(>.bamco-source-title):not(:has(button,input,select,textarea)){display:none!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .bamco-command-bar{
+ display:flex!important;flex:0 0 auto!important;flex-wrap:wrap!important;align-items:center!important;justify-content:flex-start!important;
+ gap:7px!important;min-height:48px!important;width:100%!important;box-sizing:border-box!important;overflow:visible!important;
+ margin:0!important;padding:6px 10px!important;order:0!important;border:0!important;border-bottom:1px solid var(--ui-line)!important;
+ border-radius:0!important;background:#f5f8f6!important;direction:rtl!important;
+}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :where(button.primary,button.ghost,button.danger,.bamco-command-bar>button,.bamco-page-heading>button,.workspace-report-tools button,.response-quick button,.tt-mode,.workspace-settings-form button,.option-editor button,.option-create button,.desktop-template-fieldset button){
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;
+ width:auto!important;min-width:0!important;height:var(--ui-control)!important;min-height:var(--ui-control)!important;
+ max-height:none!important;flex-shrink:0!important;padding:5px 12px!important;margin:0!important;
+ border:1px solid #bcd0c3!important;border-radius:7px!important;background:#fff!important;box-shadow:none!important;
+ color:#214b36!important;font-family:inherit!important;font-size:16px!important;line-height:1.4!important;
+ white-space:nowrap!important;text-align:center!important;text-align-last:center!important;cursor:pointer!important;
+}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior button.primary{background:#146b4d!important;color:#fff!important;border-color:#146b4d!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :where(button.danger,.vehicle-delete,#kanbanDeleteBtn,#archiveDeleteBtn,#deletePersonBtn){background:#fff8f7!important;color:#a23535!important;border-color:#e0bfbb!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :where(.vehicle-import,#importBtn,#archiveImportBtn){background:#e9eef4!important;color:#334b62!important;border-color:#bac7d4!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(.response-quick,.tt-switch) button.active{background:#146b4d!important;color:#fff!important;border-color:#146b4d!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(button,input,select,textarea,a):focus-visible{outline:2px solid #327c5c!important;outline-offset:2px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior button:disabled{opacity:.4!important;cursor:default!important;box-shadow:none!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(.bamco-command-bar>button,.content-back):not(:disabled):hover{filter:brightness(.96)}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :where(input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=hidden]):not([type=color]):not([type=range]),select,textarea){
+ box-sizing:border-box!important;max-width:100%!important;min-width:0!important;border:1px solid #bcd0c3!important;border-radius:7px!important;
+ background:#fff!important;color:var(--ui-ink)!important;box-shadow:none!important;padding:5px 10px!important;font:inherit!important;
+ text-align:right!important;text-align-last:right!important;line-height:1.5!important;
+}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :where(input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=hidden]):not([type=color]):not([type=range]),select:not([multiple])){min-height:36px!important;height:36px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior select[multiple]{height:auto!important;min-height:120px!important;padding:6px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior textarea{min-height:104px!important;width:100%!important;resize:vertical}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(input,textarea)[readonly]{background:#f2f6f3!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(input,textarea,select):disabled{background:#eef2ef!important;color:#76887d!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(.english,.english-ui,.en-text,.suite-english,[lang=en],input[type=email],input[type=url],input[type=password]){font-family:var(--en-font,'Times New Roman',serif)!important;direction:ltr!important;text-align:left!important;text-align-last:left!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(input[type=checkbox],input[type=radio]){width:17px!important;height:17px!important;margin:0!important;accent-color:#146b4d!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior label{font-size:16px!important;line-height:1.5!important;color:var(--ui-ink)!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(.bamco-filter-bar,.response-filters,.message-center-filters){
+ display:flex!important;flex-wrap:wrap!important;align-items:end!important;gap:8px!important;flex:none!important;
+ padding:10px 12px!important;margin:0!important;background:#fff!important;border:0!important;border-bottom:1px solid var(--ui-line)!important;
+}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .bamco-filter-bar>:is(input,select){flex:1 1 160px!important;width:auto!important;max-width:300px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(.bamco-command-bar,.bamco-control-row) :is(input.search,input[type=search],.toolbar-search,.vehicle-search){
+ display:block!important;visibility:visible!important;opacity:1!important;position:static!important;
+ order:100!important;flex:0 1 240px!important;width:240px!important;min-width:160px!important;max-width:100%!important;
+ margin:0 auto 0 0!important;
+}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(.task-search-toggle,.vehicle-search-toggle,.search-toggle){display:none!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(.focus-scroll,.table-wrap,.vehicle-table-wrap,.prod-table-wrap){
+ flex:1 1 0!important;min-height:100px!important;height:auto!important;max-height:none!important;
+ overflow:auto!important;overscroll-behavior:contain;scrollbar-width:auto!important;-ms-overflow-style:auto!important;
+ margin:0!important;border:0!important;border-radius:0!important;background:#fff!important;box-shadow:none!important;
+}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(.focus-scroll,.table-wrap,.vehicle-table-wrap,.prod-table-wrap)::-webkit-scrollbar{display:block!important;width:11px!important;height:11px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(.focus-scroll,.table-wrap,.vehicle-table-wrap,.prod-table-wrap)::-webkit-scrollbar-thumb{background:#a7beb0;border:2px solid #f1f6f2;border-radius:8px}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior table{
+ direction:rtl!important;width:max-content!important;min-width:100%!important;table-layout:fixed!important;
+ border-collapse:separate!important;border-spacing:0!important;background:#fff!important;
+}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior table :is(th,td){
+ box-sizing:border-box!important;min-width:64px!important;height:34px!important;max-height:none!important;
+ padding:4px 8px!important;border:0!important;border-left:1px solid #dce6df!important;border-bottom:1px solid #d1ddd8!important;
+ color:#17362d!important;font-family:inherit!important;font-size:16px!important;line-height:1.55!important;
+ vertical-align:middle!important;white-space:normal!important;overflow-wrap:break-word!important;text-align:right!important;text-align-last:right!important;
+}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior table.suite-compact :is(th,td){padding:3px 7px!important;font-size:15px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior table thead{position:sticky!important;top:0!important;z-index:15!important;background:var(--ui-head)!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior table thead th{position:relative!important;top:auto!important;background:var(--ui-head)!important;font-weight:700!important;text-align:center!important;text-align-last:center!important;white-space:nowrap!important;padding-left:18px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior table :is(.column-filters,.vehicle-filters,.suite-filters) th{height:32px!important;padding:3px 4px!important;background:#f4f7f5!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior table :is(.column-filters,.vehicle-filters,.suite-filters) select{width:100%!important;min-height:27px!important;height:27px!important;padding:1px 5px!important;font-size:14px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior table tbody tr:nth-child(even)>td{background:#fafcfa!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior table tbody tr:hover>td{background:#edf6f1!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior table tbody tr.row-warning>td{background:#fff8e5!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior table tbody tr.row-overdue>td{background:#fff0ef!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior table tbody tr:is(.suite-selected,.task-selected,.vehicle-selected,.person-selected,[aria-selected=true])>td{background:#cee8d8!important;color:#123e2d!important;box-shadow:inset 0 1px #8dbca1,inset 0 -1px #8dbca1!important;outline:0!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(.empty,.prod-empty,.workspace-loading,.tt-empty,.completion-empty,.sticker-empty){
+ padding:32px 18px!important;color:var(--ui-muted)!important;text-align:center!important;text-align-last:center!important;
+ font-size:16px!important;line-height:1.9!important;
+}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(.table-pagination,#archivePager,.suite-table-options){
+ flex:none!important;margin:0!important;padding:7px 10px!important;border:0!important;border-top:1px solid var(--ui-line)!important;
+ border-radius:0!important;box-shadow:none!important;background:#f5f8f6!important;font-size:15px!important;color:#536c62!important;
+}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .table-pagination{display:flex!important;align-items:center!important;justify-content:space-between!important;flex-wrap:wrap!important;gap:8px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .table-pagination :is(button,select){min-height:32px!important;height:32px!important;font:inherit!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(.manager-form,.workspace-settings-form,.approval-chain-form){width:100%!important;max-width:1100px!important;box-sizing:border-box!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:14px 16px!important;padding:16px!important;margin:0!important;border:1px solid var(--ui-line)!important;border-radius:var(--ui-radius)!important;background:#fff!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(.manager-form,.workspace-settings-form,.approval-chain-form)>label{display:flex!important;flex-direction:column!important;gap:6px!important;min-width:0!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(.manager-form,.approval-chain-form) label>input,html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(.manager-form,.approval-chain-form) label>select{width:100%!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(fieldset,.manager-card,.prod-card,.snapshot-preview,.workspace-error,.desktop-template-fieldset){min-width:0!important;border:1px solid var(--ui-line)!important;border-radius:var(--ui-radius)!important;background:#fff!important;box-shadow:none!important;padding:14px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior fieldset{margin:0!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior legend{padding:0 6px!important;font-size:17px!important;font-weight:700!important;color:var(--ui-brand)!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .approval-chain-form fieldset{display:grid!important;gap:12px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .approval-chain-form fieldset label{display:grid!important;gap:5px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .approval-chain-form .chain-default{grid-column:1/-1!important;display:flex!important;flex-direction:row!important;align-items:center!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(.modal-actions,.manager-form+.modal-actions){display:flex!important;flex-wrap:wrap!important;gap:8px!important;padding:14px 0!important;margin:0!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .workspace-settings-grid{padding:0!important;gap:16px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .option-editor{padding:12px!important;gap:8px!important;grid-template-columns:minmax(100px,1fr) 65px 50px 48px 72px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(.workspace-metrics,.workspace-action-grid){gap:10px!important;padding:12px!important;margin:0!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(.workspace-metrics article,.workspace-action-grid button,.dashboard-cards article){background:#fff!important;border:1px solid var(--ui-line)!important;border-radius:var(--ui-radius)!important;box-shadow:none!important;padding:12px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .desktop-dashboard-exact{max-width:none!important;gap:12px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .dashboard-chart-card{border-color:var(--ui-line)!important;border-radius:var(--ui-radius)!important;box-shadow:none!important;padding:12px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .dashboard-filter-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;padding:0!important;border:0!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .dashboard-filter-grid label{display:grid!important;gap:5px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .dashboard-filter-actions{margin-top:8px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .desktop-template-shell{display:block!important;height:auto!important;min-height:0!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .desktop-template-fieldset{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:10px!important;width:100%!important;max-width:900px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .desktop-template-fieldset select{flex:1 1 220px!important;width:auto!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .sticker-pair{gap:12px!important;margin:12px 0 0!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .sticker-pair article{border:1px solid var(--ui-line)!important;border-radius:var(--ui-radius)!important;box-shadow:none!important;background:#fff!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .task-timeline-shell{padding:12px!important;min-height:0!important;height:auto!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .tt-head{margin:0!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .tt-toolbar{padding:12px 0!important;margin:0!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .tt-toolbar .bamco-filter-bar{border:1px solid var(--ui-line)!important;border-radius:7px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior #ttBody{overflow:auto!important;min-width:0!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .tt-legend{margin:12px 0 0!important;border:1px solid var(--ui-line)!important;border-radius:7px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(.prod-chat,.task-talk-shell){display:grid!important;grid-template-columns:minmax(220px,28%) minmax(0,1fr)!important;height:calc(100dvh - 104px)!important;min-height:450px!important;border:1px solid var(--ui-line)!important;border-radius:var(--ui-radius)!important;overflow:hidden!important;gap:0!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(.prod-chat>div,.task-talk-panel){min-width:0!important;min-height:0!important;border-radius:0!important;box-shadow:none!important;overflow:auto!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .messenger-host{height:100%!important;min-height:0!important;border-radius:0!important;background:#edf4ef!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(.prod-chat-head,.task-talk-head,.messenger-head){background:#f5f8f6!important;border-bottom:1px solid var(--ui-line)!important;padding:10px 12px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .messenger-compose textarea{min-height:42px!important;height:auto!important;padding:8px 12px!important;resize:vertical!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .chat-bubble-meta{font-size:12px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .chat-body{font-size:16px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .prod-thread{font-size:16px!important;line-height:1.65!important;padding:12px!important}
+html body dialog:is(#taskDialog,#vehicleRecordDialog,.bamco-dialog).bamco-dialog:not(#calendarDialog):not(#avatarCropDialog){
+ width:min(900px,calc(100vw - 32px))!important;max-width:calc(100vw - 24px)!important;max-height:calc(100dvh - 32px)!important;
+ padding:20px!important;border:1px solid #b8c8c1!important;border-radius:14px!important;background:#fff!important;box-shadow:0 22px 70px #123f3333!important;
+ font:16px/1.65 var(--fa-font,'B Nazanin',Tahoma,serif)!important;color:#17362d!important;overflow:auto!important;
+}
+html body dialog:is(#taskDialog,#vehicleRecordDialog,.bamco-dialog).bamco-dialog.small{width:min(620px,calc(100vw - 32px))!important}
+html body dialog:is(#taskDialog,#vehicleRecordDialog,.bamco-dialog).bamco-dialog::backdrop{background:#123f3366!important;backdrop-filter:blur(3px)}
+html body dialog:is(#taskDialog,#vehicleRecordDialog,.bamco-dialog).bamco-dialog .modal-head{display:flex!important;align-items:flex-start!important;justify-content:space-between!important;gap:12px!important;padding:0 0 12px!important;margin:0 0 14px!important;border-bottom:1px solid #c5d5cc!important}
+html body dialog:is(#taskDialog,#vehicleRecordDialog,.bamco-dialog).bamco-dialog .modal-head h3{margin:0!important;color:#145741!important;font:700 20px/1.5 var(--fa-font)!important}
+html body dialog:is(#taskDialog,#vehicleRecordDialog,.bamco-dialog).bamco-dialog .modal-head p{margin:4px 0 0!important;font:15px/1.6 var(--fa-font)!important;color:#62766f!important}
+html body dialog:is(#taskDialog,#vehicleRecordDialog,.bamco-dialog).bamco-dialog :is(.form-grid,.manager-form,.vehicle-editor-grid){display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px 16px!important;margin:0!important;padding:0!important;max-height:none!important;overflow:visible!important}
+html body dialog:is(#taskDialog,#vehicleRecordDialog,.bamco-dialog).bamco-dialog :is(.form-grid,.manager-form,.vehicle-editor-grid) label{display:flex!important;flex-direction:column!important;gap:5px!important;font-size:16px!important;min-width:0!important}
+html body dialog:is(#taskDialog,#vehicleRecordDialog,.bamco-dialog).bamco-dialog :where(input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=hidden]):not([type=range]),select,textarea){box-sizing:border-box!important;width:100%!important;min-width:0!important;border:1px solid #bcd0c3!important;border-radius:7px!important;padding:6px 10px!important;background:#fff!important;color:#17362d!important;font:16px/1.5 var(--fa-font)!important;text-align:right!important}
+html body dialog:is(#taskDialog,#vehicleRecordDialog,.bamco-dialog).bamco-dialog :where(input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=hidden]):not([type=range]),select:not([multiple])){height:38px!important;min-height:38px!important}
+html body dialog:is(#taskDialog,#vehicleRecordDialog,.bamco-dialog).bamco-dialog :is(.english,[dir=ltr],input[type=password],input[type=email]){font-family:var(--en-font,'Times New Roman',serif)!important;direction:ltr!important;text-align:left!important;text-align-last:left!important}
+html body dialog:is(#taskDialog,#vehicleRecordDialog,.bamco-dialog).bamco-dialog textarea{min-height:100px!important;resize:vertical!important}
+html body dialog:is(#taskDialog,#vehicleRecordDialog,.bamco-dialog).bamco-dialog .date-field{display:grid!important;grid-template-columns:minmax(0,1fr) 38px!important;gap:7px!important}
+html body dialog:is(#taskDialog,#vehicleRecordDialog,.bamco-dialog).bamco-dialog .span-2{grid-column:1/-1!important}
+html body dialog:is(#taskDialog,#vehicleRecordDialog,.bamco-dialog).bamco-dialog .modal-actions{display:flex!important;flex-wrap:wrap!important;justify-content:flex-start!important;gap:8px!important;border-top:1px solid #d5e0da!important;padding-top:14px!important;margin-top:16px!important}
+html body dialog:is(#taskDialog,#vehicleRecordDialog,.bamco-dialog).bamco-dialog :is(.primary,.ghost,.danger,.calendar-btn){min-height:36px!important;border-radius:7px!important;padding:5px 12px!important;font:16px/1.5 var(--fa-font)!important}
+html body dialog:is(#taskDialog,#vehicleRecordDialog,.bamco-dialog).bamco-dialog .calendar-btn{padding:0!important}
+html body dialog:is(#taskDialog,#vehicleRecordDialog,.bamco-dialog).bamco-dialog :is(button,input,select,textarea):focus-visible{outline:2px solid #327c5c!important;outline-offset:2px!important}
+@media(max-width:760px){
+ html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .bamco-page-heading{min-height:52px!important;gap:10px!important;padding:8px!important}
+ html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .bamco-page-heading h3{font-size:18px!important}
+ html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .bamco-command-bar{gap:6px!important;padding:8px!important}
+ html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(.bamco-command-bar,.bamco-control-row) :is(input.search,input[type=search],.toolbar-search,.vehicle-search){flex:1 1 100%!important;width:100%!important;min-width:0!important;margin:0!important}
+ html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior>.bamco-page-body{padding:10px!important}
+ html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior.focus-table-view>.bamco-page-body{padding:0!important}
+ html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(.manager-form,.workspace-settings-form,.approval-chain-form,.workspace-settings-grid){grid-template-columns:minmax(0,1fr)!important;padding:12px!important}
+ html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .dashboard-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .bamco-filter-bar>:is(input,select){max-width:none!important;flex:1 1 130px!important}
+ html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .option-editor{grid-template-columns:minmax(0,1fr) 65px 50px!important}
+ html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .sticker-pair{grid-template-columns:1fr!important}
+ html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .sticker-pair article{min-height:240px!important}
+ html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .sticker-pair img{height:220px!important}
+ html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(.prod-chat,.task-talk-shell){grid-template-columns:minmax(0,1fr)!important;grid-template-rows:minmax(100px,180px) minmax(340px,1fr)!important;height:auto!important;min-height:550px!important;max-height:none!important}
+ html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(.prod-chat>div:first-child,.task-talk-panel:first-child){max-height:180px!important;overflow:auto!important;border-bottom:1px solid var(--ui-line)!important}
+ html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .messenger-host{min-height:380px!important}
+ html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .table-pagination{align-items:flex-start!important}
+ html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .page-controls{gap:5px!important;flex-wrap:wrap!important}
+ html body dialog:is(#taskDialog,#vehicleRecordDialog,.bamco-dialog).bamco-dialog:not(#calendarDialog):not(#avatarCropDialog){padding:14px!important;width:calc(100vw - 24px)!important;max-height:calc(100dvh - 24px)!important}
+ html body dialog:is(#taskDialog,#vehicleRecordDialog,.bamco-dialog).bamco-dialog :is(.form-grid,.manager-form,.vehicle-editor-grid){grid-template-columns:minmax(0,1fr)!important}
+}
+
+/* Presentation must never reveal controls hidden by permissions or view state. */
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(.hidden,[hidden]):is(.hidden,[hidden]),html body dialog:is(#taskDialog,#vehicleRecordDialog,.bamco-dialog).bamco-dialog :is(.hidden,[hidden]):is(.hidden,[hidden]){display:none!important}
+/* Empty utility bars should not reserve a blank row above the content. */
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .bamco-command-bar:not(:has(button,input,select,textarea,a,summary)){display:none!important}
+/* The legacy mobile sidebar must not overlap an interior page. */
+html body.content-only #appView #sidebar{display:none!important}
