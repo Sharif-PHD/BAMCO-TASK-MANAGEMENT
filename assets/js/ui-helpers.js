@@ -41,21 +41,35 @@ window.__bamcoStableStickerInstalled=true;
   }
 
   function installTypography(){
-    classifyControls(document);
-    wrapLatinText(document.body);
-    const pending=new Set();let raf=0;
-    new MutationObserver(muts=>{
-      for(const m of muts){
-        if(m.type!=='childList'||!m.addedNodes.length)continue;
-        m.addedNodes.forEach(node=>{if(node.nodeType===1)pending.add(node)});
-      }
-      if(!pending.size||raf)return;
-      raf=requestAnimationFrame(()=>{
-        raf=0;
-        const roots=[...pending];pending.clear();
-        roots.forEach(root=>classifyControls(root));
-      });
-    }).observe(document.body,{childList:true,subtree:true});
+    const app=document.querySelector('#appView');
+    if(!app||app.dataset.typographyWatcher==='1')return;
+    app.dataset.typographyWatcher='1';
+    let installed=false;
+    const activate=()=>{
+      if(installed||app.classList.contains('hidden'))return;
+      installed=true;
+      const run=()=>{
+        classifyControls(app);
+        wrapLatinText(app);
+        const pending=new Set();let raf=0;
+        new MutationObserver(muts=>{
+          for(const m of muts){
+            if(m.type!=='childList'||!m.addedNodes.length)continue;
+            m.addedNodes.forEach(node=>{if(node.nodeType===1)pending.add(node)});
+          }
+          if(!pending.size||raf)return;
+          raf=requestAnimationFrame(()=>{
+            raf=0;
+            const roots=[...pending];pending.clear();
+            roots.forEach(root=>classifyControls(root));
+          });
+        }).observe(app,{childList:true,subtree:true});
+      };
+      if('requestIdleCallback' in window)requestIdleCallback(run,{timeout:600});
+      else setTimeout(run,0);
+    };
+    activate();
+    if(!installed)new MutationObserver((_,observer)=>{if(!app.classList.contains('hidden')){observer.disconnect();activate()}}).observe(app,{attributes:true,attributeFilter:['class']});
   }
 
   function clearSelection(scope){
@@ -119,33 +133,16 @@ window.__bamcoStableStickerInstalled=true;
     nav.addEventListener('mouseenter',setSpeed,{passive:true});
   }
 
-  function refreshStableLayout(){
-    /* Bundled in bamco-unified.css. */
-  }
-
-  function installSidebarUniformStyle(){
-    /* Bundled in bamco-unified.css. */
-  }
-
-  function appendOrderedScript(){ /* already bundled */ }
-
+  function refreshStableLayout(){/* Bundled in bamco-unified.css. */}
+  function installSidebarUniformStyle(){/* Bundled in bamco-unified.css. */}
+  function appendOrderedScript(){/* already bundled */}
   function installGroupedSidebar(){appendOrderedScript('script[data-sidebar-groups]','sidebar-groups-20260906.js?v=20260907-core2','sidebarGroups')}
   function installUserRequestedFixesV2(){appendOrderedScript('script[data-user-request-fixes-v2]','user-request-fixes-20260907-v2.js?v=20260907-hq1','userRequestFixesV2')}
   function installLoginControls(){appendOrderedScript('script[data-login-controls]','login-controls-20260907.js?v=20260907-core2','loginControls')}
   function installFinalPolish(){appendOrderedScript('script[data-final-polish]','final-polish-20260907.js?v=20260907-core2','finalPolish')}
 
   const boot=()=>{
-    refreshStableLayout();
-    installSidebarUniformStyle();
-    installTypography();
-    installOutsideSelectionClear();
-    installDeleteResequence();
-    installFooter();
-    installSidebarHoverScroll();
-    installGroupedSidebar();
-    installUserRequestedFixesV2();
-    installLoginControls();
-    installFinalPolish();
+    refreshStableLayout();installSidebarUniformStyle();installTypography();installOutsideSelectionClear();installDeleteResequence();installFooter();installSidebarHoverScroll();installGroupedSidebar();installUserRequestedFixesV2();installLoginControls();installFinalPolish();
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
