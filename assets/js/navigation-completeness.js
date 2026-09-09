@@ -59,6 +59,7 @@
   }
   function regroup(){
     const nav=q('#nav');if(!nav)return;
+    if(typeof state!=='undefined'&&state.profile&&typeof isManager==='function')qa('.manager-only').forEach(el=>el.classList.toggle('hidden',!isManager()));
     groupSpecs.forEach(([key,title,icon,views])=>{
       let group=q(`#nav .nav-group[data-group="${key}"]`);if(!group)group=createGroup(key,title,icon);
       const items=q('.nav-group-items',group);views.forEach(view=>{const button=q(`#nav button[data-view="${view}"]`);if(button&&button.parentElement!==items)items.appendChild(button)});
