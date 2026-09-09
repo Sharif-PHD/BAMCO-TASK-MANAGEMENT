@@ -1,9 +1,9 @@
 (()=>{
   'use strict';
-  const VERSION='20260909-stability-hotfix-1';
+  const VERSION='20260909-production-runtime-1';
   if(window.__bamcoStabilityHotfix===VERSION)return;
   window.__bamcoStabilityHotfix=VERSION;
-  document.documentElement.dataset.navigationComplete='stability-hotfix';
+  document.documentElement.dataset.navigationComplete='production-runtime';
 
   function showBackgroundError(err){
     console.error('BAMCO background refresh failed',err);
@@ -34,10 +34,25 @@
     return true;
   }
 
+  function loadRuntime(){
+    const app=document.querySelector('#appView');
+    if(!app||app.classList.contains('hidden')||window.__bamcoProdRuntimeLoading)return;
+    window.__bamcoProdRuntimeLoading=true;
+    const s=document.createElement('script');
+    s.src='assets/js/production-runtime.js?v=20260909-1';
+    s.async=true;
+    s.onload=()=>{window.__bamcoProdRuntimeLoaded=true};
+    s.onerror=()=>{window.__bamcoProdRuntimeLoading=false;showBackgroundError(new Error('بارگذاری امکانات نقش‌محور انجام نشد.'))};
+    document.head.appendChild(s);
+  }
+
   function install(){
     wrapEnterApp();
-    // Emergency stability mode: no placeholder navigation creation and no
-    // navigation MutationObserver before login. Core navigation stays intact.
+    const app=document.querySelector('#appView');
+    if(!app)return;
+    const sync=()=>{if(!app.classList.contains('hidden'))setTimeout(loadRuntime,0)};
+    new MutationObserver(sync).observe(app,{attributes:true,attributeFilter:['class']});
+    sync();
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});
