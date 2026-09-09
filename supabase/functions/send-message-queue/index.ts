@@ -15,9 +15,10 @@ Deno.serve(async req=>{
   if(req.method!=='POST')return reply({error:'Method not allowed'},405)
   const url=Deno.env.get('SUPABASE_URL')!,serviceKey=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
   const mailerinoKey=Deno.env.get('MAILERINO_API_KEY')
-  const emailFrom=Deno.env.get('EMAIL_FROM')||'Product.Deployement.Engineerig@bamco-task-remiinder.ir'
-  const replyTo=Deno.env.get('EMAIL_REPLY_TO')||emailFrom
+  const emailFrom=Deno.env.get('MAILERINO_FROM_EMAIL')||Deno.env.get('EMAIL_FROM')
+  const replyTo='bamco.task.reminder@outlook.com'
   if(!mailerinoKey)return reply({error:'کلید API میلرینو روی سرور ثبت نشده است.'},503)
+  if(!emailFrom)return reply({error:'آدرس فرستنده تأییدشده میلرینو روی سرور ثبت نشده است.'},503)
   const auth=req.headers.get('Authorization')||''
   const userClient=createClient(url,Deno.env.get('SUPABASE_ANON_KEY')!,{global:{headers:{Authorization:auth}}})
   const {data:{user}}=await userClient.auth.getUser()
