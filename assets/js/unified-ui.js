@@ -20,10 +20,7 @@
     const header=q('thead tr:first-child',view),filters=q('thead .column-filters',view);if(!header||!filters)return;
     const rows=qa('tr[data-task-id]',body),visible=new Set(rows.map(r=>String(r.dataset.taskId)));
     picked[scope]=new Set([...picked[scope]].filter(id=>visible.has(id)||state.tasks.some(t=>String(t.id)===id)));
-    const head=document.createElement('th');head.className='unified-select-head';head.innerHTML='<input type="checkbox" aria-label="انتخاب همه ردیف‌های نمایش‌داده‌شده">';header.prepend(head);
-    const filter=document.createElement('th');filter.className='unified-select-filter';filter.textContent='—';filters.prepend(filter);
-    rows.forEach(row=>{const id=String(row.dataset.taskId),td=document.createElement('td');td.className='unified-select-cell';td.innerHTML=`<input type="checkbox" value="${id}" ${picked[scope].has(id)?'checked':''} aria-label="انتخاب این وظیفه">`;row.prepend(td);row.classList.toggle('task-selected',picked[scope].has(id));row.setAttribute('aria-selected',picked[scope].has(id)?'true':'false')});
-    const all=rows.length&&rows.every(r=>picked[scope].has(String(r.dataset.taskId))),some=rows.some(r=>picked[scope].has(String(r.dataset.taskId))),box=q('input',head);box.checked=!!all;box.indeterminate=!all&&some;
+    rows.forEach(row=>{const selected=picked[scope].has(String(row.dataset.taskId));row.classList.toggle('task-selected',selected);row.setAttribute('aria-selected',String(selected));row.tabIndex=0});
     syncToolbar(scope);
   }
   function installTaskSelection(){
@@ -31,11 +28,7 @@
     const base=renderTasks;
     renderTasks=function(archived){const scope=archived?'archive':'kanban';cleanup(scope);const out=base(archived);decorate(scope);return out};
     chooseTask=function(scope,id){id=String(id);if(picked[scope].has(id))picked[scope].delete(id);else picked[scope].add(id);state.selected[scope]=picked[scope].size===1?Number([...picked[scope]][0]):null;renderTasks(scope==='archive')};
-    document.addEventListener('click',e=>{
-      const all=e.target.closest('.unified-select-head input');if(all){e.stopImmediatePropagation();const view=all.closest('.view'),scope=view.id.startsWith('archive')?'archive':'kanban';qa('tbody tr[data-task-id]',view).forEach(r=>all.checked?picked[scope].add(String(r.dataset.taskId)):picked[scope].delete(String(r.dataset.taskId)));state.selected[scope]=picked[scope].size===1?Number([...picked[scope]][0]):null;renderTasks(scope==='archive');return}
-      const box=e.target.closest('.unified-select-cell input');if(box){e.preventDefault();e.stopImmediatePropagation();const row=box.closest('tr[data-task-id]');chooseTask(row.dataset.scope,row.dataset.taskId)}
-    },true);
-    document.addEventListener('change',e=>{const select=e.target.closest('.column-filters select');if(!select)return;const tr=select.closest('.column-filters');if(!tr?.querySelector('.unified-select-filter'))return;e.stopImmediatePropagation();const scope=tr.closest('.view').id.startsWith('archive')?'archive':'kanban';tableFilters[scope][select.closest('th').cellIndex-1]=select.value;renderTasks(scope==='archive')},true);
+    window.bamcoClearTaskSelection=()=>{for(const scope of ['kanban','archive']){picked[scope].clear();state.selected[scope]=null;const {body}=scopeInfo(scope);qa('tr[data-task-id]',body).forEach(row=>{row.classList.remove('task-selected');row.setAttribute('aria-selected','false')});syncToolbar(scope)}};
     renderTasks(false);renderTasks(true);
   }
   async function bulkAction(scope,kind){
@@ -85,3 +78,4 @@
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',waitForApp,{once:true});else waitForApp();
 })();
+

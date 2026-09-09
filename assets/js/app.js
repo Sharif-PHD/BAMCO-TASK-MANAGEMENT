@@ -736,6 +736,8 @@ showLogin();
     updateColumnFilters(scope,allRows,archived);
     const rows=allRows.filter(t=>!query||[t.title,t.description,ownerName(t),t.status,t.priority,displayId(t)].some(v=>String(v??'').toLowerCase().includes(query)))
       .filter(t=>taskColumnValues(t,archived).every((v,index)=>!filters[index]||String(v??'')===filters[index]));
+    const sort=window.BAMCO_TASK_SORT?.[scope];
+    if(sort&&window.BAMCO_COMPARE_VALUES)rows.sort((a,b)=>sort.direction*window.BAMCO_COMPARE_VALUES(taskColumnValues(a,archived)[sort.index],taskColumnValues(b,archived)[sort.index]));
     let visibleRows=rows;
     if(archived){
       const signature=JSON.stringify([query,filters]);
@@ -824,3 +826,4 @@ showLogin();
   removeSelectionHeader('kanban');removeSelectionHeader('archive');
   requestAnimationFrame(()=>{installResizableTable('kanban');installResizableTable('archive')});
 })();
+
