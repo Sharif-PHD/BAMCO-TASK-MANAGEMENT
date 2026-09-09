@@ -5,10 +5,10 @@
 }
 #appView .panel-head,#appView .vehicle-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
 #appView .panel-head h3,#appView .vehicle-panel-head h3{color:#145741;margin:0}
-#appView .toolbar,#appView .vehicle-toolbar,#appView .table-toolbar{
+#appView .toolbar,#appView .task-toolbar,#appView .vehicle-toolbar,#appView .table-toolbar{
   display:flex!important;align-items:center!important;gap:10px!important;direction:rtl!important;flex-wrap:wrap!important
 }
-#appView .toolbar button,#appView .vehicle-toolbar button,#appView .table-toolbar button{min-height:38px;white-space:nowrap}
+#appView .toolbar button,#appView .task-toolbar button,#appView .vehicle-toolbar button,#appView .table-toolbar button{min-height:38px;white-space:nowrap}
 #appView .table-wrap,#appView .vehicle-table-wrap{
   border:1px solid #b8c8c1!important;border-radius:16px!important;background:#fff!important;box-shadow:0 7px 22px #123f330a!important
 }
@@ -35,8 +35,8 @@
 #stickersView .sticker-empty-state{display:grid;place-items:center;min-height:260px;border:1px dashed #9db8ad;border-radius:16px;background:#fff;text-align:center;padding:24px;color:#506860}
 #stickersView .sticker-empty-state b{display:block;color:#145741;font-size:20px;margin-bottom:8px}
 @media(max-width:760px){
-  #appView .toolbar,#appView .vehicle-toolbar,#appView .table-toolbar{flex-wrap:nowrap!important;overflow-x:auto!important;padding-bottom:5px!important}
-  #appView .toolbar>* ,#appView .vehicle-toolbar>* ,#appView .table-toolbar>*{flex:0 0 auto!important}
+  #appView .toolbar,#appView .task-toolbar,#appView .vehicle-toolbar,#appView .table-toolbar{flex-wrap:nowrap!important;overflow-x:auto!important;padding-bottom:5px!important}
+  #appView .toolbar>* ,#appView .task-toolbar>*,#appView .vehicle-toolbar>* ,#appView .table-toolbar>*{flex:0 0 auto!important}
   #appView .panel,#appView .vehicle-panel{padding:12px!important;border-radius:14px!important}
   #taskDialog .form-grid{grid-template-columns:1fr!important;max-height:70vh!important}
   #taskDialog label.span-2{grid-column:auto!important}
