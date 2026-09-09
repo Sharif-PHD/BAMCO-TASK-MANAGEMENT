@@ -8,6 +8,27 @@ const EYE_OFF_ICON=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.3 2 
 const REFRESH_ICON=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 8a7 7 0 1 0 1 4h-2a5 5 0 1 1-1.45-3.54L14 11h7V4l-2 2v2Z" fill="currentColor"/></svg>`;
 const toLatinDigits=v=>String(v||'').replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d));
 const makeCode=()=>String(Math.floor(1000+Math.random()*9000));
+
+function installNetworkGuard(){
+  if(window.__bamcoLoginNetworkGuard)return;
+  window.__bamcoLoginNetworkGuard='v1';
+  const baseFetch=window.fetch.bind(window);
+  window.fetch=async function(input,init={}){
+    const url=typeof input==='string'?input:(input instanceof Request?input.url:String(input));
+    const isCritical=/\.supabase\.co\/(auth|rest)\/v1\//.test(url);
+    if(!isCritical||init.signal)return baseFetch(input,init);
+    const controller=new AbortController();
+    const timeoutMs=url.includes('/auth/v1/token')?15000:22000;
+    const timer=setTimeout(()=>controller.abort(),timeoutMs);
+    try{
+      return await baseFetch(input,{...init,signal:controller.signal});
+    }catch(err){
+      if(controller.signal.aborted)throw new Error('ارتباط با سامانه بیش از حد طول کشید. لطفاً دوباره تلاش کنید.');
+      throw err;
+    }finally{clearTimeout(timer)}
+  };
+}
+
 function buildLogin(){const form=q('#loginForm');if(!form||form.dataset.cleanBuilt)return;const oldEmail=q('#email'),oldPassword=q('#password');const emailValue=oldEmail?.value||'';const passwordValue=oldPassword?.value||'';form.innerHTML=`
 <div class="login-fields">
   <label class="login-field" for="email"><span class="login-field-title bamco-fa">نام کاربری</span><span class="login-input-shell"><input id="email" class="english" type="email" autocomplete="username" required placeholder="name@bamco.ir" dir="ltr"><span class="login-leading-icon">${USER_ICON}</span></span></label>
@@ -18,8 +39,25 @@ function buildLogin(){const form=q('#loginForm');if(!form||form.dataset.cleanBui
 <p id="loginError" class="form-error"></p>`;form.dataset.cleanBuilt='1';q('#email').value=emailValue;q('#password').value=passwordValue;}
 function bindPassword(){const input=q('#password'),btn=q('.login-password-toggle');if(!input||!btn||btn.dataset.bound)return;btn.dataset.bound='1';btn.addEventListener('click',()=>{const showing=input.type==='text';input.type=showing?'password':'text';btn.innerHTML=showing?EYE_ICON:EYE_OFF_ICON;btn.title=showing?'نمایش رمز عبور':'مخفی کردن رمز عبور';btn.setAttribute('aria-label',btn.title);input.focus()})}
 function bindVerification(){const form=q('#loginForm'),box=q('#loginVerification'),display=q('#loginVerifyDisplay'),input=q('#loginVerifyCode'),error=q('#loginVerifyError'),refresh=q('#refreshLoginVerify'),slots=[...document.querySelectorAll('.login-code-slots span')];if(!form||!box||!input)return;const paint=()=>{const value=toLatinDigits(input.value).replace(/\D/g,'').slice(0,4);slots.forEach((slot,i)=>slot.textContent=value[i]||'')};const renew=(clear=true)=>{box.dataset.code=makeCode();display.textContent=box.dataset.code;input.value='';paint();if(clear&&error)error.textContent=''};if(!box.dataset.code)renew();if(!refresh.dataset.bound){refresh.dataset.bound='1';refresh.addEventListener('click',()=>{renew();input.focus()})}if(!input.dataset.bound){input.dataset.bound='1';input.addEventListener('input',()=>{input.value=toLatinDigits(input.value).replace(/\D/g,'').slice(0,4);paint();if(error)error.textContent=''})}if(!form.dataset.verifyBound){form.dataset.verifyBound='1';form.addEventListener('submit',e=>{const entered=toLatinDigits(input.value).replace(/\D/g,'');if(entered!==box.dataset.code){e.preventDefault();e.stopImmediatePropagation();renew(false);if(error)error.textContent='کد تأیید صحیح نیست. کد جدید را وارد کنید.';input.focus()}},true)}if(!form.dataset.enterBound){form.dataset.enterBound='1';form.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.ctrlKey&&!e.altKey&&!e.metaKey){e.preventDefault();form.requestSubmit?form.requestSubmit():form.querySelector('[type=submit]')?.click()}})}}
+function bindLoginWatchdog(){
+  const form=q('#loginForm');if(!form||form.dataset.watchdogBound)return;
+  form.dataset.watchdogBound='1';
+  form.addEventListener('submit',()=>{
+    const btn=form.querySelector('button[type="submit"]'),error=q('#loginError');
+    if(!btn)return;
+    const original='ورود به سامانه';
+    btn.textContent='در حال ورود…';
+    if(form.__bamcoWaitTimer)clearTimeout(form.__bamcoWaitTimer);
+    form.__bamcoWaitTimer=setTimeout(()=>{
+      if(q('#loginView')?.classList.contains('hidden'))return;
+      btn.disabled=false;btn.textContent=original;
+      if(error&&!error.textContent)error.textContent='پاسخ سامانه طولانی شد. دوباره روی «ورود به سامانه» بزنید.';
+    },24000);
+    setTimeout(()=>{if(!btn.disabled)btn.textContent=original},0);
+  },true);
+}
 function applyPersianFonts(root=document){const persian=/[\u0600-\u06FF]/;root.querySelectorAll?.('body *').forEach(el=>{if(el.closest('.english,.english-ui,.en-text,[dir="ltr"]'))return;if(el.matches('input[type="email"],input[type="url"],input[type="password"]'))return;const direct=[...el.childNodes].some(n=>n.nodeType===Node.TEXT_NODE&&persian.test(n.nodeValue||''));const attrs=[el.getAttribute('placeholder'),el.getAttribute('title'),el.getAttribute('aria-label')].filter(Boolean).some(v=>persian.test(v));if(direct||attrs)el.classList.add('bamco-fa')})}
-function install(){q('#loginView .brand-lockup img')?.remove();buildLogin();bindPassword();bindVerification();applyPersianFonts(document)}
+function install(){installNetworkGuard();q('#loginView .brand-lockup img')?.remove();buildLogin();bindPassword();bindVerification();bindLoginWatchdog();applyPersianFonts(document)}
 function boot(){install();const login=q('#loginView');if(login&&!login.dataset.cleanLoginObserved){login.dataset.cleanLoginObserved='1';new MutationObserver(()=>install()).observe(login,{childList:true,subtree:true})}}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
