@@ -10,19 +10,29 @@
 }
 #appView .toolbar button,#appView .task-toolbar button,#appView .vehicle-toolbar button,#appView .table-toolbar button{min-height:38px;white-space:nowrap}
 #appView .table-wrap,#appView .vehicle-table-wrap{
-  border:1px solid #b8c8c1!important;border-radius:16px!important;background:#fff!important;box-shadow:0 7px 22px #123f330a!important
+  border:1px solid #b8c8c1!important;border-radius:16px!important;background:#fff!important;box-shadow:0 7px 22px #123f330a!important;
+  max-height:min(68vh,720px)!important;overflow:auto!important;position:relative!important
 }
 #appView table{direction:rtl;background:#fff}
-#appView table thead tr:first-child th{background:#dfe9e4!important;color:#17362d!important;text-align:center!important;border-color:#b8c8c1!important}
+#appView table thead tr:first-child th{background:#dfe9e4!important;color:#17362d!important;text-align:center!important;border-color:#b8c8c1!important;position:sticky!important;top:0!important;z-index:12!important}
+#appView table thead tr:nth-child(n+2) th{position:sticky!important;top:43px!important;z-index:11!important}
 #appView table tbody td{border-color:#d1ddd8!important;text-align:right;vertical-align:top}
 #appView table tbody tr:nth-child(even) td{background:#fafcfa}
 #appView table tbody tr:hover td{background:#edf6f1!important}
 #appView table tbody tr.task-selected td,#appView table tbody tr.vehicle-selected td{background:#dfeee7!important;outline:1px solid #4e917a;outline-offset:-1px}
 #appView .unified-select-head,#appView .unified-select-cell,#appView .unified-select-filter{width:58px!important;min-width:58px!important;max-width:58px!important;text-align:center!important}
+#appView .unified-select-head,#appView .unified-select-filter{right:0!important;z-index:16!important}
+#appView td.unified-select-cell{position:sticky!important;right:0!important;z-index:4!important;background:#fff!important;vertical-align:middle!important}
+#appView tbody tr:nth-child(even) td.unified-select-cell{background:#fafcfa!important}
+#appView tbody tr:hover td.unified-select-cell,#appView tbody tr.task-selected td.unified-select-cell{background:#dfeee7!important}
 #appView .unified-select-head input,#appView .unified-select-cell input{width:18px!important;height:18px!important;accent-color:#176b4d;cursor:pointer}
 #appView .column-filters th,#appView .vehicle-filters th{background:#edf3f0!important;padding:5px!important}
 #appView .column-filters select,#appView .vehicle-filters select{height:34px!important;border:1px solid #b8c8c1!important;border-radius:8px!important;background:#fff!important;direction:rtl!important;text-align:right!important}
 #appView .empty{padding:34px 16px!important;text-align:center!important;color:#62766f!important}
+#appView .unified-pager,#appView #archivePager{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;flex-wrap:wrap!important;margin:10px 0 0!important;padding:10px 12px!important;border:1px solid #c9d8d2!important;border-radius:12px!important;background:#f8faf9!important;color:#536c62!important}
+#appView .unified-pager>div,#appView #archivePager>div{display:flex!important;align-items:center!important;gap:8px!important;flex-wrap:wrap!important}
+#appView .unified-pager button,#appView #archivePager button{min-height:34px!important}
+#appView .unified-empty-inline{min-height:150px;display:grid;place-items:center;border:1px dashed #b8c8c1;border-radius:14px;background:#fff;color:#62766f;padding:20px;text-align:center}
 #taskDialog{width:min(980px,95vw)!important}
 #taskDialog .form-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;max-height:65vh!important;overflow:auto!important;padding:2px!important}
 #taskDialog label{display:flex!important;flex-direction:column!important;gap:5px!important;text-align:right!important}
@@ -34,6 +44,11 @@
 #stickersView .desktop-sticker-page{padding:18px}
 #stickersView .sticker-empty-state{display:grid;place-items:center;min-height:260px;border:1px dashed #9db8ad;border-radius:16px;background:#fff;text-align:center;padding:24px;color:#506860}
 #stickersView .sticker-empty-state b{display:block;color:#145741;font-size:20px;margin-bottom:8px}
+
+/* The welcome card has one positioning model on every viewport. */
+#appView #welcomeView{overflow:hidden!important}
+#appView #welcomeView .welcome-card{isolation:isolate!important}
+#appView #welcomeView .welcome-content{position:relative!important;overflow:hidden!important}
 @media(max-width:760px){
   #appView .toolbar,#appView .task-toolbar,#appView .vehicle-toolbar,#appView .table-toolbar{flex-wrap:nowrap!important;overflow-x:auto!important;padding-bottom:5px!important}
   #appView .toolbar>* ,#appView .task-toolbar>*,#appView .vehicle-toolbar>* ,#appView .table-toolbar>*{flex:0 0 auto!important}
@@ -41,4 +56,20 @@
   #taskDialog .form-grid{grid-template-columns:1fr!important;max-height:70vh!important}
   #taskDialog label.span-2{grid-column:auto!important}
   #appView .table-wrap,#appView .vehicle-table-wrap{border-radius:12px!important}
+  #appView .unified-pager,#appView #archivePager{align-items:stretch!important}
+  #appView .unified-pager>div,#appView #archivePager>div{width:100%;justify-content:space-between}
+  #appView #welcomeView{min-height:auto!important;padding:10px 0 24px!important;overflow:auto!important}
+  #appView #welcomeView .welcome-card{width:calc(100% - 16px)!important;height:auto!important;min-height:400px!important;margin:0 auto!important;overflow:hidden!important}
+  #appView #welcomeView .welcome-content{display:flex!important;align-items:flex-start!important;justify-content:center!important;width:100%!important;height:auto!important;min-height:400px!important;padding:38px 18px 190px!important;text-align:center!important}
+  #appView #welcomeView .welcome-copy{width:100%!important;max-width:310px!important;position:relative!important;z-index:5!important}
+  #appView #welcomeView .welcome-copy h2{font-size:18px!important;line-height:2!important;margin:0 0 8px!important}
+  #appView #welcomeView .welcome-copy p{font-size:14px!important;line-height:1.9!important}
+  #appView #welcomeView img.welcome-sticker{position:absolute!important;top:auto!important;bottom:-8px!important;width:145px!important;min-width:145px!important;max-width:145px!important;height:205px!important;min-height:205px!important;max-height:205px!important;object-fit:contain!important;z-index:2!important}
+  #appView #welcomeFemaleSticker{right:-6px!important;left:auto!important}
+  #appView #welcomeMaleSticker{left:-6px!important;right:auto!important}
+}
+@media(max-width:420px){
+  #appView #welcomeView .welcome-card,#appView #welcomeView .welcome-content{min-height:380px!important}
+  #appView #welcomeView .welcome-content{padding:30px 14px 168px!important}
+  #appView #welcomeView img.welcome-sticker{width:122px!important;min-width:122px!important;max-width:122px!important;height:180px!important;min-height:180px!important;max-height:180px!important}
 }
