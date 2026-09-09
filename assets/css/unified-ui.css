@@ -1,4 +1,5 @@
 /* BAMCO unified UI: one visual contract for all modules. */
+html body #appView.app.hidden{display:none!important;visibility:hidden!important}
 #appView .view{direction:rtl;text-align:right}
 #appView .view>.panel,#appView .view>.vehicle-panel,#appView .view>.desktop-sticker-page{
   border:1px solid #b8c8c1;border-radius:18px;background:#f8faf9;box-shadow:0 7px 22px #123f330a
