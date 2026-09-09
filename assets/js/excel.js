@@ -1,2 +1,10 @@
+(()=>{
+  if(window.__bamcoAuthUiInstalled==='20260909-login-fast-3'||document.querySelector('script[data-bamco-auth-early]'))return;
+  const s=document.createElement('script');
+  s.src='assets/js/auth-ui.js?v=20260909-login-fast-3';
+  s.async=false;
+  s.setAttribute('data-bamco-auth-early','');
+  (document.head||document.documentElement).appendChild(s);
+})();
 (()=>{let pending=null;window.ensureBamcoXLSX=function(){if(window.XLSX)return Promise.resolve(window.XLSX);if(pending)return pending;pending=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='assets/vendor/xlsx.min.js';s.async=true;s.onload=()=>window.XLSX?resolve(window.XLSX):reject(new Error('کتابخانه Excel فعال نشد.'));s.onerror=()=>{pending=null;reject(new Error('بارگذاری کتابخانه Excel انجام نشد.'))};(document.head||document.documentElement).appendChild(s)});return pending}})();
 (()=>{if(new URLSearchParams(location.search).get('design')!=='1')return;document.documentElement.classList.add('bve-design-access');if(document.querySelector('script[data-bamco-layout-editor]'))return;const css=document.createElement('link');css.rel='stylesheet';css.href='assets/css/layout-editor.css?v=20260908-2';css.setAttribute('data-bamco-layout-editor','');document.head.appendChild(css);const s=document.createElement('script');s.src='assets/js/layout-editor.js?v=20260908-2';s.async=true;s.setAttribute('data-bamco-layout-editor','');(document.head||document.documentElement).appendChild(s)})();
