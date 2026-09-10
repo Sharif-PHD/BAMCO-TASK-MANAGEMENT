@@ -127,7 +127,7 @@ async function enterApp(){
   $('#approvalsNav').classList.remove('hidden');$$('.manager-only').forEach(x=>x.classList.toggle('hidden',!isManager()));
   $('#viewSubtitle').textContent=isManager()?'نمای کلی وظایف و عملکرد همه متولیان':'فقط وظایف و عملکرد مربوط به شما';
   $('#kanbanScope').textContent=isManager()?'نمای همه متولیان':'فقط وظایف شما';$('#archiveScope').textContent=isManager()?'نمای همه متولیان':'فقط آرشیو شما';
-  await window.bamcoSession?.start();
+  await window.bamcoSession?.start();void window.bamcoInbox?.load();
   if(window.matchMedia('(max-width:760px)').matches)$('#sidebar').classList.add('collapsed');
   $('#loginView').classList.add('hidden');$('#appView').classList.remove('hidden');
   window.bamcoShowHome?.();
