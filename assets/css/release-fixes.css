@@ -73,9 +73,11 @@ body #taskTimelineView .tt-gantt-head>div:nth-child(2),body #taskTimelineView .t
 /* Approved login: one centered card, visible brand, stable verification row. */
 html body #loginView.login-shell{display:grid!important;place-items:center!important;min-height:100dvh!important;padding:18px!important;background:radial-gradient(circle at 50% 0,#e5f1ec 0,#f5f9f7 58%,#edf4f1 100%)!important}
 html body #loginView.hidden{display:none!important}
-html body #loginView .login-card{width:min(540px,calc(100vw - 28px))!important;max-height:calc(100dvh - 28px)!important;padding:0 28px 26px!important;overflow:auto!important;border:1px solid #abc3b8!important;border-radius:22px!important;background:#fff!important;box-shadow:0 22px 58px rgba(7,70,49,.15)!important}
-html body #loginView .brand-lockup{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:7px!important;margin:0 -28px 22px!important;padding:14px 24px 18px!important;background:linear-gradient(135deg,#07543f,#0b6a4d)!important}
-html body #loginView .brand-lockup img{display:block!important;width:238px!important;height:130px!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;object-fit:contain!important}
+/* Use the tightly cropped artwork so transparent image margins do not inflate the header.
+   Let short screens scroll the page; the card itself expands to fit every control. */
+html body #loginView .login-card{width:min(540px,calc(100vw - 28px))!important;max-height:none!important;padding:0 28px 26px!important;overflow:hidden!important;border:1px solid #abc3b8!important;border-radius:22px!important;background:#fff!important;box-shadow:0 22px 58px rgba(7,70,49,.15)!important}
+html body #loginView .brand-lockup{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;gap:32px!important;margin:0 -28px 22px!important;padding:18px 24px!important;background:linear-gradient(135deg,#07543f,#0b6a4d)!important}
+html body #loginView .brand-lockup img{display:block!important;width:min(220px,100%)!important;height:auto!important;aspect-ratio:1275/707!important;flex:none!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;object-fit:contain!important}
 html body #loginView .brand-lockup h1{margin:0!important;color:#fff!important;font-size:23px!important;line-height:1.65!important;text-align:center!important;text-align-last:center!important}
 html body #loginView #loginForm{display:grid!important;gap:16px!important;margin:0!important;padding:0!important;border:0!important;box-shadow:none!important}
 html body #loginView #loginForm .login-fields{display:grid!important;gap:13px!important}
@@ -84,7 +86,7 @@ html body #loginView #loginVerifyDisplay{grid-column:1!important;font-family:"Ti
 html body #loginView .verification-digits{grid-column:2!important}
 html body #loginView #refreshLoginVerify{grid-column:3!important}
 html body #loginView .department-back{margin:14px auto 0!important}
-@media(max-width:620px){html body #loginView .login-card{padding:0 18px 20px!important}html body #loginView .brand-lockup{margin:0 -18px 18px!important;padding:10px 16px 14px!important}html body #loginView .brand-lockup img{width:196px!important;height:104px!important}html body #loginView .brand-lockup h1{font-size:19px!important}html body #loginView #loginForm #loginVerification{grid-template-columns:minmax(84px,1fr) auto 34px!important;padding:8px!important}}
+@media(max-width:620px){html body #loginView .login-card{padding:0 18px 20px!important}html body #loginView .brand-lockup{margin:0 -18px 18px!important;padding:16px!important;gap:24px!important}html body #loginView .brand-lockup img{width:min(196px,100%)!important}html body #loginView .brand-lockup h1{font-size:19px!important}html body #loginView #loginForm #loginVerification{grid-template-columns:minmax(84px,1fr) auto 34px!important;padding:8px!important}}
 
 /* Every data page uses the same compact density and sticky header. */
 html body.table-suite #appView .view table.suite-table{border-collapse:separate!important;border-spacing:0!important;table-layout:auto!important}
