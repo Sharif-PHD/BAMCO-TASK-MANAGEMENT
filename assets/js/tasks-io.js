@@ -11,9 +11,10 @@ async function parse(file){
     const who=owner(key(r,'متولی','نام در اکسل','ایمیل','owner'));
     const title=key(r,'عنوان فعالیت','عنوان کار','عنوان','title');
     const status=String(key(r,'وضعیت','status')||'ثبت شده'),errors=[];
-    if(!title)errors.push('عنوان خالی');if(!who)errors.push('متولی نامعتبر');
+    if(!title)errors.push('عنوان خالی');if(status!=='ثبت شده'&&!who)errors.push('متولی نامعتبر');
+    if(status==='در حال انجام'&&(!iso(key(r,'تاریخ شروع','start_date'))||!iso(key(r,'تاریخ پایان','due_date'))))errors.push('تاریخ شروع و پایان الزامی است');
     if(!['ثبت شده','منتظر پاسخ','در حال انجام','انجام شده'].includes(status))errors.push('وضعیت نامعتبر');
-    return{row:i+2,errors,data:{legacy_id:Number(key(r,'شناسه','ID','id'))||null,title:String(title||''),description:String(key(r,'توضیحات','description')||''),owner_id:who?.id,status,priority:String(key(r,'اولویت','priority')||'متوسط'),start_date:iso(key(r,'تاریخ شروع','start_date')),done_date:iso(key(r,'تاریخ انجام','done_date')),due_date:status==='منتظر پاسخ'?null:iso(key(r,'تاریخ پایان','due_date')),reminder_days:Number(key(r,'یادآور','reminder_days')||0),manager_notes:String(key(r,'توضیحات مدیر','manager_notes')||''),archived:importArchived,archived_at:importArchived?new Date().toISOString():null,source:'excel'}};
+    return{row:i+2,errors,data:{legacy_id:Number(key(r,'شناسه','ID','id'))||null,title:String(title||''),description:String(key(r,'توضیحات','description')||''),owner_id:status==='ثبت شده'?null:who?.id,status,priority:String(key(r,'اولویت','priority')||'متوسط'),start_date:iso(key(r,'تاریخ شروع','start_date')),done_date:iso(key(r,'تاریخ انجام','done_date')),due_date:status==='منتظر پاسخ'?null:iso(key(r,'تاریخ پایان','due_date')),reminder_days:Number(key(r,'یادآور','reminder_days')||0),manager_notes:String(key(r,'توضیحات مدیر','manager_notes')||''),archived:importArchived,archived_at:importArchived?new Date().toISOString():null,source:'excel'}};
   });
   renderPreview(rows.length);
 }

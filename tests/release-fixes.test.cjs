@@ -65,7 +65,7 @@ test('gantt hides owner as a column while retaining owner filtering',()=>{
 });
 
 test('chat exposes requested messaging controls',()=>{
-  const js=read('assets/js/chat-ui.js'),runtime=read('assets/js/production-runtime.js');
+  const js=read('assets/js/chat-ui.js'),runtime=read('assets/js/conversations.js');
   assert.match(js,/5\*1024\*1024/);
   assert.match(js,/message-reply/);
   assert.match(js,/message-delete/);
