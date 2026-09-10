@@ -29,10 +29,10 @@ jobs:
         run: npm ci
       - name: JavaScript syntax
         run: |
-          node --check assets/js/production-runtime.js
-          node --check assets/js/session-runtime.js
-          node --check assets/js/conversations.js
-          node --check assets/js/sidebar.js
+          for file in assets/js/*.js; do
+            node --check "$file"
+          done
+          node -e "require('postcss').parse(require('fs').readFileSync('assets/css/unified-ui.css','utf8'))"
       - name: Additive navigation assertions
         run: |
           python3 - <<'PY'

@@ -8,7 +8,7 @@
  const directory=()=>rpc('chat_directory_v2',{});
  function loading(host,text='در حال دریافت اطلاعات…'){host.innerHTML=`<div class="conversation-empty" role="status">${esc(text)}</div>`}
  function failure(host,error){host.innerHTML=`<div class="workspace-error" role="alert"><p>${esc(error.message||'دریافت اطلاعات انجام نشد.')}</p><button type="button" class="ghost" data-conversation-refresh>تلاش دوباره</button></div>`}
- function personButton(p){return `<button type="button" class="conversation-item" data-person="${esc(p.id)}" data-person-name="${esc(label(p))}"><span class="conversation-avatar" aria-hidden="true">${esc(label(p).trim()[0])}</span><span><strong>${esc(label(p))}</strong><small>${p.role==='manager'?'مدیر':'متولی'}</small></span><span class="conversation-arrow" aria-hidden="true">‹</span></button>`}
+ function personButton(p){return `<button type="button" class="conversation-item" data-person="${esc(p.id)}" data-person-name="${esc(label(p))}"><span class="conversation-avatar" data-profile-photo="${esc(p.id)}" aria-hidden="true">${esc(label(p).trim()[0])}</span><span><strong>${esc(label(p))}</strong><small>${p.role==='manager'?'مدیر':'متولی'}</small></span><span class="conversation-arrow" aria-hidden="true">‹</span></button>`}
  function selectItem(button,host){qa('.conversation-item.active',host).forEach(b=>{b.classList.remove('active');b.removeAttribute('aria-current')});button.classList.add('active');button.setAttribute('aria-current','true')}
  async function render(id){
   if(!Object.hasOwn(names,id))return;const epoch=++serial;currentView=id;selectedTask=null;window.bamcoChat?.close();
@@ -24,7 +24,7 @@
     const general=q('[data-kind=public]',list);if(general)await openThread(general,view);
    }else if(id==='directMessages'){
     const people=(await directory()).filter(p=>p.id!==state.user.id);if(epoch!==serial)return;
-    list.innerHTML=people.map(personButton).join('')||'<div class="conversation-empty">مخاطبی در دسترس نیست.</div>';
+    list.innerHTML=people.map(personButton).join('')||'<div class="conversation-empty">مخاطبی در دسترس نیست.</div>';bamcoMedia.avatars(list,people);
    }else{
     const tasks=(state.tasks||[]).filter(t=>!t.archived);if(epoch!==serial)return;
     list.innerHTML=tasks.map(t=>`<button type="button" class="conversation-item conversation-task" data-task-choice="${t.id}"><span class="conversation-task-id">${esc(t.legacy_id||t.id)}</span><span><strong>${esc(t.title)}</strong><small>متولی: ${esc(ownerName(t))} · ${esc(t.status)}</small></span></button>`).join('')||'<div class="conversation-empty">وظیفهٔ جاری وجود ندارد.</div>';
@@ -37,17 +37,18 @@
   const actions=[];
   if(kind==='group'){
    actions.push({label:isManager()?'مدیریت اعضا':'اعضای گروه',run:()=>groupDialog(id,title,!isManager())});
-   actions.push({label:'خروج از گروه',run:async()=>{if(!confirm(`از گروه «${title}» خارج می‌شوید؟`))return;await rpc('chat_leave_group',{p_thread_id:id});if(epoch===serial)await render('groupChat')}});
+   actions.push({label:'خروج از گروه',run:async()=>{if(!await window.bamcoConfirm(`از گروه «${title}» خارج می‌شوید؟`))return;await rpc('chat_leave_group',{p_thread_id:id});if(epoch===serial)await render('groupChat')}});
   }
   if(kind!=='public'&&isManager())actions.push(deleteAction(id,title,currentView));
   await window.bamcoChat.mount(host,{id,title,subtitle:kind==='public'?'عمومی · همهٔ کاربران':kind==='group'?'گروه · اعضای انتخاب‌شده':'خصوصی',actions});
  }
- function deleteAction(id,title,view){return{label:'حذف گفت‌وگو',danger:true,run:async()=>{if(!confirm(`گفت‌وگوی «${title}» حذف شود؟`))return;await rpc('chat_delete_thread',{p_thread_id:id});await render(view)}}}
+ function deleteAction(id,title,view){return{label:'حذف گفت‌وگو',danger:true,run:async()=>{if(!await window.bamcoConfirm(`گفت‌وگوی «${title}» حذف شود؟`))return;await rpc('chat_delete_thread',{p_thread_id:id});await render(view)}}}
  async function chooseTask(button,view){
   const epoch=serial;selectedTask=(state.tasks||[]).find(t=>String(t.id)===button.dataset.taskChoice);if(!selectedTask)return;
   const task=selectedTask,host=q('.conversation-stage',view);selectItem(button,q('.conversation-list',view));window.bamcoChat.close();loading(host,'در حال دریافت مخاطبان…');
   try{const people=(await directory()).filter(p=>p.id!==state.user.id);if(epoch!==serial||selectedTask!==task)return;
    host.innerHTML=`<div class="conversation-recipient-head"><small>وظیفهٔ ${esc(task.legacy_id||task.id)}</small><h4>${esc(task.title)}</h4><p>با چه کسی دربارهٔ این وظیفه گفت‌وگو می‌کنید؟</p><input type="search" data-recipient-search placeholder="جست‌وجوی نام مخاطب…" aria-label="جست‌وجوی مخاطب"></div><div class="conversation-recipient-grid">${people.map(personButton).join('')||'<p>مخاطبی در دسترس نیست.</p>'}</div>`;
+  bamcoMedia.avatars(host,people);
   }catch(error){if(epoch===serial)failure(host,error)}
  }
  async function choosePerson(button,view){
@@ -55,7 +56,7 @@
   button.disabled=true;
   try{const id=task?await rpc('chat_ensure_task_direct',{p_task_id:Number(task.id),p_other_user:userId}):await rpc('chat_ensure_direct',{p_other_user:userId});if(epoch!==serial||task!==selectedTask)return;
    if(route==='directMessages')selectItem(button,q('.conversation-list',view));
-   await window.bamcoChat.mount(host,{id,title:'گفت‌وگو با '+title,subtitle:task?`وظیفهٔ ${task.legacy_id||task.id} · ${task.title}`:'خصوصی · فقط این گفت‌وگو',actions:[...(task?[{label:'تغییر مخاطب',run:()=>chooseTask(q('.conversation-task.active',view),view)}]:[]),...(isManager()?[deleteAction(id,title,route)]:[])]});
+   await window.bamcoChat.mount(host,{id,personId:userId,title,subtitle:task?`وظیفهٔ ${task.legacy_id||task.id} · ${task.title}`:'خصوصی · فقط این گفت‌وگو',actions:[...(task?[{label:'تغییر مخاطب',run:()=>chooseTask(q('.conversation-task.active',view),view)}]:[]),...(isManager()?[deleteAction(id,title,route)]:[])]});
   }catch(error){failure(host,error)}finally{if(button.isConnected)button.disabled=false}
  }
  async function groupDialog(id=null,title='',readOnly=false){
@@ -63,7 +64,8 @@
   dialog.innerHTML='<div class="conversation-empty" role="status">در حال دریافت اعضا…</div>';dialog.showModal();
   try{const [people,members]=await Promise.all([directory(),id?rpc('chat_group_members',{p_thread_id:id}):Promise.resolve([])]);if(!dialog.open)return;
    const selected=new Set(members.map(m=>m.user_id));selected.add(state.user.id);const owners=new Set(members.filter(m=>m.member_role==='owner').map(m=>m.user_id));owners.add(state.user.id);
-   dialog.innerHTML=`<form id="conversationGroupForm"><div class="modal-head"><div><h3>${readOnly?'اعضای گروه':id?'مدیریت گروه':'ایجاد گروه'}</h3><p>${readOnly?esc(title):'نام گروه را بنویسید و اعضا را انتخاب کنید.'}</p></div><button type="button" class="ghost bamco-icon-button" data-group-close aria-label="بستن">×</button></div>${readOnly?'':`<label>نام گروه<input name="title" required minlength="2" maxlength="120" value="${esc(title)}" placeholder="نام گروه"></label>`}<label>جست‌وجوی اعضا<input type="search" data-member-search placeholder="نام فرد…"></label><div class="group-selection-count" role="status"></div><div class="group-member-grid">${people.filter(p=>!readOnly||selected.has(p.id)).map(p=>`<label class="group-member-option"><input type="checkbox" name="members" value="${p.id}" ${selected.has(p.id)?'checked':''} ${readOnly||owners.has(p.id)?'disabled':''}><span class="conversation-avatar">${esc(label(p).trim()[0])}</span><span><strong>${esc(label(p))}</strong><small>${p.id===state.user.id?'شما':p.role==='manager'?'مدیر':'متولی'}</small></span></label>`).join('')}</div><p class="form-error" role="alert"></p><div class="modal-actions">${readOnly?'':`<button type="submit" class="primary">${id?'ذخیره تغییرات':'ایجاد گروه'}</button>`}<button type="button" class="ghost" data-group-close>${readOnly?'بستن':'انصراف'}</button></div></form>`;
+   dialog.innerHTML=`<form id="conversationGroupForm"><div class="modal-head"><div><h3>${readOnly?'اعضای گروه':id?'مدیریت گروه':'ایجاد گروه'}</h3><p>${readOnly?esc(title):'نام گروه را بنویسید و اعضا را انتخاب کنید.'}</p></div><button type="button" class="ghost bamco-icon-button" data-group-close aria-label="بستن">×</button></div>${readOnly?'':`<label>نام گروه<input name="title" required minlength="2" maxlength="120" value="${esc(title)}" placeholder="نام گروه"></label>`}<label>جست‌وجوی اعضا<input type="search" data-member-search placeholder="نام فرد…"></label><div class="group-selection-count" role="status"></div><div class="group-member-grid">${people.filter(p=>!readOnly||selected.has(p.id)).map(p=>`<label class="group-member-option"><input type="checkbox" name="members" value="${p.id}" ${selected.has(p.id)?'checked':''} ${readOnly||owners.has(p.id)?'disabled':''}><span class="conversation-avatar" data-profile-photo="${esc(p.id)}">${esc(label(p).trim()[0])}</span><span><strong>${esc(label(p))}</strong><small>${p.id===state.user.id?'شما':p.role==='manager'?'مدیر':'متولی'}</small></span></label>`).join('')}</div><p class="form-error" role="alert"></p><div class="modal-actions">${readOnly?'':`<button type="submit" class="primary">${id?'ذخیره تغییرات':'ایجاد گروه'}</button>`}<button type="button" class="ghost" data-group-close>${readOnly?'بستن':'انصراف'}</button></div></form>`;
+   bamcoMedia.avatars(dialog,people);
    const count=()=>q('.group-selection-count',dialog).textContent=qa('input[name=members]:checked',dialog).length.toLocaleString('fa-IR')+' عضو انتخاب شده';count();dialog.onchange=count;
    q('[data-member-search]',dialog).oninput=e=>qa('.group-member-option',dialog).forEach(row=>row.hidden=!row.textContent.toLowerCase().includes(e.target.value.trim().toLowerCase()));
    qa('[data-group-close]',dialog).forEach(b=>b.onclick=()=>dialog.close());

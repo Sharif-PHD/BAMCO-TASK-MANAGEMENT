@@ -44,7 +44,7 @@ test('welcome uses the active database sticker pair and home is deduplicated',()
 test('all data tables default to compact multi-selection behavior',()=>{
   const js=read('assets/js/table-suite.js');
   assert.match(js,/classList\.add\('suite-table','suite-compact'\)/);
-  assert.match(js,/e\.ctrlKey\|\|e\.metaKey/);
+  assert.match(read('assets/js/table-selection.js'),/event\.ctrlKey.*event\.metaKey/);
   assert.match(js,/home\.textContent='⌂ خانه'/);
 });
 
@@ -69,7 +69,7 @@ test('chat exposes requested messaging controls',()=>{
   assert.match(js,/5\*1024\*1024/);
   assert.match(js,/message-reply/);
   assert.match(js,/message-delete/);
-  assert.match(js,/avatar_path/);
+  assert.match(read('assets/js/media-cache.js'),/avatar_path/);
   assert.match(runtime,/chat_manage_group/);
   assert.match(runtime,/chat_group_members/);
 });

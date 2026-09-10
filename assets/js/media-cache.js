@@ -1,0 +1,7 @@
+/* Authenticated image requests are shared across chat, directory and previews. */
+(()=>{'use strict';const cache=new Map(),urls=new Set();
+async function get(bucket,path){if(!['avatars','stickers'].includes(bucket)||!path||String(path).split('/').includes('..'))throw Error('مسیر تصویر نامعتبر است');const key=(state.user?.id||'')+':'+bucket+':'+path;if(!cache.has(key)){const pending=(async()=>{const encoded=String(path).split('/').map(encodeURIComponent).join('/'),res=await fetch(`${SB_URL}/storage/v1/object/authenticated/${bucket}/${encoded}`,{headers:{apikey:SB_KEY,Authorization:`Bearer ${state.token}`},cache:bucket==='avatars'?'no-cache':'force-cache'});if(!res.ok)throw Error('دریافت تصویر انجام نشد');const blob=await res.blob(),url=URL.createObjectURL(blob);urls.add(url);return url})();cache.set(key,pending);pending.catch(()=>cache.delete(key))}return cache.get(key)}
+async function avatars(root,people){const byId=new Map(people.map(p=>[p.id,p]));await Promise.all([...root.querySelectorAll('[data-profile-photo]')].map(async el=>{const p=byId.get(el.dataset.profilePhoto);if(!p?.avatar_path)return;try{const src=await get('avatars',p.avatar_path);if(!el.isConnected)return;const img=document.createElement('img');img.src=src;img.alt='';el.replaceChildren(img);el.classList.add('has-image')}catch{}}))}
+function clear(){cache.clear();urls.forEach(URL.revokeObjectURL);urls.clear()}
+document.addEventListener('click',e=>{if(e.target.closest('#logoutBtn'))clear()});window.bamcoMedia={get,avatars,clear};
+})();
