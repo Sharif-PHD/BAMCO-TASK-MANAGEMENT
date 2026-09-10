@@ -50,7 +50,7 @@ async function requestJson(path,{method='GET',body,auth=false,timeout=12000}={})
 
 
 function install(){
-  injectCss();const logo=q('#loginView .brand-lockup img');if(logo)logo.src='assets/images/bamco-white.png';
+  injectCss();const logo=q('#loginView .brand-lockup img');if(logo)logo.src='assets/images/bamco-white-cropped.png';
   const form=buildLogin();if(!form)return;
   const password=q('#password'),toggle=q('.login-password-toggle'),box=q('#loginVerification'),display=q('#loginVerifyDisplay'),verify=q('#loginVerifyCode'),verifyError=q('#loginVerifyError'),refreshCode=q('#refreshLoginVerify');
   const digits=[...form.querySelectorAll('.verification-digit')];
