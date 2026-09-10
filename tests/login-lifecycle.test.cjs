@@ -14,3 +14,15 @@ test('actual login module records one session, gates first entry, changes passwo
  d.querySelector('.home-welcome-dialog')?.close();d.querySelector('#logoutBtn').click();await until(()=>!d.querySelector('#loginView').classList.contains('hidden'));
  assert.equal(f.calls.slice(start).filter(c=>c.endpoint==='logout').length,1);assert.equal(w.eval('state.token'),'');assert.deepEqual(f.errors,[]);
 });
+
+test('home and welcome appear before slow data/stickers and late callbacks cannot replace the chosen page',async t=>{
+ let slow=false,releaseData,releaseStickers;const dataGate=new Promise(r=>releaseData=r),stickerGate=new Promise(r=>releaseStickers=r);
+ const f=await fixture({fetchResult:async({endpoint})=>{if(!slow)return;if(endpoint==='task_status_view')await dataGate;if(endpoint==='sticker_sets')await stickerGate}}),{w,d}=f;
+ t.after(async()=>{releaseData();releaseStickers();await f.dispose()});
+ w.eval('showLogin()');await pause(20);slow=true;
+ const entering=w.eval("state.token='test-token';state.user={id:'test-manager'};enterApp()");
+ await until(()=>d.querySelector('.home-welcome-dialog').open);
+ assert(!d.querySelector('#homeView').classList.contains('hidden'));assert(d.querySelector('#kanbanView').classList.contains('hidden'));assert.equal(w.eval('state.view'),'home');
+ d.querySelector('.home-welcome-dialog').close();await f.open('people');w.bamcoOpenHomeWelcome();assert(!d.querySelector('#peopleView').classList.contains('hidden'));
+ releaseData();releaseStickers();await entering;await pause(60);assert(!d.querySelector('#peopleView').classList.contains('hidden'));assert(!d.querySelector('.home-welcome-dialog').open);assert.deepEqual(f.errors,[]);
+});

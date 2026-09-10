@@ -125,10 +125,13 @@ async function enterApp(){
   $('#viewSubtitle').textContent=isManager()?'نمای کلی وظایف و عملکرد همه متولیان':'فقط وظایف و عملکرد مربوط به شما';
   $('#kanbanScope').textContent=isManager()?'نمای همه متولیان':'فقط وظایف شما';$('#archiveScope').textContent=isManager()?'نمای همه متولیان':'فقط آرشیو شما';
   await window.bamcoSession?.start();
-  if(!state.profile.must_change_password)await refresh();
   if(window.matchMedia('(max-width:760px)').matches)$('#sidebar').classList.add('collapsed');
   $('#loginView').classList.add('hidden');$('#appView').classList.remove('hidden');
-  if(state.profile.must_change_password){$('#cancelPasswordBtn').classList.add('hidden');$('#passwordDialog').showModal()}else showView('kanban');
+  window.bamcoShowHome?.();
+  if(state.profile.must_change_password){$('#cancelPasswordBtn').classList.add('hidden');$('#passwordDialog').showModal()}else{
+    if(window.bamcoOpenHomeWelcome)window.bamcoOpenHomeWelcome();else showView('kanban');
+    await refresh().catch(()=>{});
+  }
 }
 async function refresh(){
   try{
@@ -840,6 +843,7 @@ showLogin();
   };
 
   refresh=async function(){
+    const loadingUser=state.user?.id;
     try{
       const profilesPromise=isManager()?select('profiles','select=id,email,full_name,display_name,gender,excel_name,role,active,default_message_channel,messaging_enabled&order=full_name'):Promise.resolve([state.profile]);
       const tasksPromise=selectAll('task_status_view','select=*&order=id.desc');
@@ -847,6 +851,7 @@ showLogin();
       const historyPromise=selectAll('change_requests','select=*&request_status=in.(approved,rejected,cancelled)&order=created_at.desc');
       const routesPromise=rpc('request_routing_status',{}).catch(()=>[]);
       const [profiles,tasks,requests,history,routes]=await Promise.all([profilesPromise,tasksPromise,requestsPromise,historyPromise,routesPromise]);
+      if(state.user?.id!==loadingUser)return;
       state.profiles=profiles;state.tasks=tasks;state.requests=requests;state.requestHistory=history;state.requestRoutes=routes;
       dataVersion++;resetRenderCaches();
       renderAll();

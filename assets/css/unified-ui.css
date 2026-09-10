@@ -478,8 +478,9 @@ html body #groupManageDialog .group-photo-picker{display:flex!important;gap:16px
 html body #groupManageDialog .group-photo-preview{width:84px!important;height:84px!important;min-width:84px!important;border-radius:50%!important;overflow:hidden!important;background:#e5f0e9!important;display:grid!important;place-items:center!important;font-size:34px!important}
 html body #groupManageDialog .group-photo-picker small{display:block!important;margin-top:7px!important}
 html body :is(.group-photo-preview,.conversation-avatar,.chat-avatar)>img{width:100%!important;height:100%!important;object-fit:cover!important;display:block!important;border-radius:inherit!important}
-html body #departmentEntry header img{padding:12px 15px!important;object-fit:contain!important}
-html body #loginView .brand-lockup img{box-sizing:border-box!important;padding:10px 12px!important;object-fit:contain!important}
+html body #departmentEntry header img{width:244px!important;height:152px!important;padding:24px 30px!important;object-fit:contain!important}
+html body #loginView .brand-lockup img{width:min(476px,100%)!important;height:auto!important;aspect-ratio:238/130!important;box-sizing:border-box!important;padding:20px 24px!important;object-fit:contain!important}
+@media(max-width:620px){html body #loginView .brand-lockup img{width:min(392px,100%)!important;aspect-ratio:196/104!important}}
 @media(max-width:620px){html body #appView#appView #stickersView.bamco-interior .sticker-selectors{width:100%!important;margin:4px 0 0!important}html body #appView#appView #stickersView.bamco-interior .sticker-selectors label{flex:1 1 200px!important}html body #appView#appView #stickersView.bamco-interior :is(#stickerSet,#stickerState){width:100%!important;min-width:0!important}}
 
 html body #appView#appView .bamco-interior .bamco-page-heading:has(+.bamco-command-bar){border-bottom:0!important}

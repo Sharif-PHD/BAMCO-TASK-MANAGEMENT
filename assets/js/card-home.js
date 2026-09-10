@@ -87,7 +87,7 @@ function install(){
  new MutationObserver(syncMode).observe(home,{attributes:true,attributeFilter:['class']});
  window.bamcoShowHome=showHome;
  let welcomed=false;
- window.bamcoOpenHomeWelcome=async()=>{showHome();if(welcomed||app.classList.contains('hidden'))return;if(typeof state!=='undefined'&&state.profile?.must_change_password)return;welcomed=true;dialog.querySelector('.welcome-person').textContent=(q('#userName')?.textContent||'همکار')+' عزیز';await stickers();dialog.showModal()};
+ window.bamcoOpenHomeWelcome=()=>{if(welcomed||app.classList.contains('hidden'))return;if(typeof state!=='undefined'&&state.profile?.must_change_password)return;welcomed=true;showHome();dialog.querySelector('.welcome-person').textContent=(q('#userName')?.textContent||'همکار')+' عزیز';dialog.showModal();void stickers()};
  dialog.querySelector('.welcome-dismiss').addEventListener('click',()=>dialog.close());
  dialog.addEventListener('close',()=>home.focus({preventScroll:true}));
  top.querySelector('.home-return').addEventListener('click',()=>{showHome();home.focus({preventScroll:true})});
