@@ -7,60 +7,13 @@ const root=path.join(__dirname,'..');
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 async function until(check){for(let i=0;i<100;i++){if(check())return;await pause(30)}assert.fail('Timed out waiting for the actual UI handler');}
 
-// Run the shipped script order against an isolated, in-memory API. No request
-// (including authentication, user deletion or session revocation) reaches a server.
-async function fixture(){
- const profiles=[{id:'test-manager',full_name:'مدیر آزمایشی',display_name:'مدیر آزمایشی',email:'manager@example.test',role:'manager',active:true},{id:'test-owner',full_name:'متولی آزمایشی',email:'owner@example.test',role:'owner',active:true}];
- const sessions=[{id:'test-session',user_id:'test-owner',login_at:new Date().toISOString(),last_activity_at:new Date().toISOString()}];
- const calls=[],errors=[],downloads=[],observers=[],blobs=new Map();let failSave=false;
- const vc=new VirtualConsole();vc.on('jsdomError',e=>errors.push(e.message));vc.on('error',(...args)=>errors.push(args.map(String).join(' ')));
- const local=requestInterceptor(request=>{
-  const url=new URL(request.url);if(url.hostname!=='bamco.test')return new Response('',{status:404});
-  if(url.pathname.endsWith('.css'))return new Response('');
-  try{return new Response(fs.readFileSync(path.join(root,url.pathname)),{headers:{'Content-Type':'application/javascript'}})}catch{return new Response('',{status:404})}
- });
- const html=fs.readFileSync(path.join(root,'index.html'),'utf8').replace(/<script\b[^>]*src="assets\/js\/(?:auth-ui|department-entry)\.js[^>]*><\/script>/g,'');
- const dom=new JSDOM(html,{url:'https://bamco.test/',runScripts:'dangerously',resources:{interceptors:[local]},pretendToBeVisual:true,virtualConsole:vc,beforeParse(w){
-  w.Response=Response;w.AbortController=AbortController;w.Blob=Blob;w.TextEncoder=TextEncoder;
-  w.fetch=async(input,init={})=>{
-   const url=new URL(typeof input==='string'?input:input.url,w.location.href),endpoint=url.pathname.split('/').pop(),method=init.method||'GET',body=init.body?JSON.parse(init.body):null;
-   calls.push({endpoint,method,body});let data=[],status=200;
-   if(endpoint==='profiles')data=url.searchParams.has('id')?profiles.filter(p=>'eq.'+p.id===url.searchParams.get('id')):profiles;
-   if(endpoint==='user_sessions')data=sessions;
-   if(endpoint==='admin-users'){
-    if(failSave){status=400;data={error:'خطای آزمایشی ذخیره'}}
-    else if(method==='DELETE'){profiles.splice(profiles.findIndex(p=>p.id===body.user_id),1);data={ok:true}}
-    else{const existing=profiles.find(p=>p.id===body.user_id);if(existing)Object.assign(existing,body);else profiles.push({id:'test-new',...body});data={ok:true}}
-   }
-   if(endpoint==='revoke_user_session'){sessions.find(s=>s.id===body.p_session_id).revoked_at=new Date().toISOString();data=true}
-   if(endpoint==='chat_ensure_public')data='test-room';
-   if(endpoint==='chat_directory')data=profiles;
-   if(endpoint==='session-audit')data={session:{id:'test-current-session'},valid:true};
-   return new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json'}});
-  };
-  const NativeObserver=w.MutationObserver;w.MutationObserver=class extends NativeObserver{constructor(cb){super(cb);observers.push(this)}};
-  w.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}});w.ResizeObserver=class{observe(){}disconnect(){}};
-  w.HTMLDialogElement.prototype.showModal=function(){this.open=true};
-  w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'))};
-  w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({measureText:()=>({width:20}),createLinearGradient:()=>({addColorStop(){}})},{get:(o,k)=>o[k]||(()=>{})});
-  w.HTMLElement.prototype.scrollTo=function(){};w.confirm=()=>true;
-  w.URL.createObjectURL=blob=>{const id='blob:test-'+blobs.size;blobs.set(id,blob);return id};w.URL.revokeObjectURL=()=>{};
-  w.HTMLAnchorElement.prototype.click=function(){downloads.push({name:this.download,blob:blobs.get(this.href)})};
- }});
- const w=dom.window,d=w.document;await new Promise(resolve=>w.addEventListener('load',resolve,{once:true}));
- w.__fixtureProfile=profiles[0];await w.eval("state.token='test-token';state.user={id:'test-manager'};state.profile=window.__fixtureProfile;enterApp()");
- d.body.classList.remove('department-pending');d.querySelector('#departmentEntry')?.setAttribute('hidden','');w.bamcoShowHome();await pause(250);d.querySelector('.home-welcome-dialog')?.close();
- return{w,d,profiles,calls,errors,downloads,setFailSave:v=>failSave=v,
-  async open(id){d.querySelector('#nav [data-view="'+id+'"]').click();await until(()=>!d.querySelector('#'+id+'View').classList.contains('hidden'));await pause(120)},
-  async dispose(){observers.forEach(o=>o.disconnect());await pause(50);observers.forEach(o=>o.disconnect());w.close()}
- };
-}
+const {fixture}=require('./helpers/app-fixture.cjs');
 
 test('management pages: shipped click handlers, toolbars, Excel downloads and return navigation',async t=>{
  const f=await fixture(),{w,d}=f;t.after(()=>f.dispose());
  await t.test('people selection, add, edit, validation feedback, cancel and delete',async()=>{
   await f.open('people');await until(()=>d.querySelectorAll('#peopleBody tr[data-id]').length===2);
-  assert(d.querySelector('#editPersonBtn').disabled);assert(d.querySelector('#deletePersonBtn').disabled);
+  assert(!d.querySelector('#editPersonBtn').disabled);assert(d.querySelector('#deletePersonBtn').disabled);d.querySelector('#editPersonBtn').click();assert(d.querySelector('#personPickerDialog').open);d.querySelector('#personPickerDialog button[type=button]').click();
   const row=d.querySelector('#peopleBody [data-id="test-owner"]');row.click();row.click();
   assert.equal(d.querySelector('#peopleBody [data-id="test-owner"]'),row,'click must preserve the row for double-click editing');
   assert.equal(row.getAttribute('aria-selected'),'true');assert(!d.querySelector('#editPersonBtn').disabled);

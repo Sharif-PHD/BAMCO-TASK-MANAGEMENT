@@ -73,7 +73,7 @@
           <div class="dashboard-chart-card"><canvas id="priorityChart" height="290"></canvas></div>
           <div class="dashboard-chart-card"><canvas id="bucketChart" height="290"></canvas></div>
           <div class="dashboard-chart-card"><canvas id="workloadChart" height="360"></canvas></div>
-          <fieldset class="dashboard-performance-range"><legend>بازه زمانی نمودار عملکرد متولیان</legend><div><label>از تاریخ<input id="perfFrom" class="jalali-input" readonly placeholder="۱۴۰۵/۰۱/۰۱"></label><button type="button" class="ghost dashboard-calendar-btn" data-dashboard-date="perfFrom">تقویم شمسی</button><label>تا تاریخ<input id="perfTo" class="jalali-input" readonly placeholder="۱۴۰۵/۰۱/۰۱"></label><button type="button" class="ghost dashboard-calendar-btn" data-dashboard-date="perfTo">تقویم شمسی</button><span></span><button id="clearPerf" type="button" class="ghost">حذف</button><button id="applyPerf" type="button" class="ghost">اعمال</button></div></fieldset>
+          <fieldset class="dashboard-performance-range"><legend>بازه زمانی نمودار عملکرد متولیان</legend><div class="performance-range-controls"><label>از تاریخ<span class="dashboard-date-field"><input id="perfFrom" class="jalali-input" readonly placeholder="۱۴۰۵/۰۱/۰۱"><button type="button" class="ghost dashboard-calendar-btn bamco-icon-button" data-dashboard-date="perfFrom" aria-label="تقویم از تاریخ">▦</button></span></label><label>تا تاریخ<span class="dashboard-date-field"><input id="perfTo" class="jalali-input" readonly placeholder="۱۴۰۵/۰۱/۰۱"><button type="button" class="ghost dashboard-calendar-btn bamco-icon-button" data-dashboard-date="perfTo" aria-label="تقویم تا تاریخ">▦</button></span></label><div class="performance-range-actions"><button id="applyPerf" type="button" class="primary">اعمال</button><button id="clearPerf" type="button" class="ghost">حذف</button></div></div></fieldset>
           <div class="dashboard-chart-card"><canvas id="performanceChart" height="360"></canvas></div>
         </div>
       </section>
@@ -148,23 +148,23 @@
 
   <dialog id="avatarCropDialog" class="modal avatar-crop-dialog"><div class="modal-head"><div><h3>تنظیم تصویر پروفایل</h3><p>تصویر را جابه‌جا کنید و با نوار زیر اندازه را تنظیم کنید.</p></div><button type="button" data-close="avatarCropDialog">×</button></div><div class="crop-stage"><canvas id="avatarCropCanvas" width="360" height="360"></canvas></div><label class="crop-zoom">اندازه تصویر<input id="avatarCropZoom" type="range" min="1" max="3" value="1" step="0.01"></label><div class="modal-actions"><button type="button" class="ghost" data-close="avatarCropDialog">انصراف</button><button id="applyAvatarCrop" type="button" class="primary">تأیید محدوده تصویر</button></div></dialog>
 
-  <script defer src="assets/js/shell.js?v=management-20260910-1"></script>
+  <script defer src="assets/js/shell.js?v=workspace-20260910-2"></script>
 
 
 
   <script defer src="assets/js/stickers.js?v=20260909-status-labels-1"></script>
 
 
-  <script defer src="assets/js/app.js?v=20260910-routing-dashboard-1"></script>
+  <script defer src="assets/js/app.js?v=workspace-20260910-2"></script>
 
 
 
 
 <script defer src="assets/js/excel.js?v=20260909-5"></script>
   <script defer src="assets/js/vehicles.js?v=20260909-tabs-7"></script>
-  <script defer src="assets/js/tasks-io.js"></script>
+  <script defer src="assets/js/tasks-io.js?v=workspace-20260910-2"></script>
   <script defer src="assets/js/table-ui.js?v=20260909-5"></script>
-  <script defer src="assets/js/timeline.js?v=20260909-centered-month-1"></script>
+  <script defer src="assets/js/timeline.js?v=workspace-20260910-2"></script>
   <script defer src="assets/js/tables.js"></script>
   <script defer src="assets/js/ui-helpers.js"></script>
 
@@ -175,18 +175,19 @@
 <script defer src="assets/js/phase3-response-tracking.js?v=20260909-release-1"></script>
 <script defer src="assets/js/task-ui.js?v=20260909-card-home-1" data-user-request-fixes-v2></script>
   
-  <script defer src="assets/js/ux.js?v=home-reference-2" data-final-polish></script>
+  <script defer src="assets/js/templates.js?v=workspace-20260910-2"></script>
+<script defer src="assets/js/ux.js?v=workspace-20260910-2" data-final-polish></script>
   <script defer src="assets/js/unified-ui.js?v=20260909-suite-3"></script>
   <link rel="stylesheet" href="assets/css/navigation-completeness.css?v=20260909-1">
-  <script defer src="assets/js/production-runtime.js?v=home-reference-2"></script>
-<script defer src="assets/js/tab-workspace.js?v=management-20260910-1"></script>
-<script defer src="assets/js/completion-ui.js?v=20260909-stable-home-1"></script>
+  <script defer src="assets/js/production-runtime.js?v=workspace-20260910-2"></script>
+<script defer src="assets/js/tab-workspace.js?v=workspace-20260910-2"></script>
+<script defer src="assets/js/conversations.js?v=workspace-20260910-2"></script>
 <script defer src="assets/js/session-runtime.js?v=20260909-stable-home-1"></script>
 
 
   <link rel="stylesheet" href="assets/css/card-home.css?v=home-reference-2">
 <script defer src="assets/js/card-home.js?v=home-reference-2"></script>
-<script defer src="assets/js/interior-ui.js?v=management-20260910-1"></script>
+<script defer src="assets/js/interior-ui.js?v=workspace-20260910-2"></script>
 <script defer src="assets/js/table-pages.js?v=interior-20260910-1"></script>
 <link rel="stylesheet" href="assets/css/interface-refinement.css?v=home-reference-2">
 <script defer src="assets/js/table-suite.js?v=management-20260910-1"></script>
@@ -195,10 +196,10 @@
 <link rel="stylesheet" href="assets/css/usability.css?v=20260909-5">
 <script defer src="assets/js/usability.js?v=20260909-tabs-7"></script>
 <script defer src="assets/js/styled-excel.js?v=20260909-tabs-7"></script>
-<script defer src="assets/js/chat-ui.js?v=20260909-5"></script>
+<script defer src="assets/js/chat-ui.js?v=workspace-20260910-2"></script>
 <link rel="stylesheet" href="assets/css/tab-workspace.css?v=20260909-tabs-7">
 <link rel="stylesheet" href="assets/css/release-fixes.css?v=home-reference-2">
-<link rel="stylesheet" href="assets/css/unified-ui.css?v=management-20260910-1">
+<link rel="stylesheet" href="assets/css/unified-ui.css?v=workspace-20260910-2">
 <link rel="stylesheet" href="assets/css/home-stable.css?v=home-reference-2">
 </body>
 </html>

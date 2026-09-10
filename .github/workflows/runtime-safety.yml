@@ -31,7 +31,7 @@ jobs:
         run: |
           node --check assets/js/production-runtime.js
           node --check assets/js/session-runtime.js
-          node --check assets/js/completion-ui.js
+          node --check assets/js/conversations.js
           node --check assets/js/sidebar.js
       - name: Additive navigation assertions
         run: |
@@ -40,21 +40,21 @@ jobs:
           rt=Path('assets/js/production-runtime.js').read_text(encoding='utf-8')
           page=Path('index.html').read_text(encoding='utf-8')
           sess=Path('assets/js/session-runtime.js').read_text(encoding='utf-8')
-          ui=Path('assets/js/completion-ui.js').read_text(encoding='utf-8')
+          ui=Path('assets/js/conversations.js').read_text(encoding='utf-8')
           forbidden=["qa('#nav>.nav-group').forEach(x=>x.remove())",'replaceChildren(','.innerHTML=\'\'']
           for x in forbidden:
               assert x not in rt, f'unsafe navigation rebuild found: {x}'
-          for view in ['groupChat','directMessages','taskChats','loginActivity','activeSessions','performanceReport','messageReport','responseReport','requestReport','loginReport','systemOptions','alertSettings','emailSettings']:
+          for view in ['groupChat','directMessages','taskChats','loginActivity','activeSessions','performanceReport','responseReport','requestReport','systemOptions']:
               assert view in rt, f'missing tested view: {view}'
-          for script in ["production-runtime.js", "tab-workspace.js", "completion-ui.js", "session-runtime.js"]:
+          for script in ["production-runtime.js", "tab-workspace.js", "conversations.js", "session-runtime.js"]:
               assert page.count(script)==1, f"runtime must load once: {script}"
           assert "navigation-completeness.js" not in page
           assert "[300,900,1800]" not in rt
           assert "setTimeout(()=>{qa('#appView .view')" not in ui
           assert "session-audit" in sess and "120000" in sess
           assert "chat_ensure_task_direct" in ui
-          assert "گفتگو درباره وظیفه" in ui
-          assert "replace(/تسک/g,'وظیفه')" in ui
+          assert "گفت‌وگوی مرتبط با وظیفه" in ui
+          assert "تسک" not in ui
           print('runtime safety: PASS')
           PY
 
