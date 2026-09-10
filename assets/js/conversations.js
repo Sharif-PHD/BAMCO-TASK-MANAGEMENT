@@ -34,7 +34,7 @@
    actions.push({label:'خروج از گروه',run:async()=>{if(!await window.bamcoConfirm(`از گروه «${title}» خارج می‌شوید؟`))return;await rpc('chat_leave_group',{p_thread_id:id});if(epoch===serial)await render('groupChat')}});
   }
   if(!readOnly&&!['public','system'].includes(kind)&&isManager())actions.push(deleteAction(id,title,currentView));
-  await window.bamcoChat.mount(host,{id,title,readOnly,personId:kind==='system'?null:button.dataset.personId||null,groupPhoto:button.dataset.groupPhoto||'',subtitle:readOnly?'حساب مخاطب حذف شده؛ سابقه گفت‌وگو':kind==='public'?'عمومی · همه کاربران':kind==='group'?'گروه · اعضای انتخاب‌شده':kind==='system'?'پیام‌های خودکار سامانه · پاسخ در همین زنجیره':button.dataset.taskId?'وظیفه '+digits(button.dataset.taskId):'خصوصی',actions});
+  await window.bamcoChat.mount(host,{id,title,readOnly,personId:kind==='system'?null:button.dataset.personId||null,groupPhoto:button.dataset.groupPhoto||'',subtitle:readOnly?'حساب مخاطب حذف شده؛ سابقه گفت‌وگو':kind==='public'?'عمومی · همه کاربران':kind==='group'?'گروه · اعضای انتخاب‌شده':kind==='system'?'پیام‌های خودکار سامانه · پاسخ در همین زنجیره':button.dataset.taskId?'وظیفه '+digits((state.tasks||[]).find(t=>String(t.id)===button.dataset.taskId)?.legacy_id||button.dataset.taskId):'خصوصی',actions});
  }
  function deleteAction(id,title,view){return{label:'حذف گفت‌وگو',danger:true,run:async()=>{if(!await window.bamcoConfirm(`گفت‌وگوی «${title}» حذف شود؟`))return;await rpc('chat_delete_thread',{p_thread_id:id});await render(view)}}}
  async function chooseTask(button,view){
