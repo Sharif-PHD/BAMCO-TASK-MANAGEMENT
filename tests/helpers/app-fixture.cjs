@@ -10,7 +10,7 @@ async function until(check){for(let i=0;i<100;i++){if(check())return;await pause
 // (including authentication, user deletion or session revocation) reaches a server.
 async function fixture(options={}){
  const profiles=[{id:'test-manager',full_name:'مدیر آزمایشی',display_name:'مدیر آزمایشی',email:'manager@example.test',role:'manager',active:true},{id:'test-owner',full_name:'متولی آزمایشی',email:'owner@example.test',role:'owner',active:true}];
- const sessions=[{id:'test-session',user_id:'test-owner',login_at:new Date().toISOString(),last_activity_at:new Date().toISOString()}];
+ const sessions=[{id:'test-session',auth_session_id:'test-auth-session',user_id:'test-owner',login_at:new Date().toISOString(),last_activity_at:new Date().toISOString()}];
  const actor=options.role==='owner'?profiles[1]:profiles[0],tables={...options.tables};
  const threads=[{id:'test-room',thread_type:'public',title:'گفت‌وگوی عمومی',is_active:true}],members=[],messages=[],uploads=[];
  const calls=[],errors=[],downloads=[],observers=[],blobs=new Map();let failSave=false;const failures=new Set();

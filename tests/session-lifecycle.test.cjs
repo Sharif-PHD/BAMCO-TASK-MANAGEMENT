@@ -73,7 +73,7 @@ test('server detects a removed Auth session and refuses another device session I
 
 test('active-session screen reconciles before reading and removes a remote logout on refresh',async t=>{
  const {fixture,until}=require('./helpers/app-fixture.cjs');
- const now=new Date().toISOString(),rows=[{id:'test-current-session',user_id:'test-manager',login_at:now,last_activity_at:now},{id:'other-device',user_id:'test-owner',login_at:now,last_activity_at:now}];
+ const now=new Date().toISOString(),rows=[{id:'test-current-session',auth_session_id:'current-auth',user_id:'test-manager',login_at:now,last_activity_at:now},{id:'other-device',auth_session_id:'other-auth',user_id:'test-owner',login_at:now,last_activity_at:now}];
  const f=await fixture({fetchResult:({endpoint})=>endpoint==='user_sessions'?rows:undefined});t.after(()=>f.dispose());
  await f.open('activeSessions');await until(()=>f.d.querySelector('#activeSessionsView').textContent.includes('نشست فعلی شما'));
  const sync=f.calls.findIndex(c=>c.endpoint==='bamco_sync_sessions'),read=f.calls.findIndex(c=>c.endpoint==='user_sessions');assert(sync>=0&&read>sync);
@@ -81,4 +81,23 @@ test('active-session screen reconciles before reading and removes a remote logou
  rows[1].logout_at=new Date().toISOString();f.d.dispatchEvent(new f.w.Event('visibilitychange'));
  await until(()=>!f.d.querySelector('#activeSessionsView').textContent.includes('other-device'));
  assert.match(f.d.querySelector('#activeSessionsView').textContent,/نشست فعلی شما/);assert.deepEqual(f.errors,[]);
+});
+
+test('a connected legacy client is linked only by its verified native session',async()=>{
+ const f=edge(),sid=[...f.native][0];
+ f.rows.push({id:'legacy',user_id:'owner',auth_session_id:null,last_activity_at:new Date().toISOString()});
+ const response=await f.call({action:'status',session_id:'legacy'},sid);
+ assert.equal(response.status,200);assert.equal(response.body.ended,false);assert.equal(f.rows[0].auth_session_id,sid);
+ f.native.delete(sid);const ended=await f.call({action:'status',session_id:'legacy'},sid);
+ assert.equal(ended.body.ended,true);assert(f.rows[0].logout_at);
+});
+test('confirmed historical exits stay closed and are never adopted by a new login',async()=>{
+ const f=edge(),time=new Date().toISOString();f.rows.push({id:'legacy',user_id:'owner',auth_session_id:null,last_activity_at:time,logout_at:time,ended_reason:'logout_confirmed'});
+ const response=await f.call({action:'heartbeat',session_id:'legacy'});assert.equal(response.body.ended,true);assert.equal(f.rows[0].auth_session_id,null);assert.equal(f.rows[0].logout_at,time);
+});
+test('recent activity alone cannot assert that an unlinked legacy record is active',()=>{
+ const {sessionState}=require('../assets/js/tab-workspace.js'),time=new Date().toISOString();
+ const legacy={last_activity_at:time,auth_session_id:null};assert.equal(sessionState(legacy),'وضعیت تأییدنشده');
+ assert.equal(sessionState({...legacy,auth_session_id:'verified'}),'فعال');
+ assert.equal(sessionState({...legacy,logout_at:time,ended_reason:'logout_confirmed'}),'خارج‌شده');
 });
