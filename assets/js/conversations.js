@@ -5,6 +5,27 @@
  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const names={groupChat:'گفت‌وگوی عمومی و گروه‌ها',directMessages:'گفت‌وگوی خصوصی',taskChats:'گفت‌وگوی مرتبط با وظیفه'};
  const label=p=>p.display_name||p.full_name||'کاربر';let serial=0,currentView='',selectedTask=null;
+ // Choose each new color as far as possible from those already used, across
+ // hue, saturation and lightness. Never cycle a short palette or repeat a fill.
+ function taskPalette(count){
+  if(!count)return[];
+  const candidates=[],seen=new Set(),steps=Math.max(30,Math.ceil(count/12)*2);
+  const linear=v=>(v/=255)<=.04045?v/12.92:((v+.055)/1.055)**2.4;
+  const lab=rgb=>{const [r,g,b]=rgb.map(linear),f=v=>v>.008856?Math.cbrt(v):7.787*v+16/116,x=f((.4124564*r+.3575761*g+.1804375*b)/.95047),y=f(.2126729*r+.7151522*g+.072175*b),z=f((.0193339*r+.119192*g+.9503041*b)/1.08883);return[116*y-16,500*(x-y),200*(y-z)]};
+  for(let i=0;i<steps;i++)for(const saturation of [.45,.65,.85])for(const lightness of [.32,.44,.58,.72,.84]){
+   const h=(155+i*360/steps)%360,a=saturation*Math.min(lightness,1-lightness);
+   const rgb=[0,8,4].map(n=>{const k=(n+h/30)%12;return Math.round(255*(lightness-a*Math.max(-1,Math.min(k-3,9-k,1))))});
+   const fill='#'+rgb.map(v=>v.toString(16).padStart(2,'0')).join('');if(seen.has(fill))continue;seen.add(fill);
+   const [r,g,b]=rgb.map(linear),luminance=.2126*r+.7152*g+.0722*b;
+   candidates.push({fill,ink:luminance>.179?'#000000':'#ffffff',lab:lab(rgb),distance:Infinity});
+  }
+  const palette=[];let next=candidates.findIndex(c=>c.lab[0]>50&&c.lab[0]<65);
+  while(palette.length<count&&candidates.length){
+   const chosen=candidates.splice(Math.max(0,next),1)[0];palette.push(chosen);let farthest=-1;next=0;
+   for(let i=0;i<candidates.length;i++){const c=candidates[i],distance=c.lab.reduce((sum,v,j)=>sum+(v-chosen.lab[j])**2,0);c.distance=Math.min(c.distance,distance);if(c.distance>farthest){farthest=c.distance;next=i}}
+  }
+  return palette;
+ }
  const directory=()=>rpc('chat_directory_v2',{});
  function loading(host,text='در حال دریافت اطلاعات…'){host.innerHTML=`<div class="conversation-empty" role="status">${esc(text)}</div>`}
  function failure(host,error){host.innerHTML=`<div class="workspace-error" role="alert"><p>${esc(error.message||'دریافت اطلاعات انجام نشد.')}</p><button type="button" class="ghost" data-conversation-refresh>تلاش دوباره</button></div>`}
@@ -17,8 +38,8 @@
   if(view.id==='taskChatsView'){
    const tasks=(state.tasks||[]).filter(t=>!t.archived&&(isManager()||t.owner_id===state.user.id));
    host.innerHTML=`<div class="conversation-recipient-head"><h4>انتخاب وظیفه</h4><p>وظیفه را انتخاب کنید؛ سپس مخاطب گفت‌وگو را مشخص کنید.</p>${isManager()?`<label class="conversation-owner-filter"><span>متولی</span><select data-task-owner><option value="">همه متولی‌ها</option>${people.map(p=>`<option value="${esc(p.id)}">${esc(label(p))}</option>`).join('')}<option value="${esc(state.user.id)}">وظایف من</option></select></label>`:''}</div><div class="conversation-task-choices"></div>`;
-   const taskHues=new Map(tasks.map((t,index)=>[t.id,(155+index*137.50776405003785)%360]));
-   const paint=()=>{const owner=q('[data-task-owner]',host)?.value; q('.conversation-task-choices',host).innerHTML=tasks.filter(t=>!owner||t.owner_id===owner).map(t=>`<button type="button" class="conversation-task-tile" style="--task-hue:${taskHues.get(t.id)}" data-task-choice="${t.id}" aria-label="${esc(t.title)}" data-preview="${esc([t.title,t.description,'متولی: '+ownerName(t),t.status].filter(Boolean).join('\n'))}"><span class="conversation-task-id">${esc(digits(t.legacy_id||t.id))}</span></button>`).join('')||'<div class="conversation-empty">وظیفه‌ای برای این متولی وجود ندارد.</div>'};paint();if(q('[data-task-owner]',host))q('[data-task-owner]',host).onchange=paint;
+   const palette=taskPalette(tasks.length),taskColors=new Map(tasks.map((t,index)=>[t.id,palette[index]]));
+   const paint=()=>{const owner=q('[data-task-owner]',host)?.value; q('.conversation-task-choices',host).innerHTML=tasks.filter(t=>!owner||t.owner_id===owner).map(t=>`<button type="button" class="conversation-task-tile" style="--task-fill:${taskColors.get(t.id).fill};--task-ink:${taskColors.get(t.id).ink}" data-task-choice="${t.id}" aria-label="${esc(t.title)}" data-preview="${esc([t.title,t.description,'متولی: '+ownerName(t),t.status].filter(Boolean).join('\n'))}"><span class="conversation-task-id">${esc(digits(t.legacy_id||t.id))}</span></button>`).join('')||'<div class="conversation-empty">وظیفه‌ای برای این متولی وجود ندارد.</div>'};paint();if(q('[data-task-owner]',host))q('[data-task-owner]',host).onchange=paint;
   }else{host.innerHTML=`<div class="conversation-recipient-head"><h4>شروع گفت‌وگوی خصوصی</h4><input type="search" data-recipient-search placeholder="جست‌وجوی مخاطب…"></div><div class="conversation-recipient-grid">${people.map(personButton).join('')}</div>`;bamcoMedia.avatars(host,people)}
  }
  async function render(id){
