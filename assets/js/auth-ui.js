@@ -28,7 +28,7 @@ function buildLogin(){
   const form=q('#loginForm');if(!form)return null;
   const email=q('#email')?.value||'',password=q('#password')?.value||'';
   form.innerHTML=`<div class="login-fields">
-  <label class="login-field" for="email"><span class="login-field-title bamco-fa">نام کاربری</span><span class="login-input-shell"><input id="email" class="english" type="email" autocomplete="username" required placeholder="name@bamco.ir" dir="ltr"><span class="login-leading-icon">${USER_ICON}</span></span></label>
+  <label class="login-field" for="email"><span class="login-field-title bamco-fa">نام کاربری</span><span class="login-input-shell"><input id="email" class="english" type="text" autocomplete="username" required placeholder="name@bamco.ir" dir="ltr"><span class="login-leading-icon">${USER_ICON}</span></span></label>
   <label class="login-field" for="password"><span class="login-field-title bamco-fa">رمز عبور</span><span class="login-input-shell"><input id="password" class="english" type="password" autocomplete="current-password" required placeholder="••••••" dir="ltr"><span class="login-leading-icon">${LOCK_ICON}</span><button type="button" class="login-password-toggle" aria-label="نمایش رمز عبور" title="نمایش رمز عبور">${EYE_ICON}</button></span></label>
   <div class="login-field login-verification-field"><span class="login-field-title bamco-fa">تأیید عددی</span><div id="loginVerification" class="login-verification-box"><div id="loginVerifyDisplay" class="login-code-display" aria-label="کد تأیید"></div><input id="loginVerifyCode" type="hidden"><div class="verification-digits" role="group" aria-label="کد تأیید چهار رقمی" dir="ltr">${[0,1,2,3].map(i=>`<input class="verification-digit english" type="text" inputmode="numeric" autocomplete="off" maxlength="4" aria-label="رقم ${i+1} کد تأیید" required>`).join('')}</div><button type="button" id="refreshLoginVerify" class="login-refresh-code" title="ساخت کد جدید" aria-label="ساخت کد جدید">${REFRESH_ICON}</button></div><div id="loginVerifyError" class="login-code-error bamco-fa" aria-live="polite"></div></div>
   </div><button class="primary wide login-submit" type="submit">ورود به سامانه</button><p id="loginError" class="form-error" aria-live="polite"></p>`;
@@ -73,7 +73,7 @@ function install(){
     const btn=form.querySelector('button[type="submit"]'),error=q('#loginError');
     form.dataset.busy='1';btn.disabled=true;btn.textContent='در حال ورود…';error.textContent='';verifyError.textContent='';
     try{
-      const auth=await requestJson('/auth/v1/token?grant_type=password',{method:'POST',body:{email:q('#email').value.trim(),password:q('#password').value},timeout:12000});
+      const auth=await requestJson('/auth/v1/token?grant_type=password',{method:'POST',body:{email:loginEmail(q('#email').value),password:q('#password').value},timeout:12000});
       window.bamcoAuth.accept(auth);
       await enterApp();
     }catch(err){window.bamcoAuth?.clear();state.token='';state.user=null;error.textContent=err?.message||'ورود انجام نشد. دوباره تلاش کنید.';renew(false)}

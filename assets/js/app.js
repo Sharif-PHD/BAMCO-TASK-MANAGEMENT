@@ -18,6 +18,8 @@ const en=n=>String(n??'').replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d
 const norm=s=>String(s??'').replace(/ي/g,'ی').replace(/ك/g,'ک').replace(/\u200c/g,' ').replace(/\s+/g,' ').trim();
 const state={token:'',user:null,profile:null,profiles:[],tasks:[],requests:[],requestHistory:[],requestRoutes:[],view:'dashboard',editing:null,reviewing:null,reviewEdit:null,resubmitting:null,dateInput:null,selected:{kanban:null,archive:null}};
 
+function loginEmail(value){const login=String(value||'').trim().toLowerCase();return login.includes('@')?login:login+'@no-email.invalid'}
+
 function apiErrorMessage(data,status){
   const code=data?.code||data?.error_code;
   const raw=[code,data?.msg,data?.message,data?.error_description,data?.error].filter(Boolean).join(' ').toLowerCase();
@@ -114,7 +116,7 @@ function showLogin(){
 }
 
 $('#loginForm').addEventListener('submit',async e=>{e.preventDefault();$('#loginError').textContent='';const submit=e.currentTarget.querySelector('button[type="submit"]');submit.disabled=true;
-  try{const data=await api('/auth/v1/token?grant_type=password',{method:'POST',auth:false,body:{email:$('#email').value.trim(),password:$('#password').value}});window.bamcoAuth.accept(data);await enterApp()}
+  try{const data=await api('/auth/v1/token?grant_type=password',{method:'POST',auth:false,body:{email:loginEmail($('#email').value),password:$('#password').value}});window.bamcoAuth.accept(data);await enterApp()}
   catch(err){showLogin();$('#loginError').textContent=err.message}
   finally{submit.disabled=false}
 });
