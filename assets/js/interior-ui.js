@@ -3,6 +3,7 @@
 (()=>{
   'use strict';
   const excluded=new Set(['homeView','welcomeView']);
+  const managementViews=new Set(['peopleView','loginActivityView','activeSessionsView']);
   const headings={dashboardView:'داشبورد',templatesView:'متن پیام‌ها',settingsView:'تنظیمات کاربری'};
   const toolbarSelector='.task-toolbar,.vehicle-toolbar,.people-actions,.manager-toolbar,.workspace-actions,.workspace-report-tools,.suite-toolbar,.sticker-toolbar,.message-center-actions,.response-quick,.tt-switch';
   let pending=false,observer;
@@ -20,9 +21,22 @@
     }
     if(view.firstElementChild!==head)view.prepend(head);
     const h=head.querySelector('h3');if(h.textContent!==title)h.textContent=title;
+    let managementBar=null;
+    if(managementViews.has(view.id)){
+      managementBar=view.querySelector('.people-actions,.workspace-report-tools,.bamco-management-toolbar');
+      if(!managementBar){
+        managementBar=document.createElement('div');managementBar.className='bamco-management-toolbar';
+        const panel=view.querySelector(':scope>.panel');
+        if(panel)panel.prepend(managementBar);else head.after(managementBar);
+      }
+      managementBar.classList.add('bamco-command-bar');
+      view.querySelectorAll('.panel-head .workspace-actions>button,.panel-head>button').forEach(button=>managementBar.append(button));
+      view.querySelectorAll('[data-empty-home]').forEach(button=>button.remove());
+    }
     let back=view.querySelector('.content-back');
     if(!back){back=document.createElement('button');back.type='button';back.className='content-back ghost';back.textContent='بازگشت به خانه';back.addEventListener('click',()=>window.bamcoShowHome?.())}
-    if(back.parentElement!==head)head.prepend(back);
+    const backHost=managementBar||head;
+    if(back.parentElement!==backHost)backHost.prepend(back);
     view.querySelectorAll('.content-back').forEach(b=>{if(b!==back)b.remove()});
     view.querySelectorAll(':scope > .content-actions').forEach(b=>{if(!b.querySelector('button,a,input,select'))b.remove()});
     if(source){
