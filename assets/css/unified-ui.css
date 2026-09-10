@@ -487,3 +487,15 @@ html body #appView#appView .bamco-interior .bamco-page-heading:has(+.bamco-comma
 html body #initialCredentials .credentials-field{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:7px!important;margin:14px 0!important;min-width:0!important}
 html body #initialCredentials .credentials-field label{display:block!important;text-align:right!important;text-align-last:right!important;white-space:nowrap!important;margin:0!important}
 html body #initialCredentials .credentials-field input{width:100%!important;min-width:0!important;box-sizing:border-box!important;text-align:left!important;direction:ltr!important}
+/* Conversation lists have an explicit RTL grid; content stays readable in each language. */
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .conversation-layout{direction:rtl!important;grid-template-areas:"threads messages"!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .conversation-sidebar{grid-area:threads!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .conversation-stage{grid-area:messages!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .conversation-task :is(strong,small),
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .conversation-recipient-head h4,
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .messenger-head small{text-align:justify!important;text-align-last:right!important;line-height:1.8!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .conversation-task-choices{padding:16px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .conversation-preview{display:-webkit-box!important;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden!important}
+.conversation-unread,.message-kind{background:#e5f1ea;color:#0e614a;border-radius:16px;padding:3px 10px;white-space:normal}
+.chat-media-dialog{width:min(760px,94vw);max-height:85dvh}.chat-media-tabs{display:flex;gap:8px;padding:12px 0;border-bottom:1px solid #c8dbd0}.chat-media-tabs .active{background:#e5f1ea!important}.chat-media-content{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;padding:16px 0;max-height:60dvh;overflow:auto}.chat-media-item{border:1px solid #d7e4dc;border-radius:12px;padding:12px;min-width:0}.chat-media-content a{overflow-wrap:anywhere;padding:14px;border:1px solid #d7e4dc;border-radius:10px}.chat-media-content img{max-width:100%;max-height:220px;object-fit:contain}.message-notification{cursor:pointer}.message-notification h4{margin:10px 0}.message-notification p{white-space:pre-wrap;text-align:justify;line-height:1.8}.message-open{color:#176b52}.message-notification:focus-visible{outline:2px solid #176b52}
+@media(max-width:760px){html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .conversation-layout{grid-template-areas:"threads" "messages"!important}}
