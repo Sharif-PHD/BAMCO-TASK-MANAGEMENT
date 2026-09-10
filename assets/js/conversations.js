@@ -16,8 +16,8 @@
  async function newConversation(view){selectedTask=null;window.bamcoChat.close();const host=q('.conversation-stage',view);loading(host);const people=(await directory()).filter(p=>p.id!==state.user.id);if(!host.isConnected)return;
   if(view.id==='taskChatsView'){
    const tasks=(state.tasks||[]).filter(t=>!t.archived&&(isManager()||t.owner_id===state.user.id));
-   host.innerHTML=`<div class="conversation-recipient-head"><h4>انتخاب وظیفه</h4><p>وظیفه را انتخاب کنید؛ سپس مخاطب گفت‌وگو را مشخص کنید.</p>${isManager()?`<label class="conversation-owner-filter"><span>متولی</span><select data-task-owner><option value="">همهٔ متولی‌ها</option>${people.map(p=>`<option value="${esc(p.id)}">${esc(label(p))}</option>`).join('')}<option value="${esc(state.user.id)}">وظایف من</option></select></label>`:''}</div><div class="conversation-task-choices"></div>`;
-   const taskHues=new Map(tasks.map((t,index)=>[t.id,(155+index*37)%360]));
+   host.innerHTML=`<div class="conversation-recipient-head"><h4>انتخاب وظیفه</h4><p>وظیفه را انتخاب کنید؛ سپس مخاطب گفت‌وگو را مشخص کنید.</p>${isManager()?`<label class="conversation-owner-filter"><span>متولی</span><select data-task-owner><option value="">همه متولی‌ها</option>${people.map(p=>`<option value="${esc(p.id)}">${esc(label(p))}</option>`).join('')}<option value="${esc(state.user.id)}">وظایف من</option></select></label>`:''}</div><div class="conversation-task-choices"></div>`;
+   const taskHues=new Map(tasks.map((t,index)=>[t.id,(155+index*137.50776405003785)%360]));
    const paint=()=>{const owner=q('[data-task-owner]',host)?.value; q('.conversation-task-choices',host).innerHTML=tasks.filter(t=>!owner||t.owner_id===owner).map(t=>`<button type="button" class="conversation-task-tile" style="--task-hue:${taskHues.get(t.id)}" data-task-choice="${t.id}" aria-label="${esc(t.title)}" data-preview="${esc([t.title,t.description,'متولی: '+ownerName(t),t.status].filter(Boolean).join('\n'))}"><span class="conversation-task-id">${esc(digits(t.legacy_id||t.id))}</span></button>`).join('')||'<div class="conversation-empty">وظیفه‌ای برای این متولی وجود ندارد.</div>'};paint();if(q('[data-task-owner]',host))q('[data-task-owner]',host).onchange=paint;
   }else{host.innerHTML=`<div class="conversation-recipient-head"><h4>شروع گفت‌وگوی خصوصی</h4><input type="search" data-recipient-search placeholder="جست‌وجوی مخاطب…"></div><div class="conversation-recipient-grid">${people.map(personButton).join('')}</div>`;bamcoMedia.avatars(host,people)}
  }
@@ -42,7 +42,7 @@
   const epoch=serial;selectedTask=(state.tasks||[]).find(t=>String(t.id)===button.dataset.taskChoice);if(!selectedTask)return;
   const task=selectedTask,host=q('.conversation-stage',view);selectItem(button,q('.conversation-list',view));window.bamcoChat.close();loading(host,'در حال دریافت مخاطبان…');
   try{const people=(await directory()).filter(p=>p.id!==state.user.id);if(epoch!==serial||selectedTask!==task)return;
-   host.innerHTML=`<div class="conversation-recipient-head"><small>وظیفه ${esc(digits(task.legacy_id||task.id))}</small><h4>${esc(task.title)}</h4><p>با چه کسی دربارهٔ این وظیفه گفت‌وگو می‌کنید؟</p><input type="search" data-recipient-search placeholder="جست‌وجوی نام مخاطب…" aria-label="جست‌وجوی مخاطب"></div><div class="conversation-recipient-grid">${people.map(personButton).join('')||'<p>مخاطبی در دسترس نیست.</p>'}</div>`;
+   host.innerHTML=`<div class="conversation-recipient-head"><small>وظیفه ${esc(digits(task.legacy_id||task.id))}</small><h4>${esc(task.title)}</h4><p>با چه کسی درباره این وظیفه گفت‌وگو می‌کنید؟</p><input type="search" data-recipient-search placeholder="جست‌وجوی نام مخاطب…" aria-label="جست‌وجوی مخاطب"></div><div class="conversation-recipient-grid">${people.map(personButton).join('')||'<p>مخاطبی در دسترس نیست.</p>'}</div>`;
   bamcoMedia.avatars(host,people);
   }catch(error){if(epoch===serial)failure(host,error)}
  }
