@@ -9,7 +9,8 @@ const call=async(action,extra={})=>{
   if(!response.ok)throw new Error(data.error||'خطای ثبت نشست');
   return data;
 };
-async function start(){
+let starting=null;
+async function startOnce(){
   try{
     let id=sessionStorage.getItem(KEY);
     if(id){
@@ -21,15 +22,18 @@ async function start(){
     id=data?.session?.id||null;if(id)sessionStorage.setItem(KEY,id);return id;
   }catch(err){console.warn('BAMCO session start',err);return null}
 }
+function start(){if(!state?.token)return Promise.resolve(null);if(!starting)starting=startOnce().finally(()=>starting=null);return starting}
 async function heartbeat(){
   const id=sessionStorage.getItem(KEY);if(!id)return start();
-  try{const data=await call('heartbeat',{session_id:id});if(data?.ended||data?.revoked||data?.expired){sessionStorage.removeItem(KEY);if(typeof toast==='function')toast('نشست شما پایان یافته است. دوباره وارد سامانه شوید.',true)}}catch(err){console.warn('BAMCO session heartbeat',err)}
+  try{const data=await call('heartbeat',{session_id:id});if(data?.ended||data?.revoked||data?.expired){sessionStorage.removeItem(KEY);if(typeof showLogin==='function')showLogin();if(typeof toast==='function')toast('نشست شما پایان یافته است. دوباره وارد سامانه شوید.',true)}}catch(err){console.warn('BAMCO session heartbeat',err)}
 }
 async function end(reason='logout'){
   const id=sessionStorage.getItem(KEY);if(!id)return;
   sessionStorage.removeItem(KEY);try{await call('end',{session_id:id,reason})}catch{}
 }
+window.bamcoSession={start,heartbeat,end};
 setTimeout(start,0);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&state?.token)heartbeat()});
 const timer=setInterval(heartbeat,120000);
 window.addEventListener('pagehide',()=>{clearInterval(timer);end('closed')},{once:true});
 document.querySelector('#logoutBtn')?.addEventListener('click',()=>end('logout'),{capture:true});

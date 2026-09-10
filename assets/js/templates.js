@@ -28,16 +28,16 @@
   async function loadTemplate(key){
     const rows=await select('email_templates',`template_key=eq.${encodeURIComponent(key)}&select=*`),row=rows[0]||null;
     const subject=await getSubject(key);
-    return {id:row?.id||null,subject:subject||DEFAULTS[key].subject,body:row?.body_html?htmlToText(row.body_html):DEFAULTS[key].body};
+    return {id:row?.id||null,subject:row?.subject_template||subject||DEFAULTS[key].subject,body:row?.body_html?htmlToText(row.body_html):DEFAULTS[key].body};
   }
   async function saveTemplate(key,subject,body){
     const cleanSubject=String(subject||'').replace(/\u200f/g,'').trim(),cleanBody=String(body||'').trim();
     if(!cleanSubject)throw new Error('موضوع ایمیل نمی‌تواند خالی باشد.');
     if(!cleanBody)throw new Error('متن ایمیل نمی‌تواند خالی باشد.');
     const rows=await select('email_templates',`template_key=eq.${encodeURIComponent(key)}&select=*`);
-    const payload={body_html:textToHtml(cleanBody)};
+    const payload={body_html:textToHtml(cleanBody),subject_template:cleanSubject};
     if(rows.length)await update('email_templates',`id=eq.${rows[0].id}`,payload);else await insert('email_templates',{template_key:key,...payload});
-    await setSubject(key,cleanSubject);
+
 
   }
 

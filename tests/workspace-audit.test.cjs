@@ -50,7 +50,7 @@ test('dashboard date controls, templates, sticker picker, chain form and Gantt a
   const form=d.querySelector('#approvalChainForm');form.elements.name.value='زنجیرهٔ آزمایشی';
   for(const key of ['members','stage1_approvers','stage2_approvers'])form.elements[key].options[key==='members'?1:0].selected=true;
   form.requestSubmit();await until(()=>f.tables.approval_stage_approvers.length===2);await until(()=>d.querySelector('.chain-toggle'));assert.equal(f.tables.approval_chain_stages.length,2);
-  d.querySelector('.chain-toggle').click();await until(()=>f.tables.approval_chains[0].active===true);
+  d.querySelector('.chain-toggle').click();await until(()=>f.tables.approval_chains[0].active===false);
  });
  await t.test('calendar/Gantt, month navigation and unscheduled panel remain bound after toolbar movement',async()=>{
   await f.open('taskTimeline');d.querySelector('[data-mode=gantt]').click();assert(d.querySelector('.tt-gantt'));assert(d.querySelector('.tt-gantt').style.getPropertyValue('--day-count'));assert.match(d.querySelector('.tt-bar').style.width,/%/);assert.equal(d.querySelector('.tt-track').style.width,'');

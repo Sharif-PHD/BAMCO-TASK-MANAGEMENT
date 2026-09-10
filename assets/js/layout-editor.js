@@ -358,8 +358,8 @@
     });
     persist(); select(null);
   }
-  function resetAll(){
-    if (!confirm('همه تغییرات ظاهری ذخیره‌شده بازنشانی شود؟')) return;
+  async function resetAll(){
+    if (!await window.bamcoConfirm('همه تغییرات ظاهری ذخیره‌شده بازنشانی شود؟')) return;
     Object.entries({...state.layouts}).forEach(([selector, rec]) => {
       try { $$(selector).forEach(el => clearInlineFromRecord(el, rec)); } catch {}
     });
@@ -387,7 +387,7 @@
       state.layouts = layouts;
       persist(); applyAll(); select(null);
     } catch {
-      alert('فایل چیدمان معتبر نیست.');
+      window.bamcoNotice('فایل چیدمان معتبر نیست.',{error:true});
     } finally { e.target.value=''; }
   }
 

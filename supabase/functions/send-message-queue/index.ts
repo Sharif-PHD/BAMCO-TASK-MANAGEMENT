@@ -1,51 +1,33 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2.57.4'
-
-const cors={
-  'Access-Control-Allow-Origin':'*',
-  'Access-Control-Allow-Headers':'authorization, x-client-info, apikey, content-type',
-  'Content-Type':'application/json'
-}
+import '../../../assets/js/message-renderer.js'
+import './worker.js'
+const cors={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'authorization, x-client-info, apikey, content-type','Content-Type':'application/json'}
 const reply=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:cors})
-const escapeHtml=(value:unknown)=>String(value??'')
-  .replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
-  .replaceAll('"','&quot;').replaceAll("'",'&#039;')
-
 Deno.serve(async req=>{
-  if(req.method==='OPTIONS')return new Response('ok',{headers:cors})
-  if(req.method!=='POST')return reply({error:'Method not allowed'},405)
-  const url=Deno.env.get('SUPABASE_URL')!,serviceKey=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-  const mailerinoKey=Deno.env.get('MAILERINO_API_KEY')
-  const emailFrom=Deno.env.get('MAILERINO_FROM_EMAIL')||Deno.env.get('EMAIL_FROM')
-  const replyTo='bamco.task.reminder@outlook.com'
-  if(!mailerinoKey)return reply({error:'کلید API میلرینو روی سرور ثبت نشده است.'},503)
-  if(!emailFrom)return reply({error:'آدرس فرستنده تأییدشده میلرینو روی سرور ثبت نشده است.'},503)
-  const auth=req.headers.get('Authorization')||''
+ if(req.method==='OPTIONS')return new Response('ok',{headers:cors})
+ if(req.method!=='POST')return reply({error:'Method not allowed'},405)
+ try{
+  const url=Deno.env.get('SUPABASE_URL')!,serviceKey=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,auth=req.headers.get('Authorization')||''
   const userClient=createClient(url,Deno.env.get('SUPABASE_ANON_KEY')!,{global:{headers:{Authorization:auth}}})
-  const {data:{user}}=await userClient.auth.getUser()
-  if(!user)return reply({error:'نشست کاربری معتبر نیست.'},401)
+  const {data:{user}}=await userClient.auth.getUser();if(!user)return reply({error:'نشست کاربری معتبر نیست.'},401)
   const admin=createClient(url,serviceKey,{auth:{persistSession:false}})
   const {data:profile}=await admin.from('profiles').select('role,active').eq('id',user.id).maybeSingle()
   if(profile?.role!=='manager'||!profile.active)return reply({error:'فقط مدیر فعال مجاز به ارسال ایمیل است.'},403)
-  const {batch_id}=await req.json().catch(()=>({}))
-  if(!batch_id)return reply({error:'شناسه بسته پیام الزامی است.'},400)
-  const {data:deliveries,error}=await admin.from('message_deliveries').select('id,thread_key,attempt_count,message_snapshots(*)').eq('batch_id',batch_id).eq('channel','email').in('status',['queued','failed']).lt('attempt_count',3)
-  if(error)return reply({error:error.message},400)
-  let sent=0,failed=0
-  for(const delivery of deliveries||[]){
-    const snapshot=Array.isArray(delivery.message_snapshots)?delivery.message_snapshots[0]:delivery.message_snapshots
-    await admin.from('message_deliveries').update({status:'processing',attempt_count:(delivery.attempt_count||0)+1,last_attempt_at:new Date().toISOString(),error_message:null}).eq('id',delivery.id)
-    try{
-      if(!snapshot?.recipient_email)throw new Error('ایمیل گیرنده ثبت نشده است.')
-      const trackingText=`شناسه پیگیری: ${delivery.thread_key}`
-      const finalText=String(snapshot.final_text||'')
-      const html=`<div dir="rtl" style="font-family:'B Nazanin',Tahoma,sans-serif;line-height:2;text-align:right"><p>${escapeHtml(finalText).replaceAll('\n','<br>')}</p><hr><small>${escapeHtml(trackingText)}</small></div>`
-      const response=await fetch('https://api.mailerino.com/v1/send',{method:'POST',headers:{Authorization:`Bearer ${mailerinoKey}`,'Content-Type':'application/json'},body:JSON.stringify({from:emailFrom,to:snapshot.recipient_email,cc:snapshot.cc_emails||[],replyTo,subject:`${snapshot.subject} [${delivery.thread_key}]`,text:`${finalText}\n\n${trackingText}`,html})})
-      const result=await response.json().catch(()=>({}))
-      if(!response.ok)throw new Error(result?.message||result?.error||`Mailerino ${response.status}`)
-      await admin.from('message_deliveries').update({status:'sent',provider_message_id:result.id||result.messageId||null,sent_at:new Date().toISOString()}).eq('id',delivery.id);sent++
-    }catch(err){await admin.from('message_deliveries').update({status:'failed',error_message:err instanceof Error?err.message:String(err)}).eq('id',delivery.id);failed++}
+  const mailerinoKey=Deno.env.get('MAILERINO_API_KEY'),emailFrom=Deno.env.get('MAILERINO_FROM_EMAIL')||Deno.env.get('EMAIL_FROM')
+  if(!mailerinoKey||!emailFrom)return reply({error:'کلید سرویس یا فرستنده تأییدشده ایمیل روی سرور تنظیم نشده است.'},503)
+  const {batch_id,action}=await req.json().catch(()=>({}))
+  if(action==='check'){
+   try{await fetch('https://api.mailerino.com/v1/send',{method:'HEAD',signal:AbortSignal.timeout(10000)});return reply({ok:true,message:'اتصال امن به سرویس برقرار است؛ نتیجه نهایی هر ارسال در سابقه پیام‌ها ثبت می‌شود.'})}
+   catch(error){return reply({error:globalThis.BamcoEmailQueue.explain(error)},503)}
   }
-  const nextStatus=failed?(sent?'partial':'failed'):'sent'
-  await admin.from('message_batches').update({status:nextStatus,completed_at:new Date().toISOString()}).eq('id',batch_id)
-  return reply({sent,failed})
+  if(!batch_id||!/^[0-9a-f-]{36}$/i.test(batch_id))return reply({error:'شناسه بسته پیام معتبر نیست.'},400)
+  const result=await globalThis.BamcoEmailQueue.run(admin,batch_id,async(snapshot,delivery)=>{
+   let stickerUrl=''
+   if(snapshot.sticker_path){const {data,error}=await admin.storage.from('stickers').createSignedUrl(snapshot.sticker_path,60*60*24*7);if(!error)stickerUrl=data.signedUrl}
+   const tracking='شناسه پیگیری: '+delivery.thread_key
+   const response=await fetch('https://api.mailerino.com/v1/send',{method:'POST',signal:AbortSignal.timeout(20000),headers:{Authorization:`Bearer ${mailerinoKey}`,'Content-Type':'application/json'},body:JSON.stringify({from:emailFrom,to:snapshot.recipient_email,cc:snapshot.cc_emails||[],replyTo:Deno.env.get('EMAIL_REPLY_TO')||'bamco.task.reminder@outlook.com',subject:`${snapshot.subject} [${delivery.thread_key}]`,text:`${snapshot.final_text}\n\n${tracking}`,html:globalThis.BamcoMessageRender.html(snapshot,{stickerUrl,tracking:delivery.thread_key})})})
+   const info=await response.json().catch(()=>({}));if(!response.ok)throw Error(typeof info.message==='string'?info.message:typeof info.error==='string'?info.error:`سرویس ایمیل خطای ${response.status} برگرداند.`)
+   return info
+  });return reply(result)
+ }catch(error){return reply({error:globalThis.BamcoEmailQueue.explain(error)},500)}
 })

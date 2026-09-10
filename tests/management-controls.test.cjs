@@ -16,7 +16,7 @@ test('management pages: shipped click handlers, toolbars, Excel downloads and re
   assert(!d.querySelector('#editPersonBtn').disabled);assert(d.querySelector('#deletePersonBtn').disabled);d.querySelector('#editPersonBtn').click();assert(d.querySelector('#personPickerDialog').open);d.querySelector('#personPickerDialog button[type=button]').click();
   const row=d.querySelector('#peopleBody [data-id="test-owner"]');row.click();row.click();
   assert.equal(d.querySelector('#peopleBody [data-id="test-owner"]'),row,'click must preserve the row for double-click editing');
-  assert.equal(row.getAttribute('aria-selected'),'true');assert(!d.querySelector('#editPersonBtn').disabled);
+  assert.equal(row.getAttribute('aria-selected'),'false');row.click();assert(!d.querySelector('#editPersonBtn').disabled);
   row.dispatchEvent(new w.MouseEvent('dblclick',{bubbles:true}));assert(d.querySelector('#personDialog').open);
   const form=d.querySelector('#personForm');assert.equal(form.elements.full_name.value,'متولی آزمایشی');
   d.querySelector('[data-person-close]').click();assert(!d.querySelector('#personDialog').open);
@@ -35,7 +35,7 @@ test('management pages: shipped click handlers, toolbars, Excel downloads and re
   const view=d.querySelector('#peopleView'),back=view.querySelector('.content-back'),exportButton=view.querySelector('[data-management-export]');
   assert.equal(view.querySelectorAll('.content-back,[data-empty-home]').length,1);assert.equal(view.querySelector('.bamco-page-heading button'),null);
   assert.equal(back.parentElement,exportButton.parentElement);assert.equal(exportButton.parentElement,d.querySelector('#addPersonBtn').parentElement);
-  assert.equal(view.querySelector('.suite-table-options [data-suite-export]'),null);
+  assert.equal(view.querySelector('.suite-table-options [data-suite-export]'),null);w.bamcoSelection.clear('#peopleBody');
   d.querySelector('#peopleSearch').value='مدیر';d.querySelector('#peopleSearch').dispatchEvent(new w.Event('input',{bubbles:true}));
   assert.equal(d.querySelectorAll('#peopleBody tr[data-id]').length,1);exportButton.click();await until(()=>f.downloads.length===1);
   const bytes=await f.downloads[0].blob.arrayBuffer(),book=w.XLSX.read(new Uint8Array(bytes),{type:'array'}),rows=w.XLSX.utils.sheet_to_json(book.Sheets[book.SheetNames[0]],{header:1});

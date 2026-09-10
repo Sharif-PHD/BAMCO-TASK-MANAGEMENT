@@ -97,7 +97,7 @@ window.__bamcoStableStickerInstalled=true;
     window.deleteTask=async id=>{
       if(typeof isManager==='function'&&!isManager())return;
       const task=state.tasks.find(t=>String(t.id)===String(id));
-      if(!task||!confirm(`وظیفه «${task.title}» برای همیشه حذف شود؟`))return;
+      if(!task||!await window.bamcoConfirm(`وظیفه «${task.title}» برای همیشه حذف شود؟`))return;
       try{
         await rpc('delete_task_and_resequence',{p_task_id:Number(id)});
         state.selected.kanban=null;state.selected.archive=null;

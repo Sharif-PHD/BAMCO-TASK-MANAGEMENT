@@ -28,11 +28,16 @@ async function fixture(options={}){
    const url=new URL(typeof input==='string'?input:input.url,w.location.href),endpoint=url.pathname.split('/').pop(),method=init.method||'GET',body=typeof init.body==='string'?JSON.parse(init.body):init.body||null;
    calls.push({endpoint,method,body,url:url.href,cache:init.cache});let data=[],status=200;
    if(failures.has(endpoint))return new Response(JSON.stringify({message:'خطای آزمایشی '+endpoint}),{status:500});
-   const filter=rows=>rows.filter(row=>[...url.searchParams].every(([k,v])=>!v.startsWith('eq.')||String(row[k])===v.slice(3)));
+   const filter=rows=>rows.filter(row=>[...url.searchParams].every(([k,v])=>v==='is.null'?row[k]==null:!v.startsWith('eq.')||String(row[k])===v.slice(3)));
    if(tables[endpoint]){
     if(method==='GET')data=filter(tables[endpoint]);
     else if(method==='POST'){data=(Array.isArray(body)?body:[body]).map((row,i)=>({id:1000+tables[endpoint].length+i,...row}));tables[endpoint].push(...data)}
     else if(method==='PATCH'){data=filter(tables[endpoint]);data.forEach(row=>Object.assign(row,body))}
+   }
+   if(endpoint==='save_approval_chain'){
+    const id=1000+(tables.approval_chains||[]).length,old=(tables.approval_chains||[]).find(c=>c.id===body.p_chain_id);if(old){old.active=false;old.superseded_by=id}
+    tables.approval_chains.push({id,name:body.p_name,is_default:body.p_is_default,active:true,superseded_by:null});body.p_member_ids.forEach(user_id=>tables.approval_chain_members.push({chain_id:id,user_id}));
+    body.p_stages.forEach((s,i)=>{const sid=1000+tables.approval_chain_stages.length;tables.approval_chain_stages.push({id:sid,chain_id:id,stage_no:i+1,title:s.title,approval_rule:s.rule});s.approvers.forEach(approver_id=>tables.approval_stage_approvers.push({stage_id:sid,approver_id}))});data=id;
    }
    if(endpoint==='task_status_view')data=actor.role==='manager'?(tables.tasks||[]):(tables.tasks||[]).filter(t=>t.owner_id===actor.id);
    if(endpoint==='profiles'){data=url.searchParams.has('id')?filter(profiles):profiles;if(method==='PATCH')data.forEach(p=>Object.assign(p,body))}
@@ -55,6 +60,7 @@ async function fixture(options={}){
    if(endpoint==='chat_delete_thread')threads.find(t=>t.id===body.p_thread_id).is_active=false;
    if(endpoint==='chat_ensure_direct'||endpoint==='chat_ensure_task_direct'){data='direct-'+(body.p_task_id||'general')+'-'+body.p_other_user;if(!threads.some(t=>t.id===data))threads.push({id:data,title:'خصوصی',thread_type:'direct',is_active:true})}
    if(endpoint==='chat_send_message'){data=messages.length+1;messages.push({id:data,thread_id:body.p_thread_id,sender_id:actor.id,body:body.p_body,reply_to:body.p_reply_to,created_at:new Date().toISOString()})}
+   if(endpoint==='chat_edit_message'){const m=messages.find(m=>m.id===body.p_message_id);m.body=body.p_body;m.edited_at=new Date().toISOString()}
    if(endpoint==='chat_delete_message')messages.find(m=>m.id===body.p_message_id).deleted_at=new Date().toISOString();
    if(url.pathname.includes('/storage/v1/object/')){if(method==='POST'){uploads.push({url:url.href,file:body});data={Key:url.pathname}}else if(method==='GET')return new Response('fixture attachment content',{headers:{'Content-Type':'application/octet-stream'}})}
    if(endpoint==='session-audit')data={session:{id:'test-current-session'},valid:true};
@@ -71,6 +77,7 @@ async function fixture(options={}){
   w.HTMLAnchorElement.prototype.click=function(){downloads.push({name:this.download,blob:blobs.get(this.href)})};
  }});
  const w=dom.window,d=w.document;await new Promise(resolve=>w.addEventListener('load',resolve,{once:true}));
+ if(!options.realNotices){w.bamcoConfirm=async message=>{calls.push({endpoint:'ui-confirm',body:message});return true};w.bamcoNotice=async(message,options)=>{calls.push({endpoint:'ui-notice',body:message,options});return true}}
  w.__fixtureProfile=actor;await w.eval("state.token='test-token';state.user={id:window.__fixtureProfile.id};state.profile=window.__fixtureProfile;enterApp()");
  d.body.classList.remove('department-pending');d.querySelector('#departmentEntry')?.setAttribute('hidden','');w.bamcoShowHome();await pause(250);d.querySelector('.home-welcome-dialog')?.close();
  return{w,d,profiles,calls,errors,downloads,tables,threads,members,messages,uploads,failures,setFailSave:v=>failSave=v,

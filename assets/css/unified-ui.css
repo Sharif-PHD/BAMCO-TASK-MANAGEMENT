@@ -221,7 +221,7 @@ html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-i
 html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .chat-bubble-meta{font-size:12px!important}
 html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .chat-body{font-size:16px!important}
 html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .prod-thread{font-size:16px!important;line-height:1.65!important;padding:12px!important}
-html body dialog:is(#taskDialog,#vehicleRecordDialog,.bamco-dialog).bamco-dialog:not(#calendarDialog):not(#avatarCropDialog){
+html body dialog:is(#taskDialog,#vehicleRecordDialog,.bamco-dialog).bamco-dialog:not(#calendarDialog):not(#avatarCropDialog):not(#bamcoNoticeDialog){
  width:min(900px,calc(100vw - 32px))!important;max-width:calc(100vw - 24px)!important;max-height:calc(100dvh - 32px)!important;
  padding:20px!important;border:1px solid #b8c8c1!important;border-radius:14px!important;background:#fff!important;box-shadow:0 22px 70px #123f3333!important;
  font:16px/1.65 var(--fa-font,'B Nazanin',Tahoma,serif)!important;color:#17362d!important;overflow:auto!important;
@@ -262,7 +262,7 @@ html body dialog:is(#taskDialog,#vehicleRecordDialog,.bamco-dialog).bamco-dialog
  html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .messenger-host{min-height:380px!important}
  html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .table-pagination{align-items:flex-start!important}
  html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .page-controls{gap:5px!important;flex-wrap:wrap!important}
- html body dialog:is(#taskDialog,#vehicleRecordDialog,.bamco-dialog).bamco-dialog:not(#calendarDialog):not(#avatarCropDialog){padding:14px!important;width:calc(100vw - 24px)!important;max-height:calc(100dvh - 24px)!important}
+ html body dialog:is(#taskDialog,#vehicleRecordDialog,.bamco-dialog).bamco-dialog:not(#calendarDialog):not(#avatarCropDialog):not(#bamcoNoticeDialog){padding:14px!important;width:calc(100vw - 24px)!important;max-height:calc(100dvh - 24px)!important}
  html body dialog:is(#taskDialog,#vehicleRecordDialog,.bamco-dialog).bamco-dialog :is(.form-grid,.manager-form,.vehicle-editor-grid){grid-template-columns:minmax(0,1fr)!important}
 }
 
@@ -397,3 +397,72 @@ html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-i
 html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .conversation-stage{min-height:450px!important}
 html body #groupManageDialog .group-member-grid{grid-template-columns:minmax(0,1fr)!important}
 }
+
+/* Shared notices, predictable charts and script-specific typography. */
+html body dialog#bamcoNoticeDialog.bamco-notice{position:fixed!important;inset:0!important;margin:auto!important;width:min(480px,calc(100vw - 32px))!important;max-width:480px!important;height:fit-content!important;padding:28px!important;border:1px solid #c5d6cc!important;border-radius:14px!important;background:#fff!important;color:#173f35!important;box-shadow:0 20px 70px #0b302740!important;text-align:center!important;box-sizing:border-box!important;max-height:calc(100dvh - 32px)!important;overflow:auto!important}
+#bamcoNoticeDialog::backdrop{background:#14352c66;backdrop-filter:blur(3px)}
+#bamcoNoticeDialog .notice-symbol{display:grid;place-items:center;width:48px;height:48px;margin:0 auto 16px;background:#e6f1eb;color:#176b4d;border-radius:50%;font-size:28px;font-weight:bold}
+#bamcoNoticeDialog[data-kind=error] .notice-symbol{background:#fff1df;color:#975f16}
+#bamcoNoticeDialog #bamcoNoticeText{white-space:pre-line;margin:0 0 24px;line-height:1.9;font-size:18px}
+#bamcoNoticeDialog .modal-actions{justify-content:center!important;gap:12px!important;margin:0!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .dashboard-chart-card{flex:none!important;min-height:0!important;overflow:hidden!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(#importBtn,#archiveImportBtn,.vehicle-import,[data-import-tasks]){background:#fff!important;color:#214b36!important;border:1px solid #b6cec0!important;box-shadow:none!important}
+html body :is(input,textarea,select,option,button),html body{font-family:BamcoScript,'B Nazanin',BNazanin,'Times New Roman',serif!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior,html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(button,input,textarea,select,option,td,th,label,p,small,strong,span,h3),html body dialog.bamco-dialog :is(button,input,textarea,select,option,p,label,span,h3){font-family:BamcoScript,'B Nazanin',BNazanin,'Times New Roman',serif!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .latin-run,html body dialog .latin-run{font-family:'Times New Roman',serif!important;direction:ltr;unicode-bidi:isolate}
+
+@font-face{font-family:BamcoScript;src:local('Times New Roman');unicode-range:U+0000-024F;font-display:swap}
+@font-face{font-family:BamcoScript;src:local('B Nazanin'),local('BNazanin'),url('../fonts/BNazanin.woff2') format('woff2');unicode-range:U+0600-06FF,U+0750-077F,U+08A0-08FF,U+FB50-FDFF,U+FE70-FEFF;font-display:swap}
+
+/* Packaged Persian faces also cover dialogs, canvas labels and offline cached pages. */
+@font-face{font-family:'B Nazanin';src:local('B Nazanin'),url('../fonts/BNazanin.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'B Nazanin';src:local('B Nazanin Bold'),url('../fonts/BNaznnBd.woff2') format('woff2');font-weight:700;font-display:swap}
+@font-face{font-family:BamcoScript;src:local('B Nazanin Bold'),url('../fonts/BNaznnBd.woff2') format('woff2');font-weight:700;unicode-range:U+0600-06FF,U+0750-077F,U+08A0-08FF,U+FB50-FDFF,U+FE70-FEFF;font-display:swap}
+@font-face{font-family:BamcoScript;src:local('Times New Roman Bold');font-weight:700;unicode-range:U+0000-024F;font-display:swap}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .chain-form-actions{display:flex!important;gap:8px!important;grid-column:1/-1!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .chain-edit-note{grid-column:1/-1!important;padding:12px!important;background:#edf5ef!important;border-radius:8px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .chain-card-actions{display:flex!important;gap:8px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .conversation-layout{height:calc(100dvh - 165px)!important;min-height:440px!important;border:1px solid #d7e4dc!important;border-radius:14px!important;overflow:hidden!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .messenger-host{display:flex!important;flex-direction:column!important;min-width:0!important;min-height:0!important;height:100%!important;background:#e8eee6!important;overflow:hidden!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .messenger-head{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:10px!important;background:#fff!important;padding:12px 16px!important;flex:none!important;min-width:0!important;border-bottom:1px solid #d7e4dc!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .messenger-head>div:not(.messenger-head-actions){flex:1!important;min-width:90px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .messenger-head-actions{display:flex!important;gap:6px!important;flex-wrap:wrap!important;width:100%!important;justify-content:flex-end!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .messenger-head-actions:empty{display:none!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .messenger-messages{flex:1 1 0!important;overflow:auto!important;min-height:0!important;padding:20px!important;display:flex!important;flex-direction:column!important;gap:8px!important;scroll-behavior:smooth!important;background-color:#e8eee6!important;background-image:radial-gradient(#c4d5c044 .9px,transparent .9px)!important;background-size:18px 18px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .chat-bubble{align-self:flex-start!important;max-width:78%!important;min-width:130px!important;background:#fff!important;border-radius:14px 14px 4px 14px!important;padding:10px 12px 6px!important;box-shadow:0 1px 2px #28483618!important;margin:0!important;overflow-wrap:anywhere!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .chat-bubble.mine{align-self:flex-end!important;background:#dcefcf!important;border-radius:14px 14px 14px 4px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .chat-bubble[hidden],html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .chat-date[hidden]{display:none!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .chat-author{display:flex!important;align-items:center!important;gap:8px!important;margin-bottom:5px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .chat-author .chat-avatar{width:26px!important;height:26px!important;min-width:26px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .chat-bubble-meta{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:8px!important;margin-top:5px!important;color:#657861!important;flex-wrap:wrap!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .chat-bubble-meta button{background:transparent!important;border:0!important;box-shadow:none!important;min-width:0!important;width:auto!important;height:auto!important;min-height:24px!important;padding:0 3px!important;font-size:13px!important;color:#376647!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .chat-bubble-meta time{font-size:12px!important;margin-left:auto!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .chat-date{align-self:center!important;border-radius:12px!important;background:#ffffffbb!important;padding:3px 12px!important;margin:8px 0!important;font-size:14px!important;color:#60715d!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .messenger-compose{display:flex!important;align-items:flex-end!important;gap:8px!important;flex:none!important;background:#fff!important;padding:12px!important;margin:0!important;border-top:1px solid #d7e4dc!important;border-radius:0!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .messenger-compose textarea{flex:1!important;min-width:0!important;min-height:40px!important;height:44px!important;max-height:130px!important;border:0!important;background:#f3f6f3!important;border-radius:10px!important;resize:vertical!important;padding:8px 12px!important;font-size:17px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .messenger-compose button{flex:none!important;width:38px!important;height:38px!important;min-width:38px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;padding:0!important;border-radius:50%!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .messenger-compose .chat-send{background:#176b4d!important;color:#fff!important;border:0!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(.conversation-avatar,.chat-avatar){overflow:hidden!important;border-radius:50%!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;flex-shrink:0!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior :is(.conversation-avatar,.chat-avatar)>img,html body #groupManageDialog .conversation-avatar>img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:50%!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .chat-search-bar{display:flex!important;align-items:center!important;gap:10px!important;padding:10px!important;background:#fff!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .chat-search-bar input{flex:1!important;min-width:0!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .chat-search-bar.hidden{display:none!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .chat-error:empty{display:none!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .message-report-body{overflow-x:auto!important;padding:16px 0!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .message-report-body table{min-width:500px!important;table-layout:auto!important}
+@media(max-width:760px){html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .conversation-layout{height:auto!important;min-height:0!important}html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .conversation-stage{height:70dvh!important;min-height:380px!important}html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .chat-bubble{max-width:90%!important}}
+/* Compact notice geometry takes precedence over full form dialogs. */
+html body dialog#bamcoNoticeDialog.bamco-notice #bamcoNoticeText{text-align:center!important;text-align-last:center!important;font-size:20px!important;margin:0 0 22px!important;line-height:1.9!important}
+html body dialog#bamcoNoticeDialog.bamco-notice .modal-actions{justify-content:center!important;gap:12px!important;border:0!important;margin:0!important;padding:0!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .messenger-host{padding:0!important;border-radius:0!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .chat-body{font-size:19px!important;line-height:1.8!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .chat-bubble blockquote{font-size:16px!important;line-height:1.7!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .messenger-head strong{font-size:21px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .messenger-head :is(.chat-search-toggle,.chat-refresh){display:inline-flex!important;align-items:center!important;justify-content:center!important;border:0!important;background:#edf5ef!important;color:#176b4d!important;width:36px!important;height:36px!important;padding:0!important;border-radius:50%!important;font-size:21px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .approval-chain-form label{display:grid!important;align-content:start!important;justify-content:stretch!important;gap:6px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .approval-chain-form fieldset{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;grid-template-rows:auto auto!important;gap:12px!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .approval-chain-form fieldset>label:nth-of-type(1){grid-column:1!important;grid-row:1!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .approval-chain-form fieldset>label:nth-of-type(2){grid-column:2!important;grid-row:1/3!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .approval-chain-form fieldset>label:nth-of-type(3){grid-column:1!important;grid-row:2!important}
+html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .approval-chain-form .chain-default{display:flex!important;align-items:center!important;justify-content:flex-start!important}
+@media(max-width:650px){html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .approval-chain-form fieldset{grid-template-columns:minmax(0,1fr)!important}html body #appView#appView :is(#kanbanView,#archiveView,.bamco-interior).bamco-interior .approval-chain-form fieldset>label:nth-of-type(n){grid-column:auto!important;grid-row:auto!important}}

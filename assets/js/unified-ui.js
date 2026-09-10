@@ -11,7 +11,7 @@
   }
   function syncToolbar(scope){
     const count=picked[scope].size,single=count===1;
-    q(`#${scope}EditBtn`)?.toggleAttribute('disabled',!single);
+    q(`#${scope}EditBtn`)?.toggleAttribute('disabled',!count);
     q(`#${scope}DeleteBtn`)?.toggleAttribute('disabled',!count);
     q(scope==='kanban'?'#kanbanArchiveBtn':'#archiveRestoreBtn')?.toggleAttribute('disabled',!count);
   }
@@ -27,22 +27,23 @@
     if(typeof renderTasks!=='function'||typeof tableFilters==='undefined')return;
     const base=renderTasks;
     renderTasks=function(archived){const scope=archived?'archive':'kanban';cleanup(scope);const out=base(archived);decorate(scope);return out};
-    chooseTask=function(scope,id){id=String(id);if(picked[scope].has(id))picked[scope].delete(id);else picked[scope].add(id);state.selected[scope]=picked[scope].size===1?Number([...picked[scope]][0]):null;renderTasks(scope==='archive')};
-    window.bamcoClearTaskSelection=()=>{for(const scope of ['kanban','archive']){picked[scope].clear();state.selected[scope]=null;const {body}=scopeInfo(scope);qa('tr[data-task-id]',body).forEach(row=>{row.classList.remove('task-selected');row.setAttribute('aria-selected','false')});syncToolbar(scope)}};
+    document.addEventListener('bamco-selection-change',e=>{const scope=e.target.closest('#archiveView')?'archive':e.target.closest('#kanbanView')?'kanban':null;if(!scope)return;picked[scope]=new Set(e.detail.ids);state.selected[scope]=picked[scope].size===1?Number([...picked[scope]][0]):null;decorate(scope)});
+    window.bamcoClearTaskSelection=()=>{for(const scope of ['kanban','archive'])window.bamcoSelection?.clear('#'+scope+'Body')};
     renderTasks(false);renderTasks(true);
   }
   async function bulkAction(scope,kind){
     const ids=[...picked[scope]];if(!ids.length)return;
     if(kind==='edit'){if(ids.length!==1){toast('برای ویرایش فقط یک ردیف را انتخاب کنید.',true);return}const task=state.tasks.find(t=>String(t.id)===ids[0]);if(task)openTask(task);return}
+    if(kind==='restore'&&ids.length===1){await restoreTask(Number(ids[0]));return}if(kind==='restore'&&ids.some(id=>{const t=state.tasks.find(x=>String(x.id)===id);return !t?.owner_id||!t.start_date||!t.due_date})){toast('برای بازگردانی گروهی، متولی و تاریخ شروع و پایان همه وظایف باید کامل باشد. موارد ناقص را تکی بازگردانید.',true);return}
     const labels={archive:'تکمیل و آرشیو',restore:'بازگردانی به کانبان',delete:'حذف'};
-    if(!confirm(`${labels[kind]} برای ${fa(ids.length)} وظیفه انتخاب‌شده انجام شود؟`))return;
+    if(!await window.bamcoConfirm(`${labels[kind]} برای ${fa(ids.length)} وظیفه انتخاب‌شده انجام شود؟`))return;
     try{
       for(const id of ids){
         if(kind==='archive'){const t=state.tasks.find(x=>String(x.id)===id);if(isManager())await update('tasks',`id=eq.${id}`,{archived:true,archived_at:new Date().toISOString(),status:'انجام شده',done_date:t.done_date||new Date().toISOString().slice(0,10)});else await rpc('submit_change_request',{p_request_type:'complete',p_task_id:Number(id),p_proposed_data:{done_date:new Date().toISOString().slice(0,10)},p_note:null})}
         if(kind==='restore'&&isManager())await update('tasks',`id=eq.${id}`,{archived:false,archived_at:null,status:'در حال انجام',done_date:null});
         if(kind==='delete'){if(isManager())await rpc('delete_task_and_resequence',{p_task_id:Number(id)});else await rpc('submit_change_request',{p_request_type:'delete',p_task_id:Number(id),p_proposed_data:{},p_note:null})}
       }
-      picked[scope].clear();toast(`${fa(ids.length)} وظیفه با موفقیت پردازش شد.`);await refresh();
+      window.bamcoSelection.clear('#'+scope+'Body');toast(`${fa(ids.length)} وظیفه با موفقیت پردازش شد.`);await refresh();
     }catch(err){toast(err.message,true)}
   }
   function interceptBulk(){
