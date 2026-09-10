@@ -74,6 +74,15 @@ Deno.serve(async(req:Request)=>{
     if(session.auth_session_id&&session.auth_session_id!==authSessionId)return respond({error:'شناسه نشست با این ورود مطابقت ندارد.'},403);
     if(session.revoked_at||session.logout_at)return respond({ok:true,revoked:!!session.revoked_at,expired:session.ended_reason==='inactivity',ended:true,ended_reason:session.ended_reason,timeout_minutes:timeoutMinutes});
 
+    // Upgrade a still-connected pre-v2 client using its verified token and its own
+    // audit ID. Never infer a legacy login from another session of the same user.
+    if(!session.auth_session_id&&authActive&&action!=='end'){
+      const {data:linked,error}=await admin.from('user_sessions').update({auth_session_id:authSessionId})
+        .eq('id',sessionId).eq('user_id',user.id).is('auth_session_id',null)
+        .is('logout_at',null).is('revoked_at',null).select('id,auth_session_id').maybeSingle();
+      if(error||!linked)return respond({error:error?.message||'وضعیت نشست تغییر کرده است؛ دوباره بررسی کنید.'},409);
+    }
+
     if(action==='end'||!authActive){
       const reason=authActive&&['logout','inactivity','closed','replaced'].includes(String(body.reason))?String(body.reason):'logout';
       const {data,error}=await admin.from('user_sessions').update({logout_at:now.toISOString(),ended_reason:reason}).eq('id',sessionId).eq('user_id',user.id).select('id,logout_at').single();
