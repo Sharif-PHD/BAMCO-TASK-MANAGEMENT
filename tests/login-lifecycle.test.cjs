@@ -12,7 +12,7 @@ test('actual login module records one session, gates first entry, changes passwo
  d.querySelector('#newPassword').value='New-test-password-739!';d.querySelector('#confirmPassword').value='New-test-password-739!';d.querySelector('#passwordForm').requestSubmit();await until(()=>!d.querySelector('#passwordDialog').open);await pause(100);
  assert.equal(f.calls.slice(start).filter(c=>c.endpoint==='user'&&c.method==='PUT').length,1);assert.equal(f.calls.slice(start).filter(c=>c.endpoint==='profiles'&&c.method==='PATCH').length,1);assert.equal(f.profiles[0].must_change_password,false);
  d.querySelector('.home-welcome-dialog')?.close();d.querySelector('#logoutBtn').click();await until(()=>!d.querySelector('#loginView').classList.contains('hidden'));
- assert.equal(f.calls.slice(start).filter(c=>c.endpoint==='logout').length,1);assert.equal(w.eval('state.token'),'');assert.deepEqual(f.errors,[]);
+ assert.equal(f.calls.slice(start).filter(c=>c.endpoint==='session-audit'&&c.body.action==='end'&&c.body.session_id==='test-current-session').length,1);assert.equal(f.calls.slice(start).filter(c=>c.endpoint==='logout').length,1);assert.equal(w.eval('state.token'),'');assert.deepEqual(f.errors,[]);
 });
 
 test('home and welcome appear before slow data/stickers and late callbacks cannot replace the chosen page',async t=>{

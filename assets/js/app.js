@@ -36,13 +36,13 @@ function apiErrorMessage(data,status){
     (status>=500?'سرویس پایگاه داده موقتاً در دسترس نیست.':'درخواست به پایگاه داده انجام نشد.');
 }
 
-async function api(path,{method='GET',body,auth=true,prefer}={}){
+async function api(path,{method='GET',body,auth=true,prefer,keepalive=false}={}){
   const headers={apikey:SB_KEY,'Content-Type':'application/json',Accept:'application/json'};
   if(auth&&state.token) headers.Authorization=`Bearer ${state.token}`;
   if(prefer) headers.Prefer=prefer;
   const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),20000);
   try{
-    const res=await fetch(SB_URL+path,{method,headers,cache:/\/(stickers|sticker_sets)(?:\?|$)/.test(path)?'default':'no-store',signal:controller.signal,body:body===undefined?undefined:JSON.stringify(body)});
+    const res=await fetch(SB_URL+path,{method,headers,keepalive,cache:/\/(stickers|sticker_sets)(?:\?|$)/.test(path)?'default':'no-store',signal:controller.signal,body:body===undefined?undefined:JSON.stringify(body)});
     const text=await res.text();let data=null;try{data=text?JSON.parse(text):null}catch{data=text}
     if(!res.ok)throw new Error(apiErrorMessage(data,res.status));
     return data;
