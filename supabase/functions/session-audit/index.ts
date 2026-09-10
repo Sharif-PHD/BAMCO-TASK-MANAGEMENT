@@ -54,9 +54,10 @@ Deno.serve(async(req:Request)=>{
       let {data,error}=await admin.from('user_sessions').insert({
         user_id:user.id,auth_session_id:authSessionId,last_activity_at:now.toISOString(),ip_address:getIp(req),
         user_agent:clamp(req.headers.get('user-agent'),1000),app_version:clamp(body.app_version||'web',120)
-      }).select('id,login_at,last_activity_at,logout_at,revoked_at').single();
-      if(error?.code==='23505')({data,error}=await admin.from('user_sessions').select('id,login_at,last_activity_at,logout_at,revoked_at').eq('auth_session_id',authSessionId).eq('user_id',user.id).single());
+      }).select('id,login_at,last_activity_at,logout_at,revoked_at,ended_reason').single();
+      if(error?.code==='23505')({data,error}=await admin.from('user_sessions').select('id,login_at,last_activity_at,logout_at,revoked_at,ended_reason').eq('auth_session_id',authSessionId).eq('user_id',user.id).single());
       if(error)return respond({error:error.message},400);
+      if(data?.logout_at&&data.ended_reason==='closed'&&!data.revoked_at){const resumed=await admin.from('user_sessions').update({logout_at:null,ended_reason:null,last_activity_at:now.toISOString()}).eq('id',data.id).eq('user_id',user.id).eq('auth_session_id',authSessionId).eq('ended_reason','closed').is('revoked_at',null).select('id,login_at,last_activity_at,logout_at,revoked_at,ended_reason').single();if(resumed.error)throw resumed.error;data=resumed.data}
       if(data?.logout_at||data?.revoked_at)return respond({error:'این نشست پایان یافته است. دوباره وارد شوید.',ended:true},409);
       return respond({ok:true,session:data,timeout_minutes:timeoutMinutes,retention_days:retentionDays});
     }
@@ -72,6 +73,8 @@ Deno.serve(async(req:Request)=>{
     if(sessionError)return respond({error:sessionError.message},400);
     if(!session)return respond({error:'نشست ثبت‌شده پیدا نشد.',expired:true,ended:true},404);
     if(session.auth_session_id&&session.auth_session_id!==authSessionId)return respond({error:'شناسه نشست با این ورود مطابقت ندارد.'},403);
+    // A verified connected client may resume a page-close marker, never logout/revocation.
+    if(authActive&&session.logout_at&&session.ended_reason==='closed'&&!session.revoked_at&&['heartbeat','status'].includes(action)){const resumed=await admin.from('user_sessions').update({logout_at:null,ended_reason:null,last_activity_at:now.toISOString()}).eq('id',sessionId).eq('user_id',user.id).eq('auth_session_id',authSessionId).eq('ended_reason','closed').is('revoked_at',null).select('id').single();if(resumed.error)throw resumed.error;return respond({ok:true,ended:false,revoked:false,expired:false,last_activity_at:now.toISOString(),timeout_minutes:timeoutMinutes})}
     if(session.revoked_at||session.logout_at)return respond({ok:true,revoked:!!session.revoked_at,expired:session.ended_reason==='inactivity',ended:true,ended_reason:session.ended_reason,timeout_minutes:timeoutMinutes});
 
     // Upgrade a still-connected pre-v2 client using its verified token and its own
