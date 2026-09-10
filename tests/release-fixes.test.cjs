@@ -38,7 +38,7 @@ test('welcome uses the active database sticker pair and home is deduplicated',()
   assert.match(js,/state_key=eq\.state1/);
   assert.match(js,/const routes=new Set/);
   assert.match(js,/bamcoPrepareWelcomeStickers/);
-  assert.match(js,/await stickers\(\)/);
+  // Non-blocking welcome is exercised with delayed API responses in login-lifecycle.test.cjs.
 });
 
 test('all data tables default to compact multi-selection behavior',()=>{
