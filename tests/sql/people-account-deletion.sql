@@ -40,6 +40,7 @@ begin
   denied:=false;begin perform public.delete_person_account(mid,uid);exception when insufficient_privilege then denied:=true;end;
   if not denied then raise exception 'Nonmanager actor accepted';end if;
   outcome:=public.delete_person_account(uid,mid);
+  if jsonb_array_length(outcome->'active_tasks')<>1 or (outcome->'active_tasks'->0->>'id')::bigint<>tid then raise exception 'Deletion did not return exactly the active task';end if;
   if (outcome->>'tasks_retained')::int<>2 then raise exception 'Retained task count incorrect';end if;
   execute 'reset role';
   if exists(select 1 from auth.users where id=uid) or exists(select 1 from auth.sessions where user_id=uid) or exists(select 1 from public.profiles where id=uid) or exists(select 1 from public.user_sessions where user_id=uid) or exists(select 1 from public.chat_members where user_id=uid) then raise exception 'Account/session/membership survived deletion';end if;

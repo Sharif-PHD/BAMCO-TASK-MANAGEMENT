@@ -28,12 +28,38 @@ test('failed deletion is reported without removing the row or preventing another
  f.failures.delete('admin-users');assert.equal(d.querySelector('#peopleBody [data-id=test-owner]').getAttribute('aria-selected'),'true');d.querySelector('#editPersonBtn').click();assert(d.querySelector('#personDialog').open);assert.deepEqual(f.errors,[]);
 });
 
-test('delete refreshes the people list and retains active/archive tasks for individual Kanban transfer',async t=>{
+test('delete immediately opens Kanban and retains active/archive tasks for individual transfer',async t=>{
  const tasks=[{id:901,title:'کار فعال',description:'توضیح محفوظ',owner_id:'test-owner',status:'در حال انجام',priority:'متوسط',start_date:'2026-09-01',due_date:'2026-09-15',archived:false},{id:902,title:'کار آرشیوی',owner_id:'test-owner',status:'انجام شده',priority:'متوسط',start_date:'2026-08-01',due_date:'2026-08-10',done_date:'2026-08-10',archived:true}];
- const f=await fixture({tables:{tasks},fetchResult:({endpoint,method,body})=>{if(endpoint==='admin-users'&&method==='DELETE'){for(const task of tasks)if(task.owner_id===body.user_id)Object.assign(task,{owner_id:null,former_owner_name:'متولی آزمایشی',owner_deleted_at:'2026-09-10T00:00:00Z'});return {ok:true,tasks_retained:2}}}}),{d}=f;t.after(()=>f.dispose());
- await f.open('people');d.querySelector('#peopleBody [data-id=test-owner]').click();d.querySelector('#deletePersonBtn').click();d.querySelector('#deletePersonBtn').click();await until(()=>f.calls.some(c=>c.endpoint==='ui-notice'&&c.body.includes('۲ وظیفه حفظ شد')));assert(!d.querySelector('#peopleBody [data-id=test-owner]'));assert.equal(f.calls.filter(c=>c.endpoint==='admin-users'&&c.method==='DELETE').length,1);
- await f.open('kanban');const row=d.querySelector('#kanbanBody [data-task-id="901"]');assert.match(row.textContent,/متولی آزمایشی.*نیازمند تعیین تکلیف/);row.click();d.querySelector('#kanbanEditBtn').click();const form=d.querySelector('#taskForm');form.elements.owner_id.value='test-manager';form.requestSubmit();await until(()=>!d.querySelector('#taskDialog').open);assert.equal(tasks[0].owner_id,'test-manager');assert.equal(tasks[0].due_date,'2026-09-15');assert.equal(tasks[1].owner_id,null);assert.equal(tasks[1].archived,true);
+ const f=await fixture({tables:{tasks},fetchResult:({endpoint,method,body})=>{if(endpoint==='admin-users'&&method==='DELETE'){for(const task of tasks)if(task.owner_id===body.user_id)Object.assign(task,{owner_id:null,former_owner_name:'متولی آزمایشی',owner_deleted_at:'2026-09-10T00:00:00Z'});return {ok:true,tasks_retained:2,active_tasks:tasks.filter(t=>!t.archived)}}}}),{d}=f;t.after(()=>f.dispose());
+ await f.open('people');d.querySelector('#peopleBody [data-id=test-owner]').click();d.querySelector('#deletePersonBtn').click();d.querySelector('#deletePersonBtn').click();await until(()=>d.querySelector('#peopleTransferBanner')&&!d.querySelector('#kanbanView').classList.contains('hidden'));assert(!d.querySelector('#peopleBody [data-id=test-owner]'));assert.equal(f.calls.filter(c=>c.endpoint==='admin-users'&&c.method==='DELETE').length,1);
+ assert.match(d.querySelector('#peopleTransferText').textContent,/۲ وظیفه حفظ شد/);const row=d.querySelector('#kanbanBody [data-task-id="901"]');assert.match(row.textContent,/متولی آزمایشی.*نیازمند تعیین تکلیف/);row.click();d.querySelector('#transferOwnerBtn').click();const form=d.querySelector('#transferOwnerDialog form');form.elements.owner_id.value='test-manager';form.requestSubmit();await until(()=>!d.querySelector('#transferOwnerDialog').open);assert.equal(tasks[0].owner_id,'test-manager');assert.equal(tasks[0].due_date,'2026-09-15');assert.equal(tasks[1].owner_id,null);assert.equal(tasks[1].archived,true);
  await f.open('archive');assert.match(d.querySelector('#archiveBody').textContent,/متولی آزمایشی.*حساب حذف شده/);assert.doesNotMatch(d.querySelector('#archiveBody').textContent,/نیازمند تعیین تکلیف/);assert.deepEqual(f.errors,[]);
+});
+
+test('deletion clears stale filters, shows only affected active tasks and transfers one task at a time',async t=>{
+ const tasks=[
+  {id:931,title:'کار اول',owner_id:'test-owner',status:'در حال انجام',row_version:1,archived:false},
+  {id:932,title:'کار دوم',owner_id:'test-owner',status:'منتظر پاسخ',row_version:1,archived:false},
+  {id:933,title:'کار تکمیل شده',owner_id:'test-owner',status:'انجام شده',archived:false},
+  {id:934,title:'کار کنسل شده',owner_id:'test-owner',status:'متوقف',archived:false},
+  {id:935,title:'کار فرد دیگر',owner_id:'test-manager',status:'در حال انجام',archived:false}
+ ];
+ const f=await fixture({tables:{tasks},fetchResult:({endpoint,method,body})=>{
+  if(endpoint==='admin-users'&&method==='DELETE'){
+   for(const task of tasks)if(task.owner_id===body.user_id)Object.assign(task,{owner_id:null,former_owner_name:'متولی آزمایشی',owner_deleted_at:'2026-09-10T00:00:00Z',row_version:2});
+   return {ok:true,tasks_retained:4,active_tasks:tasks.filter(t=>[931,932].includes(t.id))};
+  }
+ }}),{w,d}=f;t.after(()=>f.dispose());
+ w.eval("tableFilters.kanban[4]='انجام شده'");d.querySelector('#kanbanSearch').value='ناموجود';
+ await f.open('people');d.querySelector('#peopleBody [data-id=test-owner]').click();const before=f.calls.length;d.querySelector('#deletePersonBtn').click();
+ await until(()=>d.querySelector('#peopleTransferBanner')&&!d.querySelector('#kanbanView').classList.contains('hidden'));
+ const visible=()=>[...d.querySelectorAll('#kanbanBody [data-task-id]')].map(r=>r.dataset.taskId);
+ assert.deepEqual(visible(),['931','932']);assert.equal(d.querySelector('#kanbanSearch').value,'');
+ assert(!f.calls.slice(before).some(c=>['task_status_view','change_requests'].includes(c.endpoint)),'navigation must not await unrelated refresh requests');
+ w.bamcoSelection.set('#kanbanBody',['931','932']);d.querySelector('#transferOwnerBtn').click();await until(()=>f.calls.some(c=>c.endpoint==='ui-notice'&&c.body.includes('فقط یک وظیفه')));assert(!d.querySelector('#transferOwnerDialog'));
+ w.bamcoSelection.set('#kanbanBody',['931']);d.querySelector('#transferOwnerBtn').click();const form=d.querySelector('#transferOwnerDialog form');assert(![...form.elements.owner_id.options].some(o=>o.value==='test-owner'));form.elements.owner_id.value='test-manager';form.requestSubmit();await until(()=>!d.querySelector('#transferOwnerDialog').open);
+ assert.deepEqual(visible(),['932']);assert.equal(tasks[1].owner_id,null);const patch=f.calls.find(c=>c.endpoint==='tasks'&&c.method==='PATCH');assert.deepEqual(patch.body,{owner_id:'test-manager'});assert.match(patch.url,/row_version=eq.2/);
+ d.querySelector('#showAllKanbanTasks').click();assert.equal(visible().length,5);assert(d.querySelector('#peopleTransferBanner').hidden);assert.deepEqual(f.errors,[]);
 });
 
 test('historical chat messages retain the deleted sender name and body without an account profile',async t=>{

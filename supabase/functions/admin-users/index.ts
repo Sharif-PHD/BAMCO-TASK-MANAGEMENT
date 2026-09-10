@@ -33,7 +33,7 @@ Deno.serve(async(req)=>{
         try{const cleanup=await fetch(`${url}/storage/v1/object/avatars`,{method:"DELETE",headers:{apikey:service,Authorization:`Bearer ${service}`,"Content-Type":"application/json"},body:JSON.stringify({prefixes:result.avatar_paths})});if(!cleanup.ok)cleanup_warning="حساب حذف شد؛ پاک‌سازی فایل عکس نیاز به تلاش مجدد دارد."}
         catch{cleanup_warning="حساب حذف شد؛ پاک‌سازی فایل عکس نیاز به تلاش مجدد دارد."}
       }
-      return json({ok:true,tasks_retained:result.tasks_retained||0,already_deleted:!!result.already_deleted,...(cleanup_warning?{cleanup_warning}:{})});
+      return json({ok:true,tasks_retained:result.tasks_retained||0,active_tasks:result.active_tasks||[],already_deleted:!!result.already_deleted,...(cleanup_warning?{cleanup_warning}:{})});
     }
     if(req.method!=="POST")return json({error:"روش درخواست مجاز نیست."},405);
     if(!String(b.full_name||"").trim())return json({error:"نام فرد الزامی است."},400);

@@ -45,10 +45,11 @@
     deletingPeople=true;const button=q('#deletePersonBtn');button.disabled=true;
     try{
       if(!await window.bamcoConfirm(`حساب ${chosen.length.toLocaleString('fa-IR')} فرد انتخاب‌شده برای همیشه حذف شود؟\n${chosen.map(p=>p.full_name).join('، ')}\nحساب، نشست‌ها و دسترسی‌ها حذف می‌شوند. وظایف و تاریخ‌هایشان باقی می‌مانند؛ متولی جدید را در کانبان برای هر وظیفه جداگانه انتخاب کنید. سوابق و درخواست‌های باز برای بررسی باقی می‌مانند؛ پیام‌های در صف به این حساب متوقف می‌شوند.`))return;
-      let removed=0,retained=0;const errors=[],failed=[],warnings=[];
-      for(const p of chosen){try{const result=await edge({user_id:p.id},'DELETE');removed++;retained+=Number(result.tasks_retained||0);if(result.cleanup_warning)warnings.push(result.cleanup_warning)}catch(err){failed.push(p.id);errors.push(p.full_name+': '+err.message)}}
-      await refresh();await loadPeople();window.bamcoSelection.set('#peopleBody',failed);
-      toast(`${removed.toLocaleString('fa-IR')} حساب حذف شد.`+(retained?`\n${retained.toLocaleString('fa-IR')} وظیفه حفظ شد؛ واگذاری از کانبان انجام می‌شود.`:'')+(errors.length?'\n'+errors.join('\n'):'')+(warnings.length?'\n'+warnings.join('\n'):''),!!errors.length||!!warnings.length);
+      let retained=0;const errors=[],failed=[],warnings=[],deleted=[],activeTasks=[];
+      for(const p of chosen){try{const result=await edge({user_id:p.id},'DELETE');deleted.push(p);retained+=Number(result.tasks_retained||0);if(Array.isArray(result.active_tasks))activeTasks.push(...result.active_tasks);if(result.cleanup_warning)warnings.push(result.cleanup_warning)}catch(err){failed.push(p.id);errors.push(p.full_name+': '+err.message)}}
+      const deletedIds=new Set(deleted.map(p=>p.id));people=people.filter(p=>!deletedIds.has(p.id));state.profiles=state.profiles.filter(p=>!deletedIds.has(p.id));renderPeople();window.bamcoSelection.set('#peopleBody',failed);
+      if(deleted.length)window.bamcoTaskTransfer.open(deleted,activeTasks,retained);
+      if(errors.length||warnings.length)toast(`${deleted.length.toLocaleString('fa-IR')} حساب حذف شد.\n`+[...errors,...warnings].join('\n'),true);
     }catch(err){toast(err.message,true)}finally{deletingPeople=false;syncPersonSelection()}
   }
   let avatarUrl='',pendingBlob=null,pendingUrl='',cropImage=null,zoom=1,offX=0,offY=0,drag=false,last=null;
