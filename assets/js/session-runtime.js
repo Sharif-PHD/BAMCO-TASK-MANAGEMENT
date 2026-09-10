@@ -12,7 +12,7 @@ function start(){
  if(sessionStorage.getItem(KEY))return Promise.resolve(sessionStorage.getItem(KEY));
  if(!starting){
   const epoch=generation;
-  const request=call('start',{app_version:'sessions-20260910-2'}).then(data=>{
+  const request=call('start',{app_version:'sessions-20260910-3'}).then(data=>{
    const id=data?.session?.id;if(!id)throw Error('ثبت نشست انجام نشد؛ دوباره وارد شوید.');
    if(epoch===generation&&!ending&&state.token){sessionStorage.setItem(KEY,id);lastActivity=Date.now();lastSent=lastActivity}
    return id;
@@ -44,5 +44,6 @@ function clear(){generation++;sessionStorage.removeItem(KEY);starting=null}
 window.bamcoSession={start,heartbeat,end,clear,currentId:()=>sessionStorage.getItem(KEY)};
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&state?.token)heartbeat().catch(error=>console.warn('BAMCO session',error.message))});
 setInterval(()=>heartbeat().catch(error=>console.warn('BAMCO session',error.message)),120000);
-window.addEventListener('pagehide',event=>{if(!event.persisted)end('closed',{keepalive:true}).catch(()=>{})});
+// Page navigation, mobile file selection and suspension are not account logout.
+// Explicit logout ends the session; disconnected clients expire on the server.
 })();
