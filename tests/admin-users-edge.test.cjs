@@ -13,11 +13,11 @@ function service(options={}){
  const fetch=async(url,init={})=>{
   const u=new URL(url),method=init.method||'GET',body=init.body?JSON.parse(init.body):null;
   calls.push({url:u,method,body,headers:new Headers(init.headers)});
-  if(u.pathname==='/auth/v1/user')return options.unauthorized?response({error:'invalid token'},401):response({id:'manager-id'});
-  if(u.pathname==='/rest/v1/profiles'&&u.searchParams.get('id')==='eq.manager-id')return response([{role:options.role||'manager',active:options.active!==false}]);
+  if(u.pathname==='/auth/v1/user')return options.unauthorized?response({error:'invalid token'},401):response({id:'manager-id',email:'manager@example.test'});
+  if(u.pathname==='/rest/v1/profiles'&&u.searchParams.get('id')==='eq.manager-id')return response([{role:options.role||'manager',active:options.active!==false,must_change_password:!!options.mustChange}]);
   if(u.pathname==='/rest/v1/profiles'&&method==='GET')return response([stored]);
   if(u.pathname==='/auth/v1/admin/users'&&method==='POST')return response({id:stored.id});
-  if(u.pathname==='/auth/v1/admin/users/person-id')return response({id:stored.id});
+  if(u.pathname==='/auth/v1/admin/users/person-id'||u.pathname==='/auth/v1/admin/users/manager-id')return options.authFail&&method==='PUT'?response({code:'email_exists'},422):response({id:stored.id,email:stored.email});
   if(u.pathname==='/rest/v1/rpc/delete_person_account')return options.deleteFail?response({message:'synthetic delete rejected'},409):response(options.unconfirmedDeletion?{}:{ok:true,tasks_retained:2,active_tasks:[{id:901,owner_id:null,owner_deleted_at:'2026-09-10T00:00:00Z'}],avatar_paths:['person-id/avatar.png']});
   if(u.pathname==='/storage/v1/object/avatars')return response({},options.cleanupFail?500:200);
   if(u.pathname==='/rest/v1/profiles'&&method==='PATCH'){
@@ -42,9 +42,26 @@ test('deployed people handler writes profiles as the authenticated manager and v
  const auth=f.calls.find(c=>c.url.pathname==='/auth/v1/admin/users/person-id');assert.equal(auth.headers.get('Authorization'),'Bearer private-service-key');
 });
 
-test('changing an email does not reset an existing password',async()=>{
+test('changing corporate email preserves the independent login and existing password',async()=>{
  const f=service(),r=await f.save({email:'changed@example.test'});assert.equal(r.status,200);
- const update=f.calls.find(c=>c.url.pathname==='/auth/v1/admin/users/person-id');assert.equal(update.body.email,'changed@example.test');assert(!('password' in update.body));assert.equal(f.stored.must_change_password,false);
+ const update=f.calls.find(c=>c.url.pathname==='/auth/v1/admin/users/person-id');assert(!('email' in update.body));assert(!('password' in update.body));assert.equal(f.stored.email,'changed@example.test');assert.equal(f.stored.must_change_password,false);
+});
+
+test('manager can inspect and edit login for an account with corporate email; current passwords are never returned',async()=>{
+ const f=service(),read=await f.save({action:'get_credentials'});assert.equal(read.status,200);assert.equal(read.body.login_name,'person@example.test');assert.equal(read.body.credential_editable,true);assert(!('password' in read.body));assert(!('temporary_password' in read.body));
+ const saved=await f.save({action:'save_credentials',login_name:'new.person',temporary_password:'A-long-fixture-pass9!'});assert.equal(saved.status,200);assert.equal(f.stored.email,'person@example.test');assert.equal(f.stored.must_change_password,true);
+ const update=f.calls.find(c=>c.url.pathname==='/auth/v1/admin/users/person-id'&&c.method==='PUT');assert.equal(update.body.email,'new.person@no-email.invalid');assert.equal(update.body.password,'A-long-fixture-pass9!');assert(!('password' in saved.body));assert(!('temporary_password' in saved.body));
+});
+
+test('duplicate username does not report success or leave an unperformed password reset gate',async()=>{
+ const f=service({authFail:true}),r=await f.save({action:'save_credentials',login_name:'duplicate',temporary_password:'A-long-fixture-pass9!'});assert.equal(r.status,422);assert.equal(f.stored.must_change_password,false);assert(!r.body.ok);
+});
+
+test('owners can only change their own username and cannot change another user or password with that action',async()=>{
+ const f=service({role:'owner'}),r=await f.save({action:'save_own_login',user_id:'another-id',login_name:'my.login',temporary_password:'Ignore-this-pass9!'});assert.equal(r.status,200);
+ const calls=f.calls.filter(c=>c.url.pathname.includes('/admin/users'));assert.equal(calls.length,1);assert.equal(calls[0].url.pathname,'/auth/v1/admin/users/manager-id');assert.deepEqual(calls[0].body,{email:'my.login@no-email.invalid',email_confirm:true});
+ for(const opts of [{active:false},{mustChange:true},{unauthorized:true}]){const denied=service(opts),result=await denied.save({action:'save_own_login',login_name:'my.login'});assert([401,403].includes(result.status));assert(!denied.calls.some(c=>c.url.pathname.includes('/admin/users')))}
+ const forbidden=service({role:'owner'}),r2=await forbidden.save({action:'save_credentials',login_name:'other.login'});assert.equal(r2.status,403);
 });
 
 test('new accounts use the same manager profile-write context',async()=>{

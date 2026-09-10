@@ -13,6 +13,18 @@ Deno.serve(async(req)=>{
     const userRes=await fetch(`${url}/auth/v1/user`,{headers:{apikey:anon,Authorization:authorization}});if(!userRes.ok)return json({error:"ورود معتبر نیست."},401);
     const user=await userRes.json();
     const managerRes=await fetch(`${url}/rest/v1/profiles?id=eq.${user.id}&select=role,active`,{headers:{apikey:service,Authorization:`Bearer ${service}`}}),managerRows=await managerRes.json();
+    const b=await req.json();
+    if(req.method==='POST'&&b.action==='save_own_login'){
+      if(!managerRows?.[0]?.active)return json({error:'حساب فعال نیست.'},403);
+      const ownRes=await fetch(`${url}/rest/v1/profiles?id=eq.${user.id}&select=must_change_password`,{headers:{apikey:service,Authorization:`Bearer ${service}`}}),own=await ownRes.json();
+      if(!ownRes.ok||!own?.[0]||own[0].must_change_password)return json({error:'ابتدا رمز عبور موقت خود را تغییر دهید.'},403);
+      const login=normalizeEmail(b.login_name),current=loginLabel(normalizeEmail(user.email));
+      if(login===current)return json({ok:true,id:user.id,login_name:current});
+      if(!/^[a-z0-9][a-z0-9._-]{2,63}$/.test(login))return json({error:'نام کاربری باید ۳ تا ۶۴ کاراکتر و شامل حروف انگلیسی، عدد، نقطه یا خط تیره باشد.'},400);
+      const changed=await fetch(`${url}/auth/v1/admin/users/${encodeURIComponent(user.id)}`,{method:'PUT',headers:{apikey:service,Authorization:`Bearer ${service}`,'Content-Type':'application/json'},body:JSON.stringify({email:login+'@no-email.invalid',email_confirm:true})}),result=await changed.json().catch(()=>({}));
+      if(!changed.ok)return json({error:['email_exists','user_already_exists'].includes(result.code||result.error_code)?'این نام کاربری قبلاً استفاده شده است.':result.msg||result.message||'نام کاربری ذخیره نشد.'},changed.status);
+      return json({ok:true,id:user.id,login_name:login});
+    }
     if(managerRows?.[0]?.role!=="manager"||!managerRows[0].active)return json({error:"دسترسی مدیر لازم است."},403);
     // Profile guards and RLS need the verified manager's auth.uid(). Service-role
     // credentials belong only to Auth Admin calls, not these profile writes.
@@ -23,7 +35,6 @@ Deno.serve(async(req)=>{
       if(!Array.isArray(rows)||rows.length!==1||rows[0].id!==id)return json({error:"ذخیره اطلاعات تأیید نشد؛ فرد را دوباره انتخاب کنید."},409);
       return json({ok:true,id,profile:rows[0]});
     };
-    const b=await req.json();
     if(req.method==="DELETE"){
       if(!b.user_id)return json({error:"شناسه فرد ارسال نشده است."},400);
       if(b.user_id===user.id)return json({error:"مدیر نمی‌تواند حساب در حال استفاده خود را حذف کند."},400);
@@ -42,7 +53,6 @@ Deno.serve(async(req)=>{
       const id=encodeURIComponent(b.user_id),headers={apikey:service,Authorization:`Bearer ${service}`};
       const profileRes=await fetch(`${url}/rest/v1/profiles?id=eq.${id}&select=email,must_change_password`,{headers}),profiles=await profileRes.json(),profile=profiles?.[0];
       if(!profileRes.ok||!profile)return json({error:'فرد پیدا نشد.'},404);
-      if(profile.email&&!String(profile.email).endsWith('@no-email.invalid'))return json({error:'این بخش برای حساب بدون ایمیل است.'},400);
       const accountRes=await fetch(`${url}/auth/v1/admin/users/${id}`,{headers}),account=await accountRes.json();
       if(!accountRes.ok||!account.id)return json({error:'اطلاعات ورود دریافت نشد.'},accountRes.ok?409:accountRes.status);
       const current=loginLabel(normalizeEmail(account.email));
@@ -67,14 +77,14 @@ Deno.serve(async(req)=>{
     if(Array.isArray(b.cc_emails))profileBody.cc_emails=b.cc_emails;
     if(b.user_id){
       const oldRes=await fetch(`${url}/rest/v1/profiles?id=eq.${encodeURIComponent(b.user_id)}&select=email,must_change_password`,{headers:{apikey:service,Authorization:`Bearer ${service}`}}),oldRows=await oldRes.json(),old=oldRows?.[0];if(!old)return json({error:"فرد پیدا نشد."},404);
-      const emailChanged=normalizeEmail(old.email)!==normalizeEmail(publicEmail),authBody:Record<string,unknown>={user_metadata:{full_name:profileBody.full_name}};
-      if(emailChanged&&hasEmail){authBody.email=publicEmail;authBody.email_confirm=true}
+      // Corporate delivery email is independent of the existing Auth login.
+      const authBody:Record<string,unknown>={user_metadata:{full_name:profileBody.full_name}};
       const authUpdate=await fetch(`${url}/auth/v1/admin/users/${encodeURIComponent(b.user_id)}`,{method:"PUT",headers:{apikey:service,Authorization:`Bearer ${service}`,"Content-Type":"application/json"},body:JSON.stringify(authBody)}),authResult=await authUpdate.json().catch(()=>({}));if(!authUpdate.ok)return json({error:authResult.msg||authResult.message||"ویرایش حساب انجام نشد."},authUpdate.status);
       return await saveProfile(b.user_id,profileBody,"ویرایش اطلاعات فرد انجام نشد.");
     }
     const authEmail=publicEmail||internalEmail(),initialPassword=temporaryPassword(),created=await fetch(`${url}/auth/v1/admin/users`,{method:"POST",headers:{apikey:service,Authorization:`Bearer ${service}`,"Content-Type":"application/json"},body:JSON.stringify({email:authEmail,password:initialPassword,email_confirm:true,user_metadata:{full_name:profileBody.full_name}})}),account=await created.json();if(!created.ok)return json({error:account.msg||account.message||"ساخت حساب انجام نشد."},created.status);
     const saved=await saveProfile(account.id,{...profileBody,must_change_password:true},"حساب ساخته شد اما اطلاعات فرد کامل ذخیره نشد.");
     if(!saved.ok)return saved;
-    return json({...await saved.json(),temporary_password:initialPassword,login_name:hasEmail?authEmail:loginLabel(authEmail),credential_editable:!hasEmail});
+    return json({...await saved.json(),temporary_password:initialPassword,login_name:hasEmail?authEmail:loginLabel(authEmail),credential_editable:true});
   }catch(e){return json({error:e instanceof Error?e.message:"خطای ناشناخته"},500)}
 });
