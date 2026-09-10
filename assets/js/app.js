@@ -146,7 +146,7 @@ async function refresh(){
 function renderAll(){window.renderDashboard?.();renderTasks(false);renderTasks(true);renderRequests();renderRequestHistory()}
 function renderTasks(archived){
   const query=(archived?$('#archiveSearch'):$('#kanbanSearch')).value.trim().toLowerCase();
-  const scope=archived?'archive':'kanban',allRows=state.tasks.filter(t=>!!t.archived===archived),filters=tableFilters[scope];
+  const scope=archived?'archive':'kanban',allRows=state.tasks.filter(t=>!!t.archived===archived&&(archived||!window.bamcoTaskTransfer||window.bamcoTaskTransfer.includes(t))),filters=tableFilters[scope];
   updateColumnFilters(scope,allRows,archived);
   const rows=allRows.filter(t=>!query||[t.title,t.description,ownerName(t),t.status,t.priority,displayId(t)].some(v=>String(v??'').toLowerCase().includes(query))).filter(t=>taskColumnValues(t,archived).every((v,i)=>!filters[i]||String(v??'')===filters[i]));
   const body=archived?$('#archiveBody'):$('#kanbanBody');if(!rows.some(t=>String(t.id)===String(state.selected[scope])))state.selected[scope]=null;if(!rows.length){body.innerHTML=`<tr><td colspan="${archived?16:14}" class="empty">موردی برای نمایش وجود ندارد.</td></tr>`;updateTaskToolbar(scope);return}
@@ -773,7 +773,8 @@ showLogin();
     const scope=archived?'archive':'kanban';
     const searchEl=archived?qs('#archiveSearch'):qs('#kanbanSearch');
     const query=(searchEl?.value||'').trim().toLowerCase();
-    const allRows=state.tasks.filter(t=>!!t.archived===archived).sort((a,b)=>Number(displayId(a))-Number(displayId(b)));
+    const allRows=state.tasks.filter(t=>!!t.archived===archived&&(archived||!window.bamcoTaskTransfer||window.bamcoTaskTransfer.includes(t))).sort((a,b)=>Number(displayId(a))-Number(displayId(b)));
+    if(!archived)window.bamcoTaskTransfer?.sync();
     const filters=tableFilters[scope];
     updateColumnFilters(scope,allRows,archived);
     const rows=allRows.filter(t=>!query||[t.title,t.description,ownerName(t),t.status,t.priority,displayId(t)].some(v=>String(v??'').toLowerCase().includes(query)))

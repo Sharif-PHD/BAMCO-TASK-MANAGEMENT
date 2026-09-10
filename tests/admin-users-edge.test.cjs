@@ -18,7 +18,7 @@ function service(options={}){
   if(u.pathname==='/rest/v1/profiles'&&method==='GET')return response([stored]);
   if(u.pathname==='/auth/v1/admin/users'&&method==='POST')return response({id:stored.id});
   if(u.pathname==='/auth/v1/admin/users/person-id')return response({id:stored.id});
-  if(u.pathname==='/rest/v1/rpc/delete_person_account')return options.deleteFail?response({message:'synthetic delete rejected'},409):response(options.unconfirmedDeletion?{}:{ok:true,tasks_retained:2,avatar_paths:['person-id/avatar.png']});
+  if(u.pathname==='/rest/v1/rpc/delete_person_account')return options.deleteFail?response({message:'synthetic delete rejected'},409):response(options.unconfirmedDeletion?{}:{ok:true,tasks_retained:2,active_tasks:[{id:901,owner_id:null,owner_deleted_at:'2026-09-10T00:00:00Z'}],avatar_paths:['person-id/avatar.png']});
   if(u.pathname==='/storage/v1/object/avatars')return response({},options.cleanupFail?500:200);
   if(u.pathname==='/rest/v1/profiles'&&method==='PATCH'){
    // Reproduce the deployed guard: a service-role token has no manager auth.uid().
@@ -69,7 +69,7 @@ test('unauthenticated, inactive and nonmanager callers cannot reach privileged a
 
 
 test('delete uses the verified manager identity, server-only transaction and Storage API',async()=>{
- const f=service(),r=await f.remove({p_actor_id:'forged',actor_id:'forged'});assert.equal(r.status,200);assert.equal(r.body.tasks_retained,2);
+ const f=service(),r=await f.remove({p_actor_id:'forged',actor_id:'forged'});assert.equal(r.status,200);assert.equal(r.body.tasks_retained,2);assert.equal(r.body.active_tasks[0].id,901);
  const call=f.calls.find(c=>c.url.pathname==='/rest/v1/rpc/delete_person_account');assert.deepEqual(call.body,{p_user_id:'person-id',p_actor_id:'manager-id'});assert.equal(call.headers.get('Authorization'),'Bearer private-service-key');
  const cleanup=f.calls.find(c=>c.url.pathname==='/storage/v1/object/avatars');assert.deepEqual(cleanup.body.prefixes,['person-id/avatar.png']);assert(!f.calls.some(c=>c.method==='DELETE'&&c.url.pathname.includes('/auth/v1/admin/users')));
 });
