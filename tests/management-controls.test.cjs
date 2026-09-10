@@ -20,7 +20,7 @@ test('management pages: shipped click handlers, toolbars, Excel downloads and re
   row.dispatchEvent(new w.MouseEvent('dblclick',{bubbles:true}));assert(d.querySelector('#personDialog').open);
   const form=d.querySelector('#personForm');assert.equal(form.elements.full_name.value,'متولی آزمایشی');
   d.querySelector('[data-person-close]').click();assert(!d.querySelector('#personDialog').open);
-  d.querySelector('#editPersonBtn').click();form.elements.full_name.value='متولی ویرایش‌شده';form.requestSubmit();
+  d.querySelector('#editPersonBtn').click();form.elements.full_name.value='متولی ویرایش‌شده';form.querySelector('[type=submit]').click();
   await until(()=>!d.querySelector('#personDialog').open);await until(()=>d.querySelector('#peopleBody').textContent.includes('متولی ویرایش‌شده'));
   assert.equal(f.calls.filter(c=>c.endpoint==='admin-users').at(-1).body.user_id,'test-owner');
   d.querySelector('#addPersonBtn').click();form.elements.full_name.value='فرد جدید';f.setFailSave(true);form.requestSubmit();

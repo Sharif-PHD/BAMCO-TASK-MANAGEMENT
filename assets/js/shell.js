@@ -18,7 +18,7 @@
     q('#editPersonBtn').disabled=!people.length;q('#editPersonBtn').title=selected.size>1?'ویرایش فقط برای یک فرد مجاز است':'ویرایش فرد';q('#deletePersonBtn').disabled=!selected.size;
   }
   document.addEventListener('bamco-selection-change',e=>{if(e.target.closest('#peopleView')){selected=new Set(e.detail.ids);syncPersonSelection()}});
-  async function edge(body={},method='POST'){const r=await fetch(`${SB_URL}/functions/v1/admin-users`,{method,headers:{apikey:SB_KEY,Authorization:`Bearer ${state.token}`,'Content-Type':'application/json'},body:JSON.stringify(body)}),d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'عملیات حساب کاربری انجام نشد.');return d}
+  async function edge(body={},method='POST'){const result=await api('/functions/v1/admin-users',{method,body});if(!result?.ok)throw new Error(result?.error||'عملیات حساب کاربری تأیید نشد.');return result}
   async function loadPeople(){people=await select('profiles','select=id,email,full_name,display_name,role,gender,salutation,active,default_message_channel,messaging_enabled&order=full_name');state.profiles=people;renderPeople()}
   function renderPeople(){const term=q('#peopleSearch').value.trim().toLowerCase(),rows=people.filter(p=>!term||[p.full_name,p.email,p.role,p.salutation].some(v=>String(v||'').toLowerCase().includes(term)));q('#peopleBody').innerHTML=rows.map(p=>`<tr data-id="${p.id}" class="${selected.has(p.id)?'person-selected':''}"><td>${esc(p.full_name)}</td><td>${p.role==='manager'?'مدیر':'متولی'}</td><td>${esc(p.gender||'—')}</td><td class="english">${esc(p.email||'—')}</td><td>${esc(p.salutation||'—')}</td><td>${p.active!==false?'بله':'خیر'}</td></tr>`).join('')||'<tr><td colspan="6" class="empty">کاربری ثبت نشده است.</td></tr>';syncPersonSelection()}
   function syncMessageAvailability(){const f=q('#personForm'),hasEmail=!!f.elements.email.value.trim(),field=q('.person-message-channel',f);f.elements.default_message_channel.disabled=!hasEmail;field?.classList.toggle('is-disabled',!hasEmail);if(!hasEmail)f.elements.default_message_channel.value='portal'}
@@ -34,7 +34,7 @@
     e.preventDefault();const form=e.currentTarget,submit=form.querySelector('[type="submit"]');if(submit.disabled)return;
     const data=Object.fromEntries(new FormData(form));data.active=data.active==='true';data.email=String(data.email||'').trim()||null;data.messaging_enabled=!!data.email;data.default_message_channel=data.email?(data.default_message_channel||'portal'):'none';if(editing)data.user_id=editing.id;
     q('#personError').textContent='';submit.disabled=true;
-    try{await edge(data);q('#personDialog').close();toast('اطلاعات فرد ذخیره شد.');await loadPeople()}
+    try{await edge(data);await loadPeople();q('#personDialog').close();toast('اطلاعات فرد ذخیره شد.')}
     catch(err){q('#personError').textContent=err.message;toast(err.message,true)}
     finally{submit.disabled=false}
   }
