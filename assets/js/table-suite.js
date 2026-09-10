@@ -76,10 +76,11 @@ function install(){
  }
  function ensureTableToolbar(table){
   const panel=table.closest('.panel,.table-panel'),head=panel?.querySelector(':scope>.panel-head');if(!panel||!head)return null;
-  let bar=panel.querySelector(':scope>.task-toolbar,:scope>.vehicle-toolbar,:scope>.prod-toolbar,:scope>.people-actions,:scope>.manager-toolbar,:scope>.workspace-actions,:scope>.workspace-report-tools,:scope>.bamco-management-toolbar,:scope>.suite-toolbar');
+  const scope=panel.closest('.view')||panel;
+  let bar=scope.querySelector(':scope>.bamco-command-bar')||panel.querySelector(':scope>.task-toolbar,:scope>.vehicle-toolbar,:scope>.prod-toolbar,:scope>.people-actions,:scope>.manager-toolbar,:scope>.workspace-actions,:scope>.workspace-report-tools,:scope>.bamco-management-toolbar,:scope>.suite-toolbar');
   if(!bar){bar=document.createElement('div');bar.className='suite-toolbar';head.after(bar)}
   const search=head.querySelector('input.search,input[type=search],.toolbar-search');if(search)bar.append(search);
-  if(![...panel.querySelectorAll('button')].some(b=>/خروجی اکسل|خروج از اکسل/.test(b.textContent))){
+  if(![...scope.querySelectorAll('button')].some(b=>/خروجی اکسل|خروج از اکسل/.test(b.textContent))){
    const button=document.createElement('button');button.type='button';button.className='ghost';button.dataset.managementExport='all';button.textContent='خروجی اکسل';
    button.addEventListener('click',async()=>{button.disabled=true;try{if(!window.bamcoExportTable)throw Error('امکانات خروجی هنوز بارگذاری نشده است.');await window.bamcoExportTable(table)}catch(err){toast(err.message,true)}finally{button.disabled=false}});bar.append(button);
   }

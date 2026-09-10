@@ -1,8 +1,9 @@
 const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization,apikey,content-type","Access-Control-Allow-Methods":"POST,DELETE,OPTIONS"};
-const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,"Content-Type":"application/json"}});
+const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,"Content-Type":"application/json","Cache-Control":"no-store"}});
 const normalizeEmail=(value:unknown)=>String(value||"").trim().toLowerCase();
+const temporaryPassword=()=>'A9!'+Array.from(crypto.getRandomValues(new Uint8Array(17)),n=>'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'[n%64]).join('');
 const internalEmail=()=>`person-${crypto.randomUUID()}@no-email.invalid`;
-const safeChannel=(value:unknown,hasEmail:boolean)=>hasEmail&&["portal","email","both"].includes(String(value))?String(value):"none";
+const safeChannel=(value:unknown,hasEmail:boolean)=>hasEmail&&["portal","email","both"].includes(String(value))?String(value):"portal";
 
 Deno.serve(async(req)=>{
   if(req.method==="OPTIONS")return new Response("ok",{headers:cors});
@@ -32,16 +33,18 @@ Deno.serve(async(req)=>{
     if(req.method!=="POST")return json({error:"روش درخواست مجاز نیست."},405);
     if(!String(b.full_name||"").trim())return json({error:"نام فرد الزامی است."},400);
     const publicEmail=normalizeEmail(b.email)||null,hasEmail=!!publicEmail,role=b.role==="manager"?"manager":"owner",channel=safeChannel(b.default_message_channel,hasEmail);
-    const profileBody:Record<string,unknown>={email:publicEmail,full_name:String(b.full_name).trim(),display_name:String(b.full_name).trim(),role,gender:b.gender||null,salutation:b.salutation||null,active:b.active!==false,messaging_enabled:hasEmail,default_message_channel:channel};
+    const profileBody:Record<string,unknown>={email:publicEmail,full_name:String(b.full_name).trim(),display_name:String(b.full_name).trim(),role,gender:b.gender||null,salutation:b.salutation||null,active:b.active!==false,messaging_enabled:true,default_message_channel:channel};
     if(Array.isArray(b.cc_emails))profileBody.cc_emails=b.cc_emails;
     if(b.user_id){
       const oldRes=await fetch(`${url}/rest/v1/profiles?id=eq.${encodeURIComponent(b.user_id)}&select=email,must_change_password`,{headers:{apikey:service,Authorization:`Bearer ${service}`}}),oldRows=await oldRes.json(),old=oldRows?.[0];if(!old)return json({error:"فرد پیدا نشد."},404);
       const emailChanged=normalizeEmail(old.email)!==normalizeEmail(publicEmail),authBody:Record<string,unknown>={user_metadata:{full_name:profileBody.full_name}};
-      if(emailChanged){authBody.email=publicEmail||internalEmail();authBody.email_confirm=true}
+      if(emailChanged&&hasEmail){authBody.email=publicEmail;authBody.email_confirm=true}
       const authUpdate=await fetch(`${url}/auth/v1/admin/users/${encodeURIComponent(b.user_id)}`,{method:"PUT",headers:{apikey:service,Authorization:`Bearer ${service}`,"Content-Type":"application/json"},body:JSON.stringify(authBody)}),authResult=await authUpdate.json().catch(()=>({}));if(!authUpdate.ok)return json({error:authResult.msg||authResult.message||"ویرایش حساب انجام نشد."},authUpdate.status);
       return await saveProfile(b.user_id,profileBody,"ویرایش اطلاعات فرد انجام نشد.");
     }
-    const authEmail=publicEmail||internalEmail(),created=await fetch(`${url}/auth/v1/admin/users`,{method:"POST",headers:{apikey:service,Authorization:`Bearer ${service}`,"Content-Type":"application/json"},body:JSON.stringify({email:authEmail,password:"123456",email_confirm:true,user_metadata:{full_name:profileBody.full_name}})}),account=await created.json();if(!created.ok)return json({error:account.msg||account.message||"ساخت حساب انجام نشد."},created.status);
-    return await saveProfile(account.id,{...profileBody,must_change_password:hasEmail},"حساب ساخته شد اما اطلاعات فرد کامل ذخیره نشد.");
+    const authEmail=publicEmail||internalEmail(),initialPassword=temporaryPassword(),created=await fetch(`${url}/auth/v1/admin/users`,{method:"POST",headers:{apikey:service,Authorization:`Bearer ${service}`,"Content-Type":"application/json"},body:JSON.stringify({email:authEmail,password:initialPassword,email_confirm:true,user_metadata:{full_name:profileBody.full_name}})}),account=await created.json();if(!created.ok)return json({error:account.msg||account.message||"ساخت حساب انجام نشد."},created.status);
+    const saved=await saveProfile(account.id,{...profileBody,must_change_password:true},"حساب ساخته شد اما اطلاعات فرد کامل ذخیره نشد.");
+    if(!saved.ok)return saved;
+    return json({...await saved.json(),temporary_password:initialPassword,login_name:authEmail});
   }catch(e){return json({error:e instanceof Error?e.message:"خطای ناشناخته"},500)}
 });

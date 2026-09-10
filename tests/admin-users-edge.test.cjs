@@ -47,6 +47,13 @@ test('changing an email does not reset an existing password',async()=>{
 
 test('new accounts use the same manager profile-write context',async()=>{
  const f=service(),r=await f.save({user_id:null});assert.equal(r.status,200,JSON.stringify(r.body));assert.equal(f.stored.role,'manager');assert.equal(r.body.profile.id,'person-id');
+ assert.equal(r.body.temporary_password.length,20);assert.equal(f.calls.find(c=>c.url.pathname==='/auth/v1/admin/users').body.password,r.body.temporary_password);assert.equal(f.stored.must_change_password,true);
+});
+
+test('no-email users retain internal delivery and removing an email preserves their login',async()=>{
+ const f=service(),r=await f.save({email:null,default_message_channel:'both'});assert.equal(r.status,200);assert.equal(f.stored.messaging_enabled,true);assert.equal(f.stored.default_message_channel,'portal');
+ assert(!('email' in f.calls.find(c=>c.url.pathname==='/auth/v1/admin/users/person-id').body));
+ const created=service(),a=await created.save({user_id:null,email:null});assert.equal(a.status,200);assert.match(a.body.login_name,/@no-email\.invalid$/);assert(a.body.temporary_password);assert.equal(created.stored.must_change_password,true);
 });
 
 test('an empty profile update or database rejection cannot report successful saving',async()=>{

@@ -21,7 +21,7 @@ async function fixture(options={}){
   if(url.pathname.endsWith('.css')&&!options.styles)return new Response('');
   try{return new Response(fs.readFileSync(path.join(root,url.pathname)),{headers:{'Content-Type':url.pathname.endsWith('.css')?'text/css':'application/javascript'}})}catch{return new Response('',{status:404})}
  });
- const html=fs.readFileSync(path.join(root,'index.html'),'utf8').replace(/<script\b[^>]*src="assets\/js\/(?:auth-ui|department-entry)\.js[^>]*><\/script>/g,'');
+ const html=fs.readFileSync(path.join(root,'index.html'),'utf8').replace(/<script\b[^>]*src="assets\/js\/(?:auth-ui|department-entry)\.js[^>]*><\/script>/g,tag=>options.authUi&&tag.includes('/auth-ui.')?tag:'');
  const dom=new JSDOM(html,{url:'https://bamco.test/',runScripts:'dangerously',resources:{interceptors:[local]},pretendToBeVisual:true,virtualConsole:vc,beforeParse(w){
   w.Response=Response;w.Request=Request;w.Headers=Headers;w.AbortController=AbortController;w.Blob=Blob;w.TextEncoder=TextEncoder;w.CSS={escape:s=>String(s)};w.print=()=>{};for(const [key,value] of Object.entries(options.storage||{}))w.localStorage.setItem(key,value);
   w.fetch=async(input,init={})=>{
@@ -56,6 +56,7 @@ async function fixture(options={}){
    if(endpoint==='chat_create_group'){const id='group-'+threads.length;threads.push({id,title:body.p_title,thread_type:'group',is_active:true});body.p_member_ids.forEach(user_id=>members.push({thread_id:id,user_id,member_role:user_id===actor.id?'owner':'member'}));data=id}
    if(endpoint==='chat_group_members')data=members.filter(m=>m.thread_id===body.p_thread_id);
    if(endpoint==='chat_manage_group'){threads.find(t=>t.id===body.p_thread_id).title=body.p_title;for(let i=members.length-1;i>=0;i--)if(members[i].thread_id===body.p_thread_id)members.splice(i,1);body.p_member_ids.forEach(user_id=>members.push({thread_id:body.p_thread_id,user_id,member_role:user_id===actor.id?'owner':'member'}))}
+   if(endpoint==='chat_set_group_avatar'){threads.find(t=>t.id===body.p_thread_id).avatar_path=body.p_avatar_path;data=null}
    if(endpoint==='chat_leave_group'){for(let i=members.length-1;i>=0;i--)if(members[i].thread_id===body.p_thread_id&&members[i].user_id===actor.id)members.splice(i,1)}
    if(endpoint==='chat_delete_thread')threads.find(t=>t.id===body.p_thread_id).is_active=false;
    if(endpoint==='chat_ensure_direct'||endpoint==='chat_ensure_task_direct'){data='direct-'+(body.p_task_id||'general')+'-'+body.p_other_user;if(!threads.some(t=>t.id===data))threads.push({id:data,title:'خصوصی',thread_type:'direct',is_active:true})}

@@ -41,6 +41,7 @@
     const backHost=managementBar||head;
     if(backHost.firstElementChild!==back)backHost.prepend(back);
     back.style.order='-100';
+    if(managementBar&&head.nextElementSibling!==managementBar)head.after(managementBar);
     view.querySelectorAll('.content-back').forEach(b=>{if(b!==back)b.remove()});
     view.querySelectorAll(':scope > .content-actions').forEach(b=>{if(!b.querySelector('button,a,input,select'))b.remove()});
     if(source){
@@ -57,7 +58,7 @@
       nativeHead.classList.toggle('bamco-control-row',!!hasActions);
     }
     [...view.children].forEach(child=>{
-      if(child!==head&&!child.matches('style,script,input,dialog,.content-actions'))child.classList.add('bamco-page-body');
+      if(child!==head&&!child.matches('style,script,input,dialog,.content-actions,.bamco-command-bar'))child.classList.add('bamco-page-body');
     });
     view.querySelectorAll(toolbarSelector).forEach(bar=>{
       if(!bar.closest('dialog,form,details'))bar.classList.add('bamco-command-bar');

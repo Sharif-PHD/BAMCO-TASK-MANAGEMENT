@@ -53,7 +53,8 @@ test('people can omit email and never enter an initial password',()=>{
   assert.doesNotMatch(js,/name="initial_password"/);
   assert.match(js,/ایمیل \(اختیاری\)/);
   assert.match(js,/messaging_enabled/);
-  assert.match(edge,/password:"123456"/);
+  assert.doesNotMatch(edge,/password:"123456"/);
+  assert.match(edge,/crypto.getRandomValues/);
   assert.match(edge,/internalEmail/);
 });
 

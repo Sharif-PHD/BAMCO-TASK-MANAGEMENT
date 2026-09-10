@@ -280,15 +280,13 @@
     form.addEventListener('submit',async e=>{
       e.preventDefault();e.stopImmediatePropagation();
       const p=q('#newPassword')?.value||'',c=q('#confirmPassword')?.value||'',error=q('#passwordError');if(error)error.textContent='';
-      if(p.length<8){if(error)error.textContent='رمز عبور باید حداقل ۸ کاراکتر باشد.';return}
+      if(p.length<12){if(error)error.textContent='رمز عبور باید حداقل ۱۲ کاراکتر باشد.';return}
       if(p!==c){if(error)error.textContent='تکرار رمز عبور یکسان نیست.';return}
       const wasRequired=passwordRequired(),submit=form.querySelector('button[type="submit"]');if(submit)submit.disabled=true;
       try{
-        await api('/auth/v1/user',{method:'PUT',body:{password:p}});
-        const saved=await update('profiles',`id=eq.${state.profile.id}`,{must_change_password:false,updated_at:new Date().toISOString()});
-        state.profile.must_change_password=false;if(saved?.[0])state.profile={...state.profile,...saved[0]};
+        await window.bamcoAuth.changePassword(p);
         form.reset();q('#passwordDialog')?.close();q('#cancelPasswordBtn')?.classList.remove('hidden');toast('رمز عبور با موفقیت تغییر کرد.');
-        if(wasRequired)setTimeout(showWelcomePage,40);
+        if(wasRequired){await refresh();setTimeout(showWelcomePage,40)}
       }catch(err){if(error)error.textContent=err?.message==='New password should be different from the old password.'?'رمز جدید باید با رمز قبلی متفاوت باشد.':(err?.message||'تغییر رمز عبور انجام نشد.')}
       finally{if(submit)submit.disabled=false}
     },true);
