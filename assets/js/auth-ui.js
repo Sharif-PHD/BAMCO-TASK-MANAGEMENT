@@ -11,7 +11,7 @@ const EYE_ICON=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5c5.2 0
 const EYE_OFF_ICON=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.3 2 18.7 18.7-1.3 1.3-3.4-3.4A11.8 11.8 0 0 1 12 20C6.8 20 2.7 15.4 1.5 13.9a1.4 1.4 0 0 1 0-1.8 20.5 20.5 0 0 1 4.1-4.2L2 3.3 3.3 2Zm3.8 7.4A18.5 18.5 0 0 0 3.5 13c1.1 1.6 4.5 5 8.5 5 1.3 0 2.6-.4 3.7-1l-1.8-1.8a4 4 0 0 1-5.1-5.1L7.1 9.4ZM12 6c5.2 0 9.3 4.6 10.5 6.1a1.4 1.4 0 0 1 0 1.8 18.2 18.2 0 0 1-2.2 2.4l-1.4-1.4a17.2 17.2 0 0 0 1.6-1.9c-1.1-1.6-4.5-5-8.5-5-.8 0-1.5.1-2.2.3L8.2 6.7A12 12 0 0 1 12 6Z"/></svg>`;
 const REFRESH_ICON=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 8a7 7 0 1 0 1 4h-2a5 5 0 1 1-1.45-3.54L14 11h7V4l-2 2v2Z" fill="currentColor"/></svg>`;
 const toLatinDigits=v=>String(v||'').replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d));
-const makeCode=()=>String(Math.floor(1000+Math.random()*9000));
+const makeCode=()=>String(1000+crypto.getRandomValues(new Uint32Array(1))[0]%9000);
 
 function injectCss(){
   if(q('#bamcoLoginSafetyCss'))return;
@@ -48,22 +48,6 @@ async function requestJson(path,{method='GET',body,auth=false,timeout=12000}={})
   finally{clearTimeout(timer)}
 }
 
-function exposeApp(profile){
-  state.profile=profile;
-  q('#userName').textContent=profile.display_name||profile.full_name||profile.email;
-  q('#userRole').textContent=isManager()?'مدیر سامانه':'متولی';
-  q('#avatar').textContent=(profile.display_name||profile.full_name||'ب').trim()[0];
-  window.refreshProfileAvatar?.();
-  q('#approvalsNav')?.classList.remove('hidden');
-  document.querySelectorAll('.manager-only').forEach(x=>x.classList.toggle('hidden',!isManager()));
-  if(q('#viewSubtitle'))q('#viewSubtitle').textContent=isManager()?'نمای کلی وظایف و عملکرد همه متولیان':'فقط وظایف و عملکرد مربوط به شما';
-  if(q('#kanbanScope'))q('#kanbanScope').textContent=isManager()?'نمای همه متولیان':'فقط وظایف شما';
-  if(q('#archiveScope'))q('#archiveScope').textContent=isManager()?'نمای همه متولیان':'فقط آرشیو شما';
-  if(window.matchMedia('(max-width:760px)').matches)q('#sidebar')?.classList.add('collapsed');
-  q('#loginView')?.classList.add('hidden');q('#appView')?.classList.remove('hidden');
-  if(profile.must_change_password){q('#cancelPasswordBtn')?.classList.add('hidden');q('#passwordDialog')?.showModal?.()}else showView('kanban');
-  setTimeout(()=>Promise.resolve(refresh()).catch(err=>{console.error('BAMCO background refresh failed',err);if(typeof toast==='function')toast(err?.message||'بارگذاری اطلاعات کامل نشد. دوباره تلاش کنید.',true)}),0);
-}
 
 function install(){
   injectCss();const logo=q('#loginView .brand-lockup img');if(logo)logo.src='assets/images/bamco-white.png';
@@ -90,13 +74,9 @@ function install(){
     form.dataset.busy='1';btn.disabled=true;btn.textContent='در حال ورود…';error.textContent='';verifyError.textContent='';
     try{
       const auth=await requestJson('/auth/v1/token?grant_type=password',{method:'POST',body:{email:q('#email').value.trim(),password:q('#password').value},timeout:12000});
-      state.token=auth.access_token;state.user=auth.user;
-      const profiles=await requestJson(`/rest/v1/profiles?id=eq.${encodeURIComponent(state.user.id)}&select=*`,{auth:true,timeout:12000});
-      if(!profiles?.length)throw new Error('پروفایل کاربر پیدا نشد.');
-      state.profile=profiles[0];
-      await window.bamcoPrepareWelcomeStickers?.();
-      exposeApp(profiles[0]);
-    }catch(err){state.token='';state.user=null;error.textContent=err?.message||'ورود انجام نشد. دوباره تلاش کنید.';renew(false)}
+      window.bamcoAuth.accept(auth);
+      await enterApp();
+    }catch(err){window.bamcoAuth?.clear();state.token='';state.user=null;error.textContent=err?.message||'ورود انجام نشد. دوباره تلاش کنید.';renew(false)}
     finally{form.dataset.busy='0';btn.disabled=false;btn.textContent='ورود به سامانه'}
   },true);
 }

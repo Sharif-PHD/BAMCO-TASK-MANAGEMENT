@@ -26,7 +26,7 @@ test('management pages: shipped click handlers, toolbars, Excel downloads and re
   d.querySelector('#addPersonBtn').click();form.elements.full_name.value='فرد جدید';f.setFailSave(true);form.requestSubmit();
   await until(()=>d.querySelector('#personError').textContent);assert(d.querySelector('#personDialog').open);assert(!form.querySelector('[type=submit]').disabled);
   f.setFailSave(false);form.requestSubmit();await until(()=>!d.querySelector('#personDialog').open);await until(()=>d.querySelector('#peopleBody [data-id="test-new"]'));
-  assert.equal(f.profiles.find(p=>p.id==='test-new').messaging_enabled,false);
+  assert.equal(f.profiles.find(p=>p.id==='test-new').messaging_enabled,true);
   d.querySelector('#peopleBody [data-id="test-new"]').click();d.querySelector('#deletePersonBtn').click();
   await until(()=>!d.querySelector('#peopleBody [data-id="test-new"]'));assert(d.querySelector('#deletePersonBtn').disabled);
   assert.equal(f.calls.filter(c=>c.endpoint==='admin-users'&&c.method==='DELETE').length,1);

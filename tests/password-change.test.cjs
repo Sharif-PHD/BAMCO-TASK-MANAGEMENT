@@ -9,7 +9,8 @@ async function run(failAuth=false,failProfile=false){
  let submit;const calls=[];const form={reset(){calls.push('reset')}};
  const elements={'#passwordForm':{addEventListener(_,cb){submit=cb}},'#newPassword':{value:'Changed-password-83!'},'#confirmPassword':{value:'Changed-password-83!'},'#passwordError':{textContent:''},'#passwordDialog':{close(){calls.push('close')}}};
  const state={profile:{id:'test',must_change_password:true}};
- vm.runInNewContext(handler,{$:s=>elements[s],state,Date,api:async()=>{calls.push('auth');if(failAuth)throw Error('auth failed')},update:async(_,__,data)=>{calls.push(data.must_change_password?'require':'clear');if(failProfile&&!data.must_change_password)throw Error('profile failed')},toast(){},showView(){calls.push('navigate')}});
+ const context={$:s=>elements[s],state,Date,window:{fetch:async()=>new Response('{}')},setTimeout,clearTimeout,api:async()=>{calls.push('auth');if(failAuth)throw Error('auth failed')},update:async(_,__,data)=>{calls.push(data.must_change_password?'require':'clear');if(failProfile&&!data.must_change_password)throw Error('profile failed')},toast(){},showView(){calls.push('navigate')}};
+ vm.createContext(context);vm.runInContext(fs.readFileSync(path.join(__dirname,'../assets/js/auth-session.js'),'utf8'),context);vm.runInContext(handler,context);
  const event={preventDefault(){},currentTarget:form};const pending=submit(event);event.currentTarget=null;await pending;return{calls,state,error:elements['#passwordError'].textContent};
 }
 test('password update succeeds before clearing mandatory change flag; form survives async event',async()=>{const r=await run();assert.deepEqual(r.calls,['auth','clear','reset','close','navigate']);assert.equal(r.state.profile.must_change_password,false)});
