@@ -119,6 +119,7 @@ $('#loginForm').addEventListener('submit',async e=>{e.preventDefault();$('#login
   finally{submit.disabled=false}
 });
 async function enterApp(){
+  void window.bamcoPrepareWelcomeStickers?.();
   const profiles=await select('profiles',`id=eq.${state.user.id}&select=*`);if(!profiles.length)throw new Error('پروفایل کاربر پیدا نشد.');state.profile=profiles[0];if(state.profile.active===false)throw Error('حساب کاربری غیرفعال است.');
   $('#userName').textContent=state.profile.display_name||state.profile.full_name||state.profile.email;$('#userRole').textContent=isManager()?'مدیر سامانه':'متولی';$('#avatar').textContent=(state.profile.display_name||state.profile.full_name||'ب').trim()[0];if(!state.profile.must_change_password)window.refreshProfileAvatar?.();
   $('#approvalsNav').classList.remove('hidden');$$('.manager-only').forEach(x=>x.classList.toggle('hidden',!isManager()));
