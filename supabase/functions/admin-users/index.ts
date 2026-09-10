@@ -3,6 +3,7 @@ const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,
 const normalizeEmail=(value:unknown)=>String(value||"").trim().toLowerCase();
 const temporaryPassword=()=>'A9!'+Array.from(crypto.getRandomValues(new Uint8Array(17)),n=>'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'[n%64]).join('');
 const internalEmail=()=>`person-${crypto.randomUUID()}@no-email.invalid`;
+const loginLabel=(email:string)=>email.endsWith('@no-email.invalid')?email.slice(0,-'@no-email.invalid'.length):email;
 const safeChannel=(value:unknown,hasEmail:boolean)=>hasEmail&&["portal","email","both"].includes(String(value))?String(value):"portal";
 
 Deno.serve(async(req)=>{
@@ -36,6 +37,30 @@ Deno.serve(async(req)=>{
       return json({ok:true,tasks_retained:result.tasks_retained||0,active_tasks:result.active_tasks||[],already_deleted:!!result.already_deleted,...(cleanup_warning?{cleanup_warning}:{})});
     }
     if(req.method!=="POST")return json({error:"روش درخواست مجاز نیست."},405);
+    if(b.action==='get_credentials'||b.action==='save_credentials'){
+      if(!b.user_id)return json({error:'فرد را انتخاب کنید.'},400);
+      const id=encodeURIComponent(b.user_id),headers={apikey:service,Authorization:`Bearer ${service}`};
+      const profileRes=await fetch(`${url}/rest/v1/profiles?id=eq.${id}&select=email,must_change_password`,{headers}),profiles=await profileRes.json(),profile=profiles?.[0];
+      if(!profileRes.ok||!profile)return json({error:'فرد پیدا نشد.'},404);
+      if(profile.email&&!String(profile.email).endsWith('@no-email.invalid'))return json({error:'این بخش برای حساب بدون ایمیل است.'},400);
+      const accountRes=await fetch(`${url}/auth/v1/admin/users/${id}`,{headers}),account=await accountRes.json();
+      if(!accountRes.ok||!account.id)return json({error:'اطلاعات ورود دریافت نشد.'},accountRes.ok?409:accountRes.status);
+      const current=loginLabel(normalizeEmail(account.email));
+      if(b.action==='get_credentials')return json({ok:true,id:account.id,login_name:current,credential_editable:true});
+      const login=normalizeEmail(b.login_name),password=String(b.temporary_password||'');
+      if(!login||(login!==current&&!/^[a-z0-9][a-z0-9._-]{2,63}$/.test(login)))return json({error:'نام کاربری باید ۳ تا ۶۴ کاراکتر و شامل حروف انگلیسی، عدد، نقطه یا خط تیره باشد.'},400);
+      if(password&&(password.length<12||/^(.)\1+$/.test(password)||/^(123456|password|qwerty)/i.test(password)))return json({error:'رمز موقت باید حداقل ۱۲ کاراکتر و غیرقابل حدس باشد.'},400);
+      const changes:Record<string,unknown>={};
+      if(login!==current){changes.email=login+'@no-email.invalid';changes.email_confirm=true}
+      if(password)changes.password=password;
+      const gate=password&&!profile.must_change_password;
+      if(gate){const saved=await saveProfile(account.id,{must_change_password:true},'تنظیم رمز موقت انجام نشد.');if(!saved.ok)return saved}
+      if(Object.keys(changes).length){
+        const changed=await fetch(`${url}/auth/v1/admin/users/${id}`,{method:'PUT',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify(changes)}),result=await changed.json().catch(()=>({}));
+        if(!changed.ok){if(gate)await saveProfile(account.id,{must_change_password:false},'بازگردانی تنظیم رمز انجام نشد.');return json({error:['email_exists','user_already_exists'].includes(result.code||result.error_code)?'این نام کاربری قبلاً استفاده شده است.':result.msg||result.message||'اطلاعات ورود ذخیره نشد.'},changed.status)}
+      }
+      return json({ok:true,id:account.id,login_name:login,credential_editable:true});
+    }
     if(!String(b.full_name||"").trim())return json({error:"نام فرد الزامی است."},400);
     const publicEmail=normalizeEmail(b.email)||null,hasEmail=!!publicEmail,role=b.role==="manager"?"manager":"owner",channel=safeChannel(b.default_message_channel,hasEmail);
     const profileBody:Record<string,unknown>={email:publicEmail,full_name:String(b.full_name).trim(),display_name:String(b.full_name).trim(),role,gender:b.gender||null,salutation:b.salutation||null,active:b.active!==false,messaging_enabled:true,default_message_channel:channel};
@@ -50,6 +75,6 @@ Deno.serve(async(req)=>{
     const authEmail=publicEmail||internalEmail(),initialPassword=temporaryPassword(),created=await fetch(`${url}/auth/v1/admin/users`,{method:"POST",headers:{apikey:service,Authorization:`Bearer ${service}`,"Content-Type":"application/json"},body:JSON.stringify({email:authEmail,password:initialPassword,email_confirm:true,user_metadata:{full_name:profileBody.full_name}})}),account=await created.json();if(!created.ok)return json({error:account.msg||account.message||"ساخت حساب انجام نشد."},created.status);
     const saved=await saveProfile(account.id,{...profileBody,must_change_password:true},"حساب ساخته شد اما اطلاعات فرد کامل ذخیره نشد.");
     if(!saved.ok)return saved;
-    return json({...await saved.json(),temporary_password:initialPassword,login_name:authEmail});
+    return json({...await saved.json(),temporary_password:initialPassword,login_name:hasEmail?authEmail:loginLabel(authEmail),credential_editable:!hasEmail});
   }catch(e){return json({error:e instanceof Error?e.message:"خطای ناشناخته"},500)}
 });
