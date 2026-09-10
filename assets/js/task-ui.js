@@ -252,7 +252,7 @@
       ensureWelcomeView();
       if(wasHidden){
         wasHidden=false;
-        setTimeout(()=>{if(!passwordRequired())showWelcomePage()},40);
+        if(!passwordRequired())showWelcomePage();
       }
     };
     new MutationObserver(sync).observe(app,{attributes:true,attributeFilter:['class']});
@@ -286,7 +286,7 @@
       try{
         await window.bamcoAuth.changePassword(p);
         form.reset();q('#passwordDialog')?.close();q('#cancelPasswordBtn')?.classList.remove('hidden');toast('رمز عبور با موفقیت تغییر کرد.');
-        if(wasRequired){await refresh();setTimeout(showWelcomePage,40)}
+        if(wasRequired){showWelcomePage();await refresh()}
       }catch(err){if(error)error.textContent=err?.message==='New password should be different from the old password.'?'رمز جدید باید با رمز قبلی متفاوت باشد.':(err?.message||'تغییر رمز عبور انجام نشد.')}
       finally{if(submit)submit.disabled=false}
     },true);
