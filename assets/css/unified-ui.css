@@ -483,3 +483,8 @@ html body #loginView .brand-lockup img{box-sizing:border-box!important;padding:1
 @media(max-width:620px){html body #appView#appView #stickersView.bamco-interior .sticker-selectors{width:100%!important;margin:4px 0 0!important}html body #appView#appView #stickersView.bamco-interior .sticker-selectors label{flex:1 1 200px!important}html body #appView#appView #stickersView.bamco-interior :is(#stickerSet,#stickerState){width:100%!important;min-width:0!important}}
 
 html body #appView#appView .bamco-interior .bamco-page-heading:has(+.bamco-command-bar){border-bottom:0!important}
+
+/* People tab: keep each credential label together above its own field. */
+html body #initialCredentials .credentials-field{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:7px!important;margin:14px 0!important;min-width:0!important}
+html body #initialCredentials .credentials-field label{display:block!important;text-align:right!important;text-align-last:right!important;white-space:nowrap!important;margin:0!important}
+html body #initialCredentials .credentials-field input{width:100%!important;min-width:0!important;box-sizing:border-box!important;text-align:left!important;direction:ltr!important}
