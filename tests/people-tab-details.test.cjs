@@ -25,5 +25,24 @@ test('people Excel writes explicit borders for every cell for selected and compl
 
 test('failed deletion is reported without removing the row or preventing another edit',async t=>{
  const f=await fixture(),{d}=f;t.after(()=>f.dispose());await f.open('people');await until(()=>d.querySelector('#peopleBody [data-id=test-owner]'));d.querySelector('#peopleBody [data-id=test-owner]').click();f.failures.add('admin-users');d.querySelector('#deletePersonBtn').click();await until(()=>f.calls.some(c=>c.endpoint==='ui-notice'&&c.body.includes('۰ حساب حذف شد')));assert(d.querySelector('#peopleBody [data-id=test-owner]'));
- f.failures.delete('admin-users');d.querySelector('#peopleBody [data-id=test-owner]').click();d.querySelector('#editPersonBtn').click();assert(d.querySelector('#personDialog').open);assert.deepEqual(f.errors,[]);
+ f.failures.delete('admin-users');assert.equal(d.querySelector('#peopleBody [data-id=test-owner]').getAttribute('aria-selected'),'true');d.querySelector('#editPersonBtn').click();assert(d.querySelector('#personDialog').open);assert.deepEqual(f.errors,[]);
+});
+
+test('delete refreshes the people list and retains active/archive tasks for individual Kanban transfer',async t=>{
+ const tasks=[{id:901,title:'کار فعال',description:'توضیح محفوظ',owner_id:'test-owner',status:'در حال انجام',priority:'متوسط',start_date:'2026-09-01',due_date:'2026-09-15',archived:false},{id:902,title:'کار آرشیوی',owner_id:'test-owner',status:'انجام شده',priority:'متوسط',start_date:'2026-08-01',due_date:'2026-08-10',done_date:'2026-08-10',archived:true}];
+ const f=await fixture({tables:{tasks},fetchResult:({endpoint,method,body})=>{if(endpoint==='admin-users'&&method==='DELETE'){for(const task of tasks)if(task.owner_id===body.user_id)Object.assign(task,{owner_id:null,former_owner_name:'متولی آزمایشی',owner_deleted_at:'2026-09-10T00:00:00Z'});return {ok:true,tasks_retained:2}}}}),{d}=f;t.after(()=>f.dispose());
+ await f.open('people');d.querySelector('#peopleBody [data-id=test-owner]').click();d.querySelector('#deletePersonBtn').click();d.querySelector('#deletePersonBtn').click();await until(()=>f.calls.some(c=>c.endpoint==='ui-notice'&&c.body.includes('۲ وظیفه حفظ شد')));assert(!d.querySelector('#peopleBody [data-id=test-owner]'));assert.equal(f.calls.filter(c=>c.endpoint==='admin-users'&&c.method==='DELETE').length,1);
+ await f.open('kanban');const row=d.querySelector('#kanbanBody [data-task-id="901"]');assert.match(row.textContent,/متولی آزمایشی.*نیازمند تعیین تکلیف/);row.click();d.querySelector('#kanbanEditBtn').click();const form=d.querySelector('#taskForm');form.elements.owner_id.value='test-manager';form.requestSubmit();await until(()=>!d.querySelector('#taskDialog').open);assert.equal(tasks[0].owner_id,'test-manager');assert.equal(tasks[0].due_date,'2026-09-15');assert.equal(tasks[1].owner_id,null);assert.equal(tasks[1].archived,true);
+ await f.open('archive');assert.match(d.querySelector('#archiveBody').textContent,/متولی آزمایشی.*حساب حذف شده/);assert.doesNotMatch(d.querySelector('#archiveBody').textContent,/نیازمند تعیین تکلیف/);assert.deepEqual(f.errors,[]);
+});
+
+test('historical chat messages retain the deleted sender name and body without an account profile',async t=>{
+ const f=await fixture(),{d}=f;t.after(()=>f.dispose());f.messages.push({id:901,thread_id:'test-room',sender_id:null,sender_name_snapshot:'همکار سابق <script>',body:'متن محفوظ سابقه',created_at:'2026-09-01T09:00:00Z'});
+ await f.open('groupChat');await until(()=>d.querySelector('.chat-sender'));assert.equal(d.querySelector('.chat-sender').textContent,'همکار سابق <script>');assert.equal(d.querySelector('.chat-body').textContent,'متن محفوظ سابقه');assert(!d.querySelector('.chat-sender script'));assert.deepEqual(f.errors,[]);
+});
+
+test('the surviving user can open a deleted contact conversation from the list, read history and cannot send',async t=>{
+ const thread={id:'old-direct',title:'سابقه',thread_type:'direct',is_active:false,deleted_participant_name:'همکار سابق',participant_deleted_at:'2026-09-10T00:00:00Z'};
+ const f=await fixture({fetchResult:({endpoint,url})=>endpoint==='chat_threads'&&url.searchParams.get('is_active')==='eq.false'?[thread]:undefined}),{d}=f;t.after(()=>f.dispose());f.members.push({thread_id:thread.id,user_id:'test-manager',member_role:'member'});f.messages.push({id:912,thread_id:thread.id,sender_id:null,sender_name_snapshot:'همکار سابق',body:'گفت‌وگوی محفوظ',created_at:'2026-09-01T09:00:00Z'});
+ await f.open('directMessages');await until(()=>d.querySelector('[data-thread="old-direct"]'));d.querySelector('[data-thread="old-direct"]').click();await until(()=>d.querySelector('.chat-body'));assert.equal(d.querySelector('.chat-sender').textContent,'همکار سابق');assert.equal(d.querySelector('.chat-body').textContent,'گفت‌وگوی محفوظ');assert(d.querySelector('.messenger-compose').hidden);assert(!d.querySelector('.message-reply'));d.querySelector('.messenger-compose textarea').value='نباید ارسال شود';d.querySelector('.messenger-compose').requestSubmit();assert(!f.calls.some(c=>c.endpoint==='chat_send_message'));assert.deepEqual(f.errors,[]);
 });

@@ -26,9 +26,14 @@ Deno.serve(async(req)=>{
     if(req.method==="DELETE"){
       if(!b.user_id)return json({error:"شناسه فرد ارسال نشده است."},400);
       if(b.user_id===user.id)return json({error:"مدیر نمی‌تواند حساب در حال استفاده خود را حذف کند."},400);
-      const deleted=await fetch(`${url}/auth/v1/admin/users/${encodeURIComponent(b.user_id)}`,{method:"DELETE",headers:{apikey:service,Authorization:`Bearer ${service}`}}),result=await deleted.json().catch(()=>({}));
-      if(!deleted.ok){const linked=String(result.msg||result.message||"").toLowerCase().includes("database");return json({error:linked?"این فرد سابقه مرتبط دارد؛ حساب را غیرفعال کنید.":result.msg||result.message||"حذف حساب انجام نشد."},deleted.status)}
-      return json({ok:true});
+      const deleted=await fetch(`${url}/rest/v1/rpc/delete_person_account`,{method:"POST",headers:{apikey:service,Authorization:`Bearer ${service}`,"Content-Type":"application/json"},body:JSON.stringify({p_user_id:b.user_id,p_actor_id:user.id})}),result=await deleted.json().catch(()=>({}));
+      if(!deleted.ok||result?.ok!==true)return json({error:result.message||result.error||"حذف حساب انجام نشد."},deleted.ok?409:deleted.status);
+      let cleanup_warning="";
+      if(result.avatar_paths?.length){
+        try{const cleanup=await fetch(`${url}/storage/v1/object/avatars`,{method:"DELETE",headers:{apikey:service,Authorization:`Bearer ${service}`,"Content-Type":"application/json"},body:JSON.stringify({prefixes:result.avatar_paths})});if(!cleanup.ok)cleanup_warning="حساب حذف شد؛ پاک‌سازی فایل عکس نیاز به تلاش مجدد دارد."}
+        catch{cleanup_warning="حساب حذف شد؛ پاک‌سازی فایل عکس نیاز به تلاش مجدد دارد."}
+      }
+      return json({ok:true,tasks_retained:result.tasks_retained||0,already_deleted:!!result.already_deleted,...(cleanup_warning?{cleanup_warning}:{})});
     }
     if(req.method!=="POST")return json({error:"روش درخواست مجاز نیست."},405);
     if(!String(b.full_name||"").trim())return json({error:"نام فرد الزامی است."},400);
