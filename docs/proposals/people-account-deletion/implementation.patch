@@ -1,0 +1,55 @@
+--- a/assets/js/app.js
++++ b/assets/js/app.js
+@@ -63,7 +63,7 @@
+ function toast(message,error=false){return window.bamcoNotice(message,{error})}
+ function safe(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+ function displayId(t){return t.legacy_id||t.id}
+-function ownerName(t){const p=state.profiles.find(x=>x.id===t.owner_id);return p?.full_name||p?.excel_name||t.legacy_owner_name||'—'}
++function ownerName(t){const p=state.profiles.find(x=>x.id===t.owner_id);return p?.full_name||p?.excel_name||(t.owner_deleted_at?(t.former_owner_name||'متولی قبلی')+' (حذف شده؛ نیازمند واگذاری)':t.legacy_owner_name)||'—'}
+ function languageClass(value){return /[\u0600-\u06ff]/.test(String(value??''))?'fa-text':'en-text'}
+ function cell(value,formatted=value){return `<td class="${languageClass(value)}">${safe(formatted??'')}</td>`}
+ const tableFilters={kanban:{},archive:{}};
+--- a/assets/js/shell.js
++++ b/assets/js/shell.js
+@@ -39,9 +39,18 @@
+     finally{submit.disabled=false}
+   }
+   function showInitialCredentials(result){let dialog=q('#initialCredentials');if(!dialog){dialog=document.createElement('dialog');dialog.id='initialCredentials';dialog.className='modal bamco-dialog';dialog.setAttribute('aria-labelledby','initialCredentialsTitle');document.body.append(dialog)}dialog.innerHTML=`<div class="modal-head"><h3 id="initialCredentialsTitle">حساب ساخته شد</h3></div><p>رمز موقت فقط همین‌بار نمایش داده می‌شود. آن را امن به کاربر تحویل دهید؛ کاربر در اولین ورود رمز خود را تغییر می‌دهد.</p><div class="credentials-field"><label for="initialLoginName"><span>نام کاربری</span></label><input id="initialLoginName" class="english" dir="ltr" readonly autocomplete="off" spellcheck="false" value="${esc(result.login_name)}"></div><div class="credentials-field"><label for="initialTemporaryPassword"><span>رمز عبور موقت</span></label><input id="initialTemporaryPassword" class="english" dir="ltr" readonly autocomplete="off" spellcheck="false" value="${esc(result.temporary_password)}"></div><div class="modal-actions"><button type="button" class="primary">ثبت کردم؛ بستن</button></div>`;q('button',dialog).onclick=()=>dialog.close();dialog.addEventListener('close',()=>dialog.replaceChildren(),{once:true});dialog.showModal()}
+-  async function removePerson(){const chosen=people.filter(p=>selected.has(p.id));if(!chosen.length)return toast('حداقل یک فرد را انتخاب کنید.',true);if(!await window.bamcoConfirm(`حساب ${chosen.length.toLocaleString('fa-IR')} فرد انتخاب‌شده حذف شود؟
+-${chosen.map(p=>p.full_name).join('، ')}
+-حساب‌های دارای سابقه ممکن است فقط قابل غیرفعال‌سازی باشند.`))return;const button=q('#deletePersonBtn');button.disabled=true;let removed=0,errors=[];for(const p of chosen){try{await edge({user_id:p.id},'DELETE');removed++}catch(err){errors.push(p.full_name+': '+err.message)}}window.bamcoSelection.clear('#peopleBody');await loadPeople();toast(`${removed.toLocaleString('fa-IR')} حساب حذف شد.`+(errors.length?'\n'+errors.join('\n'):''),!!errors.length)}
++  let deletingPeople=false;
++  async function removePerson(){
++    if(deletingPeople)return;const chosen=people.filter(p=>selected.has(p.id));if(!chosen.length)return toast('حداقل یک فرد را انتخاب کنید.',true);
++    deletingPeople=true;const button=q('#deletePersonBtn');button.disabled=true;
++    try{
++      if(!await window.bamcoConfirm(`حساب ${chosen.length.toLocaleString('fa-IR')} فرد انتخاب‌شده برای همیشه حذف شود؟\n${chosen.map(p=>p.full_name).join('، ')}\nحساب، نشست‌ها و دسترسی‌ها حذف می‌شوند. وظایف و تاریخ‌هایشان باقی می‌مانند؛ متولی جدید را در کانبان برای هر وظیفه جداگانه انتخاب کنید. درخواست‌های باز و پیام‌های در صف این حساب لغو می‌شوند.`))return;
++      let removed=0,retained=0;const errors=[],failed=[],warnings=[];
++      for(const p of chosen){try{const result=await edge({user_id:p.id},'DELETE');removed++;retained+=Number(result.tasks_retained||0);if(result.cleanup_warning)warnings.push(result.cleanup_warning)}catch(err){failed.push(p.id);errors.push(p.full_name+': '+err.message)}}
++      await refresh();await loadPeople();window.bamcoSelection.set('#peopleBody',failed);
++      toast(`${removed.toLocaleString('fa-IR')} حساب حذف شد.`+(retained?`\n${retained.toLocaleString('fa-IR')} وظیفه حفظ شد؛ واگذاری از کانبان انجام می‌شود.`:'')+(errors.length?'\n'+errors.join('\n'):'')+(warnings.length?'\n'+warnings.join('\n'):''),!!errors.length||!!warnings.length);
++    }catch(err){toast(err.message,true)}finally{deletingPeople=false;syncPersonSelection()}
++  }
+   let avatarUrl='',pendingBlob=null,pendingUrl='',cropImage=null,zoom=1,offX=0,offY=0,drag=false,last=null;
+   function paint(el,url=''){if(!el)return;el.textContent=(state.profile.display_name||state.profile.full_name||'ب').trim()[0];el.classList.toggle('has-image',!!url);el.style.backgroundImage=url?`url("${url}")`:''}
+   window.refreshProfileAvatar=async()=>{if(!state.profile)return;if(avatarUrl)URL.revokeObjectURL(avatarUrl);avatarUrl='';paint(q('#avatar'));paint(q('#profileAvatarPreview'));if(!state.profile.avatar_path)return;try{const path=state.profile.avatar_path.split('/').map(encodeURIComponent).join('/'),r=await fetch(`${SB_URL}/storage/v1/object/authenticated/avatars/${path}`,{headers:{apikey:SB_KEY,Authorization:`Bearer ${state.token}`},cache:'no-store'});if(!r.ok)throw new Error('دریافت عکس انجام نشد.');avatarUrl=URL.createObjectURL(await r.blob());paint(q('#avatar'),avatarUrl);paint(q('#profileAvatarPreview'),avatarUrl)}catch(err){toast(err.message,true)}};
+--- a/supabase/functions/admin-users/index.ts
++++ b/supabase/functions/admin-users/index.ts
+@@ -26,9 +26,14 @@
+     if(req.method==="DELETE"){
+       if(!b.user_id)return json({error:"شناسه فرد ارسال نشده است."},400);
+       if(b.user_id===user.id)return json({error:"مدیر نمی‌تواند حساب در حال استفاده خود را حذف کند."},400);
+-      const deleted=await fetch(`${url}/auth/v1/admin/users/${encodeURIComponent(b.user_id)}`,{method:"DELETE",headers:{apikey:service,Authorization:`Bearer ${service}`}}),result=await deleted.json().catch(()=>({}));
+-      if(!deleted.ok){const linked=String(result.msg||result.message||"").toLowerCase().includes("database");return json({error:linked?"این فرد سابقه مرتبط دارد؛ حساب را غیرفعال کنید.":result.msg||result.message||"حذف حساب انجام نشد."},deleted.status)}
+-      return json({ok:true});
++      const deleted=await fetch(`${url}/rest/v1/rpc/delete_person_account`,{method:"POST",headers:{apikey:service,Authorization:`Bearer ${service}`,"Content-Type":"application/json"},body:JSON.stringify({p_user_id:b.user_id,p_actor_id:user.id})}),result=await deleted.json().catch(()=>({}));
++      if(!deleted.ok||result?.ok!==true)return json({error:result.message||result.error||"حذف حساب انجام نشد."},deleted.ok?409:deleted.status);
++      let cleanup_warning="";
++      if(result.avatar_paths?.length){
++        try{const cleanup=await fetch(`${url}/storage/v1/object/avatars`,{method:"DELETE",headers:{apikey:service,Authorization:`Bearer ${service}`,"Content-Type":"application/json"},body:JSON.stringify({prefixes:result.avatar_paths})});if(!cleanup.ok)cleanup_warning="حساب حذف شد؛ پاک‌سازی فایل عکس نیاز به تلاش مجدد دارد."}
++        catch{cleanup_warning="حساب حذف شد؛ پاک‌سازی فایل عکس نیاز به تلاش مجدد دارد."}
++      }
++      return json({ok:true,tasks_retained:result.tasks_retained||0,already_deleted:!!result.already_deleted,...(cleanup_warning?{cleanup_warning}:{})});
+     }
+     if(req.method!=="POST")return json({error:"روش درخواست مجاز نیست."},405);
+     if(!String(b.full_name||"").trim())return json({error:"نام فرد الزامی است."},400);
