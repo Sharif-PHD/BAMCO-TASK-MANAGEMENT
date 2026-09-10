@@ -23,8 +23,9 @@
     list.innerHTML=threads.filter(t=>t.thread_type==='public'||mine.has(t.id)).map(t=>`<button type="button" class="conversation-item" data-thread="${esc(t.id)}" data-title="${esc(t.title)}" data-kind="${t.thread_type}" data-group-photo="${esc(t.avatar_path||'')}"><span class="conversation-avatar" data-thread-photo="${esc(t.id)}" aria-hidden="true">${t.thread_type==='public'?'◎':'♙'}</span><span><strong>${esc(t.title)}</strong><small>${t.thread_type==='public'?'عمومی · همه کاربران':'گروه · اعضای انتخاب‌شده'}</small></span><span class="conversation-arrow" aria-hidden="true">‹</span></button>`).join('')||'<div class="conversation-empty">هنوز عضو گروهی نیستید.</div>';
     bamcoMedia.groups(list,threads);const general=q('[data-kind=public]',list);if(general)await openThread(general,view);
    }else if(id==='directMessages'){
-    const people=(await directory()).filter(p=>p.id!==state.user.id);if(epoch!==serial)return;
-    list.innerHTML=people.map(personButton).join('')||'<div class="conversation-empty">مخاطبی در دسترس نیست.</div>';bamcoMedia.avatars(list,people);
+    const [directoryPeople,history,members]=await Promise.all([directory(),select('chat_threads','select=id,title,task_id,deleted_participant_name&thread_type=eq.direct&is_active=eq.false&participant_deleted_at=not.is.null&order=updated_at.desc'),select('chat_members',`select=thread_id&user_id=eq.${encodeURIComponent(state.user.id)}`)]);if(epoch!==serial)return;
+    const people=directoryPeople.filter(p=>p.id!==state.user.id),mine=new Set(members.map(m=>m.thread_id)),retained=history.filter(t=>mine.has(t.id));
+    list.innerHTML=people.map(personButton).join('')+retained.map(t=>`<button type="button" class="conversation-item" data-thread="${esc(t.id)}" data-title="${esc(t.deleted_participant_name||t.title)}" data-kind="direct" data-read-only="true"><span class="conversation-avatar" aria-hidden="true">${esc((t.deleted_participant_name||'ک')[0])}</span><span><strong>${esc(t.deleted_participant_name||t.title)}</strong><small>حساب حذف شده · سوابق گفت‌وگو${t.task_id?' · وظیفه '+esc(t.task_id):''}</small></span></button>`).join('')||'<div class="conversation-empty">مخاطبی در دسترس نیست.</div>';bamcoMedia.avatars(list,people);
    }else{
     const tasks=(state.tasks||[]).filter(t=>!t.archived);if(epoch!==serial)return;
     list.innerHTML=tasks.map(t=>`<button type="button" class="conversation-item conversation-task" data-task-choice="${t.id}"><span class="conversation-task-id">${esc(t.legacy_id||t.id)}</span><span><strong>${esc(t.title)}</strong><small>متولی: ${esc(ownerName(t))} · ${esc(t.status)}</small></span></button>`).join('')||'<div class="conversation-empty">وظیفه جاری وجود ندارد.</div>';
@@ -34,13 +35,13 @@
  async function openThread(button,view){
   const epoch=serial,host=q('.conversation-stage',view),id=button.dataset.thread,title=button.dataset.title,kind=button.dataset.kind;
   selectItem(button,q('.conversation-list',view));
-  const actions=[];
+  const readOnly=button.dataset.readOnly==='true',actions=[];
   if(kind==='group'){
    actions.push({label:isManager()?'مدیریت اعضا':'اعضای گروه',run:()=>groupDialog(id,title,!isManager(),button.dataset.groupPhoto||'')});
    actions.push({label:'خروج از گروه',run:async()=>{if(!await window.bamcoConfirm(`از گروه «${title}» خارج می‌شوید؟`))return;await rpc('chat_leave_group',{p_thread_id:id});if(epoch===serial)await render('groupChat')}});
   }
-  if(kind!=='public'&&isManager())actions.push(deleteAction(id,title,currentView));
-  await window.bamcoChat.mount(host,{id,title,groupPhoto:button.dataset.groupPhoto||'',subtitle:kind==='public'?'عمومی · همه کاربران':kind==='group'?'گروه · اعضای انتخاب‌شده':'خصوصی',actions});
+  if(!readOnly&&kind!=='public'&&isManager())actions.push(deleteAction(id,title,currentView));
+  await window.bamcoChat.mount(host,{id,title,readOnly,groupPhoto:button.dataset.groupPhoto||'',subtitle:readOnly?'حساب مخاطب حذف شده؛ سابقه گفت‌وگو':kind==='public'?'عمومی · همه کاربران':kind==='group'?'گروه · اعضای انتخاب‌شده':'خصوصی',actions});
  }
  function deleteAction(id,title,view){return{label:'حذف گفت‌وگو',danger:true,run:async()=>{if(!await window.bamcoConfirm(`گفت‌وگوی «${title}» حذف شود؟`))return;await rpc('chat_delete_thread',{p_thread_id:id});await render(view)}}}
  async function chooseTask(button,view){
