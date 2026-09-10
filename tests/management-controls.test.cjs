@@ -9,6 +9,25 @@ async function until(check){for(let i=0;i<100;i++){if(check())return;await pause
 
 const {fixture}=require('./helpers/app-fixture.cjs');
 
+test('people credential action edits an emailed user and the Excel export contains only safe account state',async t=>{
+ let f;f=await fixture({fetchResult:({endpoint,body})=>{
+  if(endpoint!=='admin-users'||!body.action)return;
+  const person=f.profiles.find(p=>p.id===body.user_id);
+  if(body.action==='save_credentials'){person.login_name=body.login_name;person.must_change_password=!!body.temporary_password}
+  return {ok:true,id:person.id,login_name:person.login_name||person.email,credential_editable:true};
+ }});t.after(()=>f.dispose());const {d,w}=f;
+ await f.open('people');const view=d.querySelector('#peopleView');
+ assert.deepEqual([...view.querySelectorAll('thead tr:first-child th')].map(x=>x.textContent),['نام متولی','نقش','جنسیت','پست الکترونیک سازمانی','نام کاربری','رمز عبور','عنوان خطاب','فعال']);
+ view.querySelector('[data-person-credentials="test-owner"]').click();await until(()=>d.querySelector('#initialCredentials')?.open);
+ const form=d.querySelector('#initialCredentials form');assert.equal(form.elements.login_name.value,'owner@example.test');assert.equal(form.elements.temporary_password.value,'');
+ form.elements.login_name.value='owner.updated';form.elements.temporary_password.value='Fixture-temporary9!';form.requestSubmit();
+ await until(()=>view.textContent.includes('owner.updated'));assert(view.textContent.includes('رمز موقت؛ نیازمند تغییر'));assert(!view.textContent.includes('Fixture-temporary9!'));
+ form.querySelector('[type=button]').click();assert.equal(d.querySelector('#initialCredentials').childElementCount,0);
+ w.bamcoSelection.clear('#peopleBody');view.querySelector('[data-management-export]').click();await until(()=>f.downloads.length);
+ const bytes=await f.downloads[0].blob.arrayBuffer(),book=w.XLSX.read(new Uint8Array(bytes),{type:'array'}),rows=w.XLSX.utils.sheet_to_json(book.Sheets[book.SheetNames[0]],{header:1});
+ assert(rows.flat().includes('owner.updated'));assert(rows.flat().includes('owner@example.test'));assert(!rows.flat().includes('Fixture-temporary9!'));assert.equal(rows[0].length,8);assert.deepEqual(f.errors,[]);
+});
+
 test('management pages: shipped click handlers, toolbars, Excel downloads and return navigation',async t=>{
  const f=await fixture(),{w,d}=f;t.after(()=>f.dispose());
  await t.test('people selection, add, edit, validation feedback, cancel and delete',async()=>{
