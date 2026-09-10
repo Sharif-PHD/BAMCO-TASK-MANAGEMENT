@@ -55,7 +55,7 @@ test('new accounts use the same manager profile-write context',async()=>{
 test('no-email users retain internal delivery and removing an email preserves their login',async()=>{
  const f=service(),r=await f.save({email:null,default_message_channel:'both'});assert.equal(r.status,200);assert.equal(f.stored.messaging_enabled,true);assert.equal(f.stored.default_message_channel,'portal');
  assert(!('email' in f.calls.find(c=>c.url.pathname==='/auth/v1/admin/users/person-id').body));
- const created=service(),a=await created.save({user_id:null,email:null});assert.equal(a.status,200);assert.match(a.body.login_name,/@no-email\.invalid$/);assert(a.body.temporary_password);assert.equal(created.stored.must_change_password,true);
+ const created=service(),a=await created.save({user_id:null,email:null});assert.equal(a.status,200);assert.equal(created.calls.find(c=>c.url.pathname==='/auth/v1/admin/users').body.email,a.body.login_name+'@no-email.invalid');assert.equal(a.body.credential_editable,true);assert(a.body.temporary_password);assert.equal(created.stored.must_change_password,true);
 });
 
 test('an empty profile update or database rejection cannot report successful saving',async()=>{

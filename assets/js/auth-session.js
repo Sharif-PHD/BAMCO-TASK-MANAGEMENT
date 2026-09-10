@@ -31,8 +31,18 @@
  };
  async function signOut(){
   if(ending)return;ending=true;
-  try{await window.bamcoSession?.end('logout').catch(()=>{});if(state.token)await transport(SB_URL+'/auth/v1/logout?scope=local',{method:'POST',headers:{apikey:SB_KEY,Authorization:'Bearer '+state.token}}).catch(()=>{})}
-  finally{clear();ending=false;showLogin()}
+  let auditError=null,logoutError=null;
+  try{
+   try{await window.bamcoSession?.end('logout')}catch(error){auditError=error}
+   if(state.token){
+    const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),10000);
+    try{const response=await transport(SB_URL+'/auth/v1/logout?scope=local',{method:'POST',headers:{apikey:SB_KEY,Authorization:'Bearer '+state.token},signal:controller.signal});if(!response.ok)throw Error('خروج در سرور تأیید نشد.')}
+    catch(error){logoutError=error}
+    finally{clearTimeout(timeout)}
+   }
+  }finally{clear();ending=false;showLogin()}
+  if(auditError&&logoutError)toast('خروج از این دستگاه انجام شد؛ به‌دلیل قطع ارتباط، ثبت پایان نشست در سرور تأیید نشد.',true);
+  else if(logoutError)toast('پایان نشست ثبت شد؛ ارتباط با سرویس خروج برقرار نشد.',true);
  }
  async function changePassword(password){
   if(password.length<12)throw Error('رمز عبور باید حداقل ۱۲ کاراکتر باشد.');

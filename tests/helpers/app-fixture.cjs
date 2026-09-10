@@ -64,7 +64,7 @@ async function fixture(options={}){
    if(endpoint==='chat_edit_message'){const m=messages.find(m=>m.id===body.p_message_id);m.body=body.p_body;m.edited_at=new Date().toISOString()}
    if(endpoint==='chat_delete_message')messages.find(m=>m.id===body.p_message_id).deleted_at=new Date().toISOString();
    if(url.pathname.includes('/storage/v1/object/')){if(method==='POST'){uploads.push({url:url.href,file:body});data={Key:url.pathname}}else if(method==='GET')return new Response('fixture attachment content',{headers:{'Content-Type':'application/octet-stream'}})}
-   if(endpoint==='session-audit')data={session:{id:'test-current-session'},valid:true};
+   if(endpoint==='session-audit')data=body.action==='start'?{ok:true,session:{id:'test-current-session'}}:{ok:true,ended:body.action==='end'};
    if(options.fetchResult){const result=await options.fetchResult({endpoint,method,body,url,data,tables});if(result!==undefined)data=result}
    return new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json'}});
   };
