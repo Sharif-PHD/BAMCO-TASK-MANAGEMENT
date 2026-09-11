@@ -100,7 +100,9 @@ function toggleRow(scope,id,shiftKey=false){
     const a=visible.indexOf(last),b=visible.indexOf(id),[from,to]=a<b?[a,b]:[b,a];
     for(let i=from;i<=to;i++)set.add(visible[i]);
   }else if(set.has(id))set.delete(id);else set.add(id);
-  lastPicked[scope]=id;decorate(scope,{prune:false});
+  lastPicked[scope]=id;
+  if(typeof state!=='undefined'&&state?.selected)state.selected[scope]=set.size===1?Number([...set][0]):null;
+  decorate(scope,{prune:false});
 }
 function optimisticResequence(tasks){
   const numbered=tasks.filter(t=>Number.isFinite(Number(t?.legacy_id))).sort((a,b)=>Number(a.legacy_id)-Number(b.legacy_id)||Number(a.id)-Number(b.id));
