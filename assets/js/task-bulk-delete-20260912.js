@@ -2,6 +2,7 @@
 'use strict';
 if(window.__bamcoTaskBulkDelete20260912V2)return;
 window.__bamcoTaskBulkDelete20260912V2=true;
+window.__bamcoTaskBulkDelete20260912V1=true;
 
 const q=(s,r=document)=>r?.querySelector?.(s)||null;
 const qa=(s,r=document)=>[...(r?.querySelectorAll?.(s)||[])];
