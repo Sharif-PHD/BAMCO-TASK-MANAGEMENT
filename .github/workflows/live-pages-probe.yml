@@ -7,25 +7,57 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - name: Probe deployed GitHub Pages
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe deployed GitHub Pages source
         shell: bash
         run: |
           set -uo pipefail
           BASE='https://nazanin-ghaemizadeh.github.io/BAMCO-TASK-MANAGEMENT/'
-          for i in 1 2 3 4 5 6; do
-            stamp="${GITHUB_SHA}-${i}-$(date +%s)"
-            html="$(curl -fsSL --retry 2 --connect-timeout 10 "${BASE}?probe=${stamp}" 2>/dev/null || true)"
-            echo "ATTEMPT=${i} BYTES=${#html}"
-            if grep -q 'systemMessageCardLayoutRootFix' <<<"$html"; then echo 'ROOT_FIX_PRESENT=1'; else echo 'ROOT_FIX_PRESENT=0'; fi
-            if grep -q 'message-title-layout-20260911-2' <<<"$html"; then echo 'MESSAGE_RENDERER_BUSTER_PRESENT=1'; else echo 'MESSAGE_RENDERER_BUSTER_PRESENT=0'; fi
-            if grep -q 'messaging-history-root-20260911.js?v=profile-counts-20260911-1' <<<"$html"; then echo 'HISTORY_SCRIPT_PRESENT=1'; else echo 'HISTORY_SCRIPT_PRESENT=0'; fi
-            if grep -q 'systemMessageCardLayoutRootFix' <<<"$html"; then break; fi
-            sleep 15
-          done
+          html="$(curl -fsSL --retry 2 --connect-timeout 10 "${BASE}?probe=${GITHUB_SHA}-$(date +%s)" 2>/dev/null || true)"
+          echo "HTML_BYTES=${#html}"
+          if grep -q 'systemMessageCardLayoutRootFix' <<<"$html"; then echo 'ROOT_FIX_PRESENT=1'; else echo 'ROOT_FIX_PRESENT=0'; fi
+          if grep -q 'message-title-layout-20260911-2' <<<"$html"; then echo 'MESSAGE_RENDERER_BUSTER_PRESENT=1'; else echo 'MESSAGE_RENDERER_BUSTER_PRESENT=0'; fi
           echo '--- RESPONSE HEADERS ---'
-          curl -sSIL --connect-timeout 10 "${BASE}?probe=${GITHUB_SHA}" | sed -n '1,40p'
-          echo '--- LIVE HISTORY SCRIPT SIGNATURE ---'
-          js="$(curl -fsSL --retry 2 --connect-timeout 10 "${BASE}assets/js/messaging-history-root-20260911.js?probe=${GITHUB_SHA}" 2>/dev/null || true)"
-          echo "JS_BYTES=${#js}"
-          if grep -q '.system-message-open-head{display:flex' <<<"$js"; then echo 'LIVE_PREVIEW_FLEX=1'; else echo 'LIVE_PREVIEW_FLEX=0'; fi
-          if grep -q 'function systemPreview(data,messageId)' <<<"$js"; then echo 'LIVE_SYSTEM_PREVIEW=1'; else echo 'LIVE_SYSTEM_PREVIEW=0'; fi
+          curl -sSIL --connect-timeout 10 "${BASE}?probe=${GITHUB_SHA}" | sed -n '1,30p'
+      - name: Install Chromium probe
+        run: |
+          python -m pip install playwright==1.57.0
+          python -m playwright install --with-deps chromium
+      - name: Render exact live system-card DOM
+        shell: bash
+        run: |
+          cat > /tmp/probe.py <<'PY'
+          import asyncio, json
+          from playwright.async_api import async_playwright
+          URL='https://nazanin-ghaemizadeh.github.io/BAMCO-TASK-MANAGEMENT/?live-card-probe=1'
+          async def main():
+            async with async_playwright() as p:
+              browser=await p.chromium.launch()
+              page=await browser.new_page(viewport={'width':732,'height':413})
+              await page.goto(URL, wait_until='networkidle')
+              await page.evaluate("""() => {
+                document.body.className='';
+                document.body.innerHTML=`<div style="padding:34px 84px;background:#edf4ef;min-height:100vh;box-sizing:border-box"><div class="chat-bubble bamco-system-message"><div class="chat-body"><button type="button" class="system-message-open"><span class="system-message-open-head"><span class="system-message-open-title">گزارش روزانه وضعیت امور | جمعه، ۲۰ شهریور ۱۴۰۵ | نیازمند توجه</span><span class="system-message-open-date">۱۴۰۵/۰۶/۲۰، ۲۱:۰۰</span></span><span class="system-message-open-meta">فرستنده: نازنین قائمی</span><span class="system-message-open-chips"><span class="system-message-chip warning">هشدار: ۲</span><span class="system-message-chip overdue">دیرکرد: ۱</span></span><span class="system-message-open-cta">مشاهده محتوای کامل <span>←</span></span></button></div></div></div>`;
+              }""")
+              data=await page.evaluate("""() => {
+                const box=s=>{const e=document.querySelector(s),r=e.getBoundingClientRect(),c=getComputedStyle(e);return {x:r.x,y:r.y,w:r.width,h:r.height,display:c.display,gridArea:c.gridArea,direction:c.direction,textAlign:c.textAlign,whiteSpace:c.whiteSpace}};
+                return {card:box('.system-message-open'),head:box('.system-message-open-head'),title:box('.system-message-open-title'),date:box('.system-message-open-date'),sender:box('.system-message-open-meta'),rootFix:!!document.querySelector('#systemMessageCardLayoutRootFix')};
+              }""")
+              print('LIVE_CHROMIUM_LAYOUT='+json.dumps(data,ensure_ascii=False))
+              title,date,sender=data['title'],data['date'],data['sender']
+              ok=(data['rootFix'] and data['card']['display']=='grid' and title['w'] > data['card']['w']*.85 and date['y'] > title['y'] and sender['y'] > title['y'] and date['x'] < sender['x'])
+              print('LIVE_CARD_LAYOUT_OK='+('1' if ok else '0'))
+              await page.screenshot(path='live-card.png',full_page=True)
+              await browser.close()
+              if not ok: raise SystemExit(1)
+          asyncio.run(main())
+          PY
+          python /tmp/probe.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: live-card-probe
+          path: live-card.png
+          retention-days: 2
