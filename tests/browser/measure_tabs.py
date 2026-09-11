@@ -39,18 +39,74 @@ async def open_measure(page,tab):
     stable['loading_visible']=await view.locator('.workspace-loading:visible').count()
     return stable
 
+async def assert_mobile_geometry(page):
+    geom=await page.evaluate('''()=>({
+      innerWidth:innerWidth,
+      bodyScroll:document.documentElement.scrollWidth,
+      workspace:document.querySelector('#appView .workspace')?.getBoundingClientRect().width||0,
+      nav:document.querySelector('#sidebar #nav')?.getBoundingClientRect().width||0
+    })''')
+    assert geom['bodyScroll'] <= geom['innerWidth'] + 2, f"page horizontal overflow: {geom}"
+    assert geom['workspace'] <= geom['innerWidth'] + 1 and geom['workspace'] >= geom['innerWidth'] - 4, f"workspace width mismatch: {geom}"
+    assert geom['nav'] <= geom['innerWidth'] + 1, f"mobile nav overflow: {geom}"
+
+async def assert_mobile_toolbar(page,tab):
+    view=page.locator('#'+tab+'View')
+    toolbar=view.locator('.task-toolbar,.vehicle-toolbar,.prod-toolbar,.people-actions,.manager-toolbar,.workspace-actions,.workspace-report-tools,.suite-toolbar,.message-center-simple-toolbar,.sent-controls').first
+    if not await toolbar.count() or not await toolbar.is_visible(): return
+    data=await toolbar.evaluate('''n=>{const r=n.getBoundingClientRect(),s=getComputedStyle(n);return {w:r.width,sw:n.scrollWidth,h:r.height,wrap:s.flexWrap,overflowX:s.overflowX,children:[...n.children].filter(x=>getComputedStyle(x).display!=='none').map(x=>{const b=x.getBoundingClientRect();return {w:b.width,h:b.height}})}}''')
+    assert data['w'] <= 390.5, f'{tab} toolbar wider than viewport: {data}'
+    assert data['wrap']=='nowrap', f'{tab} toolbar wraps on mobile: {data}'
+    assert data['overflowX'] in ('auto','scroll'), f'{tab} toolbar cannot scroll horizontally: {data}'
+    assert data['h'] < 70, f'{tab} toolbar became multi-row/tall: {data}'
+
+async def assert_dashboard_mobile(page):
+    await home(page);await page.locator('#nav button[data-view="dashboard"]').click(force=True);await settled(page,'dashboard')
+    data=await page.evaluate('''()=>{
+      const v=document.querySelector('#dashboardView'),root=v.querySelector('.desktop-dashboard-exact'),cards=v.querySelector('#dashboardCards');
+      const rr=root.getBoundingClientRect(),cr=cards.getBoundingClientRect();
+      const chart=[...v.querySelectorAll('.dashboard-chart-card')].map(x=>x.getBoundingClientRect().width);
+      return {root:rr.width,cards:cr.width,columns:getComputedStyle(root).gridTemplateColumns,cardColumns:getComputedStyle(cards).gridTemplateColumns,chart,innerWidth};
+    }''')
+    assert data['root'] <= data['innerWidth'] + 1, data
+    assert data['cards'] <= data['innerWidth'] + 1, data
+    assert all(w <= data['innerWidth'] + 1 for w in data['chart']), data
+    assert len(data['columns'].split()) == 1, f"dashboard is not one column: {data}"
+
+async def assert_automated_message_route(page):
+    await home(page);await page.locator('#nav button[data-view="directMessages"]').click(force=True);await settled(page,'directMessages')
+    system=page.locator('#directMessagesView [data-kind="system"]').first
+    await expect(system).to_be_visible();await system.click()
+    link=page.locator('#directMessagesView [data-bamco-task-id]').first
+    await expect(link).to_be_visible();task_id=await link.get_attribute('data-bamco-task-id');assert task_id
+    await link.click(force=True)
+    await expect(page.locator('#kanbanView')).to_be_visible()
+    row=page.locator(f'#kanbanBody tr[data-task-id="{task_id}"]')
+    await expect(row).to_be_visible();await expect(row).to_have_class(__import__('re').compile(r'task-selected|suite-selected'))
+    assert await row.evaluate('''n=>{const r=n.getBoundingClientRect();return r.bottom>0&&r.top<innerHeight}'''), 'target task not scrolled into viewport'
+
 async def one_case(browser,base,width,role):
     mobile=width<700
     ctx=await browser.new_context(viewport={'width':width,'height':844 if mobile else 900},is_mobile=mobile,has_touch=mobile)
     page=await ctx.new_page();page.set_default_timeout(10000);errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
     await page.add_init_script(FIXTURE);await page.goto(base,wait_until='load',timeout=15000);await login(page,role)
+    if mobile: await assert_mobile_geometry(page)
     views=await page.locator('#nav button[data-view]').evaluate_all("(els,role)=>els.filter(b=>!b.disabled&&(role==='manager'||!b.classList.contains('manager-only'))).map(b=>b.dataset.view)",role)
     metrics={};seen=[]
     for tab in views:
       if tab in seen or not await page.locator('#'+tab+'View').count(): continue
       seen.append(tab)
-      try: metrics[tab]=await open_measure(page,tab)
+      try:
+        metrics[tab]=await open_measure(page,tab)
+        if mobile:
+          await assert_mobile_geometry(page)
+          await assert_mobile_toolbar(page,tab)
       except Exception as exc: metrics[tab]={'error':str(exc)}
+    if mobile:
+      try: await assert_dashboard_mobile(page);metrics['_dashboard_mobile']={'passed':True}
+      except Exception as exc: metrics['_dashboard_mobile']={'error':str(exc)}
+      try: await assert_automated_message_route(page);metrics['_automated_message_route']={'passed':True}
+      except Exception as exc: metrics['_automated_message_route']={'error':str(exc)}
     result={'width':width,'role':role,'tabs':metrics,'javascript_errors':errors}
     await ctx.close();return result
 
@@ -70,5 +126,7 @@ async def main():
     flat.sort(key=lambda x:x.get('settle_ms',0),reverse=True)
     print('TAB_METRICS='+json.dumps(flat,ensure_ascii=False))
     assert not any(case['javascript_errors'] for case in results),results
+    failures=[x for x in flat if 'error' in x]
+    assert not failures, failures
 
 if __name__=='__main__': asyncio.run(main())
