@@ -99,7 +99,7 @@ window.__bamcoStableStickerInstalled=true;
       const task=state.tasks.find(t=>String(t.id)===String(id));
       if(!task||!await window.bamcoConfirm(`وظیفه «${task.title}» برای همیشه حذف شود؟`))return;
       try{
-        await rpc('delete_task_and_resequence',{p_task_id:Number(id)});
+        await rpc('delete_tasks_and_resequence',{p_task_ids:[Number(id)]});
         state.selected.kanban=null;state.selected.archive=null;
         await refresh();toast('وظیفه حذف شد و شماره‌ها در کانبان و آرشیو بازشماری شدند.');
       }catch(err){toast(err.message,true)}

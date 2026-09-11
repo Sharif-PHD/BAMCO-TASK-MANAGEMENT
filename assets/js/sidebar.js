@@ -64,7 +64,7 @@
       closeAllGroups(group);
       group.classList.toggle('open',willOpen);
       toggle.setAttribute('aria-expanded',willOpen?'true':'false');
-      if(willOpen)requestAnimationFrame(()=>positionDropdown(group));
+      if(willOpen)positionDropdown(group);
     });
     items.addEventListener('click',e=>{const btn=e.target.closest('button[data-view]');if(btn){group.classList.remove('open');toggle.setAttribute('aria-expanded','false')}});
     return group;

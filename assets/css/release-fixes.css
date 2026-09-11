@@ -71,7 +71,7 @@ body #taskTimelineView .tt-gantt-head>div:nth-child(1),body #taskTimelineView .t
 body #taskTimelineView .tt-gantt-head>div:nth-child(2),body #taskTimelineView .tt-gantt-row>div:nth-child(2){right:70px!important;box-shadow:-3px 0 6px #1a493212!important}
 
 /* Approved login: one centered card, visible brand, stable verification row. */
-html body #loginView.login-shell{display:grid!important;place-items:center!important;min-height:100dvh!important;padding:18px!important;background:radial-gradient(circle at 50% 0,#e5f1ec 0,#f5f9f7 58%,#edf4f1 100%)!important}
+html body:not(.department-pending) #loginView.login-shell{display:grid!important;place-items:center!important;min-height:100dvh!important;padding:18px!important;background:radial-gradient(circle at 50% 0,#e5f1ec 0,#f5f9f7 58%,#edf4f1 100%)!important}
 html body #loginView.hidden{display:none!important}
 /* Use the tightly cropped artwork so transparent image margins do not inflate the header.
    Let short screens scroll the page; the card itself expands to fit every control. */

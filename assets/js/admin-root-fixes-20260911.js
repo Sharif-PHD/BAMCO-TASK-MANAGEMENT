@@ -12,23 +12,11 @@ function removeTemplateHelp(){
  const btn=q('#openDesktopTemplateEditor',view);if(btn){if(btn.type!=='button')btn.type='button';if(btn.textContent!=='ویرایش متن')btn.textContent='ویرایش متن'}
 }
 function normalizeRequestExport(){const b=q('#requestReportView [data-report-export]');if(b&&b.textContent!=='خروجی اکسل')b.textContent='خروجی اکسل'}
-function installTemplateGuard(){
- document.addEventListener('click',e=>{
-  const nav=e.target.closest('#nav [data-view="templates"]');
-  if(nav){setTimeout(()=>{window.bamcoTemplateEditor?.install?.();removeTemplateHelp()},0);setTimeout(removeTemplateHelp,100);return}
-  const btn=e.target.closest('#templatesView #openDesktopTemplateEditor');
-  if(!btn)return;
-  e.preventDefault();e.stopImmediatePropagation();
-  if(window.bamcoTemplateEditor?.open){window.bamcoTemplateEditor.open();return}
-  let tries=0;const timer=setInterval(()=>{if(window.bamcoTemplateEditor?.open){clearInterval(timer);window.bamcoTemplateEditor.open()}else if(++tries>25){clearInterval(timer);if(typeof toast==='function')toast('ویرایشگر متن هنوز آماده نشده است؛ صفحه را تازه‌سازی کنید.',true)}},80);
- },true);
- const view=q('#templatesView');if(view&&!view.dataset.rootTemplateWatch){view.dataset.rootTemplateWatch='1';new MutationObserver(removeTemplateHelp).observe(view,{childList:true,subtree:true})}
-}
 function installRequestGuard(){
  normalizeRequestExport();
  const view=q('#requestReportView');if(view&&!view.dataset.rootRequestWatch){view.dataset.rootRequestWatch='1';new MutationObserver(normalizeRequestExport).observe(view,{childList:true,subtree:true,characterData:true})}
  document.addEventListener('click',e=>{if(e.target.closest('#nav [data-view="requestReport"]'))setTimeout(normalizeRequestExport,40)},true)
 }
-function boot(){installTemplateGuard();installRequestGuard();removeTemplateHelp();normalizeRequestExport()}
+function boot(){installRequestGuard();removeTemplateHelp();normalizeRequestExport()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();

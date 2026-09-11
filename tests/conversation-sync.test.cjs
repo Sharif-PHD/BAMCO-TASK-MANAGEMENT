@@ -19,7 +19,7 @@ test('owner tasks, Persian IDs, system sender identity and notification-to-threa
  const thread=f.threads.find(x=>x.thread_type==='direct');thread.system_recipient_id='test-owner';thread.title='پیام‌های سامانه';
  f.messages.push({id:11,thread_id:thread.id,sender_id:null,is_system:true,message_kind:'daily',body:'گزارش خودکار',created_at:new Date().toISOString()});
  f.tables.notifications.push({id:91,user_id:'test-owner',notification_type:'daily',title:'گزارش وضعیت امور روزانه',body:'گزارش خودکار',entity_type:'chat_thread',entity_id:thread.id,created_at:new Date().toISOString(),read_at:null});
- await w.bamcoInbox.load();assert.equal(d.querySelector('#messageBadge').textContent,'۱');await f.open('messages');await until(()=>d.querySelector('[data-notification="91"]'));
+ await w.bamcoInbox.load();assert.equal(d.querySelector('#messageBadge').textContent,'۱');assert.equal(d.querySelector('[data-group="conversations"] .conversation-nav-count').textContent,'۱');await f.open('messages');await until(()=>d.querySelector('[data-notification="91"]'));
  assert.match(d.querySelector('[data-notification="91"]').textContent,/گزارش وضعیت امور روزانه/);d.querySelector('[data-notification="91"]').click();
  await until(()=>!d.querySelector('#directMessagesView').classList.contains('hidden')&&d.querySelector('#directMessagesView .chat-sender')?.textContent==='سامانه');assert(f.tables.notifications[0].read_at);assert.equal(d.querySelector('#messageBadge').textContent,'');assert.deepEqual(f.errors,[]);
 });

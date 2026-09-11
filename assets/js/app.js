@@ -251,9 +251,9 @@ $('#taskForm').addEventListener('submit',async e=>{
     }else if(state.resubmitting){
       await rpc('resubmit_change_request',{p_request_id:state.resubmitting.id,p_proposed_data:data});
     }else if(isManager()){
-      if(state.editing?._restoring){data.archived=false;data.archived_at=null}
       if(completing){data.archived=true;data.archived_at=new Date().toISOString()}
-      if(state.editing)await update('tasks',`id=eq.${state.editing.id}`,data);
+      if(state.editing?._restoring){await update('tasks',`id=eq.${state.editing.id}`,{...data,archived:true,archived_at:state.editing.archived_at||new Date().toISOString()});await rpc('restore_tasks_to_kanban_and_resequence',{p_task_ids:[Number(state.editing.id)]})}
+      else if(state.editing)await update('tasks',`id=eq.${state.editing.id}`,data);
       else await insert('tasks',{...data,created_by:state.profile.id});
     }else{
       if(completing&&state.editing){
@@ -270,8 +270,8 @@ $('#taskForm').addEventListener('submit',async e=>{
 });
 window.archiveTask=async id=>{const task=state.tasks.find(t=>String(t.id)===String(id));if(!task)return;const rule=window.bamcoOptions.status(task),preserve=!!rule?.archivable&&!window.bamcoOptions.completed(task),message=preserve?`وظیفه «${task.title}» با وضعیت «${task.status}» به آرشیو منتقل شود؟`:`وظیفه «${task.title}» تکمیل و آرشیو شود؟`;if(!await window.bamcoConfirm(message))return;try{const data={archived:true,archived_at:new Date().toISOString(),...(preserve?{}:{status:window.bamcoOptions.label('status','done'),done_date:task.done_date||new Date().toISOString().slice(0,10)})};if(isManager())await update('tasks',`id=eq.${id}`,data);else await rpc('submit_change_request',{p_request_type:preserve?'update':'complete',p_task_id:Number(id),p_proposed_data:preserve?{...data,status:task.status}:{done_date:data.done_date},p_note:null});toast(isManager()?'وظیفه به آرشیو منتقل شد.':'درخواست برای تأیید مدیر ارسال شد.');await refresh()}catch(error){toast(error.message,true)}};
 
-window.deleteTask=async id=>{const task=state.tasks.find(t=>String(t.id)===String(id));if(!task)return;const prompt=isManager()?`وظیفه «${task.title}» برای همیشه حذف شود؟`:`درخواست حذف وظیفه «${task.title}» برای مدیر ارسال شود؟`;if(!await window.bamcoConfirm(prompt))return;try{if(isManager()){await rpc('delete_task_and_resequence',{p_task_id:Number(id)});toast('وظیفه حذف و شناسه‌های نمایشی بازشماری شد.')}else{await rpc('submit_change_request',{p_request_type:'delete',p_task_id:Number(id),p_proposed_data:{},p_note:null});toast('درخواست حذف برای مدیر ارسال شد.')}await refresh()}catch(err){toast(err.message,true)}};
-async function restoreTask(id){if(!isManager())return;const task=state.tasks.find(t=>String(t.id)===String(id));if(!task||!await window.bamcoConfirm(`وظیفه «${task.title}» به کانبان بازگردانده شود؟`))return;if(!task.owner_id||!task.start_date||!task.due_date){openTask({...task,status:window.bamcoOptions.label('status','doing'),done_date:null,_restoring:true});$('#taskDialogHint').textContent='برای بازگشت به کانبان، متولی و تاریخ شروع و پایان را کامل کنید.';return}try{await update('tasks',`id=eq.${id}`,{archived:false,archived_at:null,status:window.bamcoOptions.label('status','doing'),done_date:null});state.selected.archive=null;toast('وظیفه به کانبان بازگردانده شد.');await refresh()}catch(err){toast(err.message,true)}}
+window.deleteTask=async id=>{const task=state.tasks.find(t=>String(t.id)===String(id));if(!task)return;const prompt=isManager()?`وظیفه «${task.title}» برای همیشه حذف شود؟`:`درخواست حذف وظیفه «${task.title}» برای مدیر ارسال شود؟`;if(!await window.bamcoConfirm(prompt))return;try{if(isManager()){await rpc('delete_tasks_and_resequence',{p_task_ids:[Number(id)]});toast('وظیفه حذف و شناسه‌های نمایشی بازشماری شد.')}else{await rpc('submit_change_request',{p_request_type:'delete',p_task_id:Number(id),p_proposed_data:{},p_note:null});toast('درخواست حذف برای مدیر ارسال شد.')}await refresh()}catch(err){toast(err.message,true)}};
+async function restoreTask(id){if(!isManager())return;const task=state.tasks.find(t=>String(t.id)===String(id));if(!task||!await window.bamcoConfirm(`وظیفه «${task.title}» به کانبان بازگردانده شود؟`))return;if(!task.owner_id||!task.start_date||!task.due_date){openTask({...task,status:window.bamcoOptions.label('status','doing'),done_date:null,_restoring:true});$('#taskDialogHint').textContent='برای بازگشت به کانبان، متولی و تاریخ شروع و پایان را کامل کنید.';return}try{await rpc('restore_tasks_to_kanban_and_resequence',{p_task_ids:[Number(id)]});state.selected.archive=null;toast('وظیفه به کانبان بازگردانده و شماره‌ها بازشماری شد.');await refresh()}catch(err){toast(err.message,true)}}
 $('#kanbanEditBtn').addEventListener('click',()=>{const t=selectedTask('kanban');if(t)openTask(t)});$('#archiveEditBtn').addEventListener('click',()=>{const t=selectedTask('archive');if(t)openTask(t)});
 $('#kanbanArchiveBtn').addEventListener('click',()=>{const t=selectedTask('kanban');if(t)archiveTask(t.id)});$('#archiveRestoreBtn').addEventListener('click',()=>{const t=selectedTask('archive');if(t)restoreTask(t.id)});
 $('#kanbanDeleteBtn').addEventListener('click',()=>{const t=selectedTask('kanban');if(t)deleteTask(t.id)});$('#archiveDeleteBtn').addEventListener('click',()=>{const t=selectedTask('archive');if(t)deleteTask(t.id)});
@@ -673,7 +673,6 @@ showLogin();
   const latestArchived={kanban:false,archive:true};
   const optionCache={kanban:new Map(),archive:new Map()};
   let valueCache=new WeakMap();
-  let idleToken=0;
   let archivePage=1;
   let archivePageSize=50;
   let archiveQuerySignature='';
@@ -681,7 +680,7 @@ showLogin();
   function resetRenderCaches(){
     rendered.kanban=false;rendered.archive=false;rendered.dashboard=false;
     optionCache.kanban.clear();optionCache.archive.clear();
-    valueCache=new WeakMap();idleToken++;
+    valueCache=new WeakMap();
   }
 
   if(typeof jalaliText==='function'&&!jalaliText.__bamcoCached){
@@ -726,19 +725,6 @@ showLogin();
     selectEl.dataset.bamcoPopulated=String(dataVersion);
   }
 
-  function scheduleCommonFilterWarmup(scope){
-    const token=idleToken;
-    const work=()=>{
-      if(token!==idleToken)return;
-      const tr=qs(`#${scope}View .column-filters`);if(!tr)return;
-      for(const index of [0,3,4,5,9,11]){
-        const selectEl=tr.children[index]?.querySelector('select');
-        if(selectEl)populateFilter(selectEl,scope,index);
-      }
-    };
-    if('requestIdleCallback'in window)requestIdleCallback(work,{timeout:1200});else setTimeout(work,250);
-  }
-
   updateColumnFilters=function(scope,rows,archived){
     latestRows[scope]=rows;latestArchived[scope]=archived;
     const table=qs(`#${scope}View table`);if(table)normalizeHeaderRows(table);
@@ -757,15 +743,8 @@ showLogin();
       selectEl.value=current;
       selectEl.className=languageClass(current);
       selectEl.disabled=false;
-      if(selectEl.dataset.bamcoLazyBound!=='1'){
-        selectEl.dataset.bamcoLazyBound='1';
-        const warm=()=>populateFilter(selectEl,scope,index);
-        selectEl.addEventListener('pointerenter',warm,{passive:true});
-        selectEl.addEventListener('focus',warm,{passive:true});
-        selectEl.addEventListener('pointerdown',warm,{passive:true});
-      }
+      populateFilter(selectEl,scope,index);
     });
-    scheduleCommonFilterWarmup(scope);
   };
 
   renderTasks=function(archived){
