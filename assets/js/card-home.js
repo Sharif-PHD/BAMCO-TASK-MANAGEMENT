@@ -69,7 +69,12 @@ function install(){
  }
  function stickers(force=false){if(welcomeStickerReady&&!force)return Promise.resolve();if(!welcomeStickerPromise||force)welcomeStickerPromise=loadWelcomeStickers().finally(()=>{welcomeStickerPromise=null});return welcomeStickerPromise}
  window.bamcoPrepareWelcomeStickers=()=>stickers();stickers();window.addEventListener('bamco-stickers-ready',()=>stickers(true));
- let homeExpected=false,repairFrame=0;
+ let homeExpected=false,repairFrame=0,homeEpoch=0,homeTimers=[];
+ function clearHomeTimers(){homeTimers.forEach(clearTimeout);homeTimers=[]}
+ function leaveHome(){
+  homeExpected=false;homeEpoch++;clearHomeTimers();
+  if(repairFrame){cancelAnimationFrame(repairFrame);repairFrame=0}
+ }
  function resetHomeScroll(){
   try{window.scrollTo({top:0,left:0,behavior:'auto'})}catch{window.scrollTo(0,0)}
   for(const node of [document.documentElement,document.body,app,workspace,home])if(node&&node.scrollTop)node.scrollTop=0;
@@ -97,11 +102,15 @@ function install(){
  }
  function scheduleHomeRepair(){
   if(repairFrame||!homeBroken())return;
-  repairFrame=requestAnimationFrame(()=>{repairFrame=0;if(homeBroken())showHome()});
+  const epoch=homeEpoch;
+  repairFrame=requestAnimationFrame(()=>{repairFrame=0;if(epoch===homeEpoch&&homeBroken())showHome()});
  }
  function settleHome(){
-  showHome();
-  [0,40,120,300,700,1400].forEach(ms=>setTimeout(()=>{if(homeExpected&&!dialog.open&&!app.classList.contains('hidden'))showHome()},ms));
+  clearHomeTimers();homeExpected=true;const epoch=++homeEpoch;showHome();
+  homeTimers=[0,40,120,300,700,1400].map(ms=>setTimeout(()=>{
+   if(epoch!==homeEpoch||!homeExpected||dialog.open||app.classList.contains('hidden'))return;
+   showHome();
+  },ms));
  }
  function syncMode(){const loggedIn=!app.classList.contains('hidden'),atHome=!home.classList.contains('hidden');document.body.classList.toggle('card-home-active',loggedIn&&atHome);document.body.classList.toggle('content-only',loggedIn&&!atHome);if(homeExpected&&!dialog.open)scheduleHomeRepair()}
  const repairObserver=new MutationObserver(scheduleHomeRepair);
@@ -111,15 +120,16 @@ function install(){
  repairObserver.observe(top,{attributes:true,attributeFilter:['class','style','hidden']});
  repairObserver.observe(document.body,{attributes:true,attributeFilter:['class']});
  new MutationObserver(syncMode).observe(home,{attributes:true,attributeFilter:['class']});
- nav.addEventListener('click',e=>{if(e.target.closest('button[data-view]'))homeExpected=false},true);
+ nav.addEventListener('click',e=>{if(e.target.closest('button[data-view]'))leaveHome()},true);
+ window.bamcoLeaveHome=leaveHome;
  window.bamcoShowHome=settleHome;
  let welcomed=false;
- window.bamcoOpenHomeWelcome=()=>{if(welcomed||app.classList.contains('hidden'))return;if(typeof state!=='undefined'&&state.profile?.must_change_password)return;welcomed=true;showHome();dialog.querySelector('.welcome-person').textContent=(q('#userName')?.textContent||'همکار')+' عزیز';dialog.showModal();void stickers()};
+ window.bamcoOpenHomeWelcome=()=>{if(welcomed||app.classList.contains('hidden'))return;if(typeof state!=='undefined'&&state.profile?.must_change_password)return;welcomed=true;clearHomeTimers();homeExpected=true;homeEpoch++;showHome();dialog.querySelector('.welcome-person').textContent=(q('#userName')?.textContent||'همکار')+' عزیز';dialog.showModal();void stickers()};
  dialog.querySelector('.welcome-dismiss').addEventListener('click',()=>dialog.close());
  dialog.addEventListener('close',()=>{settleHome();requestAnimationFrame(()=>home.focus({preventScroll:true}))});
  dialog.addEventListener('cancel',()=>{homeExpected=true;requestAnimationFrame(settleHome)});
  top.querySelector('.home-return').addEventListener('click',()=>{settleHome();home.focus({preventScroll:true})});
- new MutationObserver(()=>{if(app.classList.contains('hidden')){homeExpected=false;welcomed=false;if(dialog.open)dialog.close();document.body.classList.remove('card-home-active','content-only')}else if(homeExpected&&!dialog.open)scheduleHomeRepair()}).observe(app,{attributes:true,attributeFilter:['class']});
+ new MutationObserver(()=>{if(app.classList.contains('hidden')){leaveHome();welcomed=false;if(dialog.open)dialog.close();document.body.classList.remove('card-home-active','content-only')}else if(homeExpected&&!dialog.open)scheduleHomeRepair()}).observe(app,{attributes:true,attributeFilter:['class']});
  addEventListener('pageshow',()=>{if(homeExpected&&!dialog.open&&!app.classList.contains('hidden'))settleHome()});
  if(!app.classList.contains('hidden'))window.bamcoOpenHomeWelcome();
 }
