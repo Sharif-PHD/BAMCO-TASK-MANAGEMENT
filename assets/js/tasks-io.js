@@ -1,27 +1,74 @@
 (()=>{
-let preview=[],importArchived=false,importFile=null;
+let preview=[],importArchived=false,importFile=null,committing=false;
 const key=(o,...ks)=>{for(const k of ks)if(o[k]!==undefined&&String(o[k]).trim()!=='')return o[k];return null};
-const iso=v=>{if(!v)return null;if(v instanceof Date&&!isNaN(v))return v.toISOString().slice(0,10);if(typeof v==='number'&&window.XLSX?.SSF){const d=window.XLSX.SSF.parse_date_code(v);return d?`${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`:null}const s=en(String(v).trim()).replace(/-/g,'/');if(/^\d{4}\/\d{1,2}\/\d{1,2}$/.test(s)){const [y,m,d]=s.split('/').map(Number);if(y<1700&&typeof jalaliToISO==='function')return jalaliToISO(y,m,d);return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`}return null};
-function owner(value){const s=norm(value).toLowerCase();return state.profiles.find(p=>norm(p.full_name).toLowerCase()===s||norm(p.excel_name).toLowerCase()===s||String(p.email).toLowerCase()===s)}
+const iso=v=>{if(!v)return null;if(v instanceof Date&&!isNaN(v))return v.toISOString().slice(0,10);if(typeof v==='number'&&window.XLSX?.SSF){const d=window.XLSX.SSF.parse_date_code(v);return d?`${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`:null}const s=en(String(v).trim()).replace(/-/g,'/');if(/^\d{4}\/\d{1,2}\/\d{1,2}$/.test(s)){const [y,m,d]=s.split('/').map(Number);if(y<1700&&typeof jalaliToISO==='function')return jalaliToISO(y,m,d);const out=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;const test=new Date(out+'T12:00:00');return Number.isNaN(test.getTime())?null:out}return null};
+function owner(value){const s=norm(value).toLowerCase();return state.profiles.find(p=>norm(p.full_name).toLowerCase()===s||norm(p.excel_name).toLowerCase()===s||String(p.email||'').toLowerCase()===s)}
+const escAttr=s=>safe(s).replace(/"/g,'&quot;');
+function setupDialog(){
+ const d=document.querySelector('#importDialog');if(!d||d.dataset.errorEditor==='1')return;d.dataset.errorEditor='1';
+ d.innerHTML=`<div class="modal-head"><div><h3>اصلاح خطاهای ورود از اکسل</h3><p id="importSummary"></p></div><button type="button" data-close="importDialog">×</button></div><div class="table-wrap import-error-wrap"><table class="import-error-table"><thead><tr><th>ردیف</th><th>شناسه</th><th>عنوان</th><th>متولی</th><th>وضعیت</th><th>اولویت</th><th>تاریخ شروع</th><th>تاریخ انجام</th><th>تاریخ پایان</th><th>علت مشکل</th></tr></thead><tbody id="importPreviewBody"></tbody></table></div><div class="modal-actions"><button type="button" class="ghost" data-close="importDialog">انصراف</button><button id="commitImportBtn" type="button" class="primary">بررسی و ورود</button></div>`;
+ d.querySelector('[data-close="importDialog"]')?.addEventListener('click',()=>d.close());
+ d.querySelector('.modal-actions [data-close="importDialog"]')?.addEventListener('click',()=>d.close());
+ d.querySelector('#commitImportBtn')?.addEventListener('click',commit);
+ d.querySelector('#importPreviewBody')?.addEventListener('input',editRow);
+ d.querySelector('#importPreviewBody')?.addEventListener('change',editRow);
+}
+function dateText(v){return v?String(v):''}
+function validateAll(){
+ const ids=new Map();preview.forEach(r=>{const id=Number(r.data.legacy_id)||null;if(id)ids.set(id,(ids.get(id)||0)+1)});
+ preview.forEach(r=>{
+  const errors=[],data=r.data;
+  if(!String(data.title||'').trim())errors.push('عنوان خالی است');
+  if(!data.owner_id)errors.push('متولی معتبر انتخاب نشده است');
+  if(data.legacy_id&&state.tasks.some(t=>Number(t.legacy_id||t.id)===Number(data.legacy_id)))errors.push('شناسه قبلاً در سامانه وجود دارد');
+  if(data.legacy_id&&(ids.get(Number(data.legacy_id))||0)>1)errors.push('شناسه در همین فایل تکراری است');
+  for(const [raw,label,field] of [[r.rawStart,'تاریخ شروع','start_date'],[r.rawDone,'تاریخ انجام','done_date'],[r.rawDue,'تاریخ پایان','due_date']]){if(String(raw||'').trim()&&!data[field])errors.push(`${label} نامعتبر است`)}
+  try{const candidate={...data};window.bamcoOptions.normalizeTask(candidate,null);Object.assign(data,candidate);if(importArchived&&!window.bamcoOptions.status(data)?.archivable)errors.push('این وضعیت اجازه ورود مستقیم به آرشیو ندارد')}catch(error){errors.push(error.message)}
+  r.errors=[...new Set(errors.filter(Boolean))];
+ });
+ return preview.filter(r=>r.errors.length);
+}
+function ownerOptions(selected){return '<option value="">انتخاب متولی</option>'+state.profiles.filter(p=>p.active!==false).map(p=>`<option value="${escAttr(p.id)}" ${String(p.id)===String(selected)?'selected':''}>${safe(p.full_name||p.excel_name||p.email||'—')}</option>`).join('')}
+function options(type,value){const rows=window.bamcoOptions.ordered(type,preview.map(r=>r.data[type])).filter(Boolean);return rows.map(v=>`<option ${String(v)===String(value)?'selected':''}>${safe(v)}</option>`).join('')}
+function renderErrors(){
+ setupDialog();const bad=validateAll(),body=document.querySelector('#importPreviewBody'),summary=document.querySelector('#importSummary');
+ if(summary)summary.textContent=bad.length?`${fa(bad.length)} ردیف نیاز به اصلاح دارد. علت هر خطا در ستون آخر نوشته شده است.`:'همه ردیف‌ها آماده ورود هستند.';
+ if(body)body.innerHTML=bad.map(r=>`<tr class="row-overdue" data-row="${r.row}"><td>${fa(r.row)}</td><td><input data-field="legacy_id" inputmode="numeric" value="${escAttr(r.data.legacy_id||'')}"></td><td><input data-field="title" value="${escAttr(r.data.title)}"></td><td><select data-field="owner_id">${ownerOptions(r.data.owner_id)}</select></td><td><select data-field="status">${options('status',r.data.status)}</select></td><td><select data-field="priority">${options('priority',r.data.priority)}</select></td><td><input data-field="rawStart" value="${escAttr(dateText(r.rawStart))}" placeholder="۱۴۰۵/۰۱/۰۱"></td><td><input data-field="rawDone" value="${escAttr(dateText(r.rawDone))}" placeholder="۱۴۰۵/۰۱/۰۱"></td><td><input data-field="rawDue" value="${escAttr(dateText(r.rawDue))}" placeholder="۱۴۰۵/۰۱/۰۱"></td><td class="import-error-reason">${safe(r.errors.join('؛ '))}</td></tr>`).join('');
+ const d=document.querySelector('#importDialog');if(bad.length&&!d.open)d.showModal();
+ return bad;
+}
+function editRow(e){
+ const input=e.target.closest('[data-field]'),tr=e.target.closest('tr[data-row]');if(!input||!tr)return;const r=preview.find(x=>String(x.row)===String(tr.dataset.row));if(!r)return;const f=input.dataset.field,v=input.value;
+ if(f==='legacy_id')r.data.legacy_id=Number(en(v))||null;
+ else if(f==='rawStart'){r.rawStart=v;r.data.start_date=iso(v)}
+ else if(f==='rawDone'){r.rawDone=v;r.data.done_date=iso(v)}
+ else if(f==='rawDue'){r.rawDue=v;r.data.due_date=iso(v)}
+ else r.data[f]=v;
+ window.clearTimeout(editRow.timer);editRow.timer=window.setTimeout(renderErrors,80);
+}
 async function parse(file){
-  importFile=file;await window.bamcoOptions.load(true);
+  setupDialog();importFile=file;await window.bamcoOptions.load(true);
   const XLSX=await window.ensureBamcoXLSX();
   const wb=XLSX.read(await file.arrayBuffer(),{type:'array',cellDates:true});
   const ws=wb.Sheets[wb.SheetNames[0]],rows=XLSX.utils.sheet_to_json(ws,{defval:''});
   preview=rows.map((r,i)=>{
-    const who=owner(key(r,'متولی','نام در اکسل','ایمیل','owner'));
+    const rawOwner=key(r,'متولی','نام در اکسل','ایمیل','owner'),who=owner(rawOwner);
     const title=key(r,'عنوان فعالیت','عنوان کار','عنوان','title');
-    const status=String(key(r,'وضعیت','status')||window.bamcoOptions.label('status','registered')),errors=[];
-    const legacyId=Number(key(r,'شناسه','ID','id'))||null,existing=document.querySelector('#duplicateMode').value==='update'?state.tasks.find(t=>Number(t.legacy_id||t.id)===legacyId):null;
-    const data={legacy_id:legacyId,title:String(title||''),description:String(key(r,'توضیحات','description')||''),owner_id:who?.id||null,status,priority:String(key(r,'اولویت','priority')||window.bamcoOptions.label('priority','medium')),start_date:iso(key(r,'تاریخ شروع','start_date')),done_date:iso(key(r,'تاریخ انجام','done_date')),due_date:iso(key(r,'تاریخ پایان','due_date')),reminder_days:Number(key(r,'یادآور','reminder_days')||0),manager_notes:String(key(r,'توضیحات مدیر','manager_notes')||''),archived:importArchived,archived_at:importArchived?new Date().toISOString():null,source:'excel'};
-    if(!title)errors.push('عنوان خالی');if(key(r,'متولی','نام در اکسل','ایمیل','owner')&&!who)errors.push('متولی نامعتبر');
-    try{window.bamcoOptions.normalizeTask(data,existing);if(importArchived&&!window.bamcoOptions.status(data)?.archivable&&!existing?.archived)errors.push('این وضعیت اجازه آرشیو ندارد')}catch(error){errors.push(error.message)}
-    return{row:i+2,errors,data};
+    const rawStart=key(r,'تاریخ شروع','start_date')||'',rawDone=key(r,'تاریخ انجام','done_date')||'',rawDue=key(r,'تاریخ پایان','due_date')||'';
+    const data={legacy_id:Number(en(key(r,'شناسه','ID','id')||''))||null,title:String(title||''),description:String(key(r,'توضیحات','description')||''),owner_id:who?.id||null,status:String(key(r,'وضعیت','status')||window.bamcoOptions.label('status','registered')),priority:String(key(r,'اولویت','priority')||window.bamcoOptions.label('priority','medium')),start_date:iso(rawStart),done_date:iso(rawDone),due_date:iso(rawDue),reminder_days:Number(en(key(r,'یادآور','reminder_days')||0))||0,manager_notes:String(key(r,'توضیحات مدیر','manager_notes')||''),archived:importArchived,archived_at:importArchived?new Date().toISOString():null,source:'excel'};
+    return{row:i+2,errors:[],data,rawOwner,rawStart,rawDone,rawDue};
   });
-  renderPreview(rows.length);
+  if(!preview.length){toast('فایل انتخاب‌شده ردیف قابل ورود ندارد.',true);return}
+  const bad=renderErrors();if(!bad.length)await commit();
 }
-function renderPreview(total){const bad=preview.filter(x=>x.errors.length).length;document.querySelector('#importSummary').textContent=`${fa(total)} رکورد بررسی شد؛ ${fa(total-bad)} معتبر و ${fa(bad)} دارای خطاست.`;document.querySelector('#importPreviewBody').innerHTML=preview.slice(0,100).map(x=>`<tr class="${x.errors.length?'row-overdue':''}"><td>${fa(x.row)}</td><td>${fa(x.data.legacy_id||'—')}</td><td>${safe(x.data.title)}</td><td>${safe(ownerName(x.data))}</td><td>${safe(x.errors.join('، ')||'آماده ورود')}</td></tr>`).join('');document.querySelector('#importDialog').showModal()}
-async function commit(){const mode=document.querySelector('#duplicateMode').value,valid=preview.filter(x=>!x.errors.length);let ok=0,failed=0,firstError='';for(const r of valid){try{const exists=r.data.legacy_id?state.tasks.find(t=>Number(t.legacy_id||t.id)===r.data.legacy_id):null;if(exists&&mode==='reject')continue;if(exists&&mode==='update')await update('tasks',`id=eq.${exists.id}`,{...r.data,legacy_id:exists.legacy_id});else await insert('tasks',{...r.data,legacy_id:exists&&mode==='create'?null:r.data.legacy_id,created_by:state.profile.id});ok++}catch(e){failed++;if(!firstError)firstError=e.message}}document.querySelector('#importDialog').close();toast(`${fa(ok)} رکورد وارد شد؛ ${fa(failed)} خطا.${firstError?' '+firstError:''}`,failed>0);await refresh()}
+async function commit(){
+ if(committing)return;const bad=renderErrors();if(bad.length){toast(`${fa(bad.length)} ردیف هنوز نیاز به اصلاح دارد.`,true);return}
+ committing=true;const button=document.querySelector('#commitImportBtn');if(button)button.disabled=true;let ok=0,failed=0,firstError='';
+ try{
+  for(const r of preview){try{await insert('tasks',{...r.data,created_by:state.profile.id});ok++}catch(e){failed++;if(!firstError)firstError=e.message}}
+  document.querySelector('#importDialog')?.close();toast(`${fa(ok)} رکورد وارد شد${failed?`؛ ${fa(failed)} خطا`:' و خطایی وجود نداشت.'}${firstError?' '+firstError:''}`,failed>0);preview=[];importFile=null;await refresh();
+ }finally{committing=false;if(button)button.disabled=false;const file=document.querySelector('#importFile');if(file)file.value=''}
+}
 async function exportRows(archived){
   await window.bamcoOptions.load(true);
   const XLSX=await window.ensureBamcoXLSX();
@@ -40,7 +87,7 @@ async function exportRows(archived){
   ws['!rows']=[{hpt:28},...rows.map(()=>({hpt:24}))];ws['!cols']=headers.map((h,i)=>({wch:[10,28,42,24,18,12,15,15,15,10,22,18,30,10,10][i]||14}));
   const wb=XLSX.utils.book_new();wb.__bamcoCatalogColors=true;wb.Workbook={Views:[{RTL:true}]};XLSX.utils.book_append_sheet(wb,ws,archived?'آرشیو':'کانبان');XLSX.writeFile(wb,`خروجی ${archived?'آرشیو':'کانبان'}_${jalaliText(new Date().toISOString()).replaceAll('/','-')}.xlsx`,{compression:true});toast('فایل Excel راست‌چین و قالب‌بندی‌شده آماده شد.');
 }
-document.querySelector('#importBtn')?.addEventListener('click',()=>{importArchived=false;document.querySelector('#importFile').click()});document.querySelector('#archiveImportBtn')?.addEventListener('click',()=>{importArchived=true;document.querySelector('#importFile').click()});document.querySelector('#importFile')?.addEventListener('change',e=>e.target.files?.[0]&&parse(e.target.files[0]).catch(x=>toast(x.message,true)));document.querySelector('#commitImportBtn')?.addEventListener('click',commit);document.querySelector('#kanbanExportBtn')?.addEventListener('click',()=>exportRows(false));document.querySelector('#archiveExportBtn')?.addEventListener('click',()=>exportRows(true));
-document.querySelector('#duplicateMode')?.addEventListener('change',()=>{if(importFile&&document.querySelector('#importDialog')?.open)parse(importFile).catch(e=>toast(e.message,true))});
+setupDialog();
+document.querySelector('#importBtn')?.addEventListener('click',()=>{importArchived=false;document.querySelector('#importFile').click()});document.querySelector('#archiveImportBtn')?.addEventListener('click',()=>{importArchived=true;document.querySelector('#importFile').click()});document.querySelector('#importFile')?.addEventListener('change',e=>e.target.files?.[0]&&parse(e.target.files[0]).catch(x=>toast(x.message,true)));document.querySelector('#kanbanExportBtn')?.addEventListener('click',()=>exportRows(false));document.querySelector('#archiveExportBtn')?.addEventListener('click',()=>exportRows(true));
 window.BAMCO_DATA_IO={iso,exportRows,parse};
 })();
