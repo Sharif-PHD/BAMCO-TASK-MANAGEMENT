@@ -1,15 +1,15 @@
 (()=>{
 'use strict';
-if(window.__bamcoReportStabilityFixes20260911V4)return;
-window.__bamcoReportStabilityFixes20260911V4=true;
+if(window.__bamcoReportStabilityFixes20260911V5)return;
+window.__bamcoReportStabilityFixes20260911V5=true;
 const q=(s,r=document)=>r?.querySelector?.(s)||null,qa=(s,r=document)=>[...(r?.querySelectorAll?.(s)||[])];
-let rawTabRender=null,warmKey='',warming=false,cleanFrame=0;
+let rawTabRender=null,warmKey='',warming=false,cleanFrame=0,navigationEpoch=0;
 
 function installCss(){
   q('#bamcoReportStabilityCss')?.remove();
   const s=document.createElement('style');s.id='bamcoReportStabilityCss';s.textContent=`
 #performanceReportView [data-performance-clear]{font-weight:400!important;font-family:BamcoPersian,"B Nazanin",BNazanin,Tahoma,sans-serif!important}
-/* Never cover a tab with an intermediate loading page. */
+/* Tabs must never be covered by an intermediate loading page. */
 .view.bamco-view-settling{position:static!important;min-height:0!important}
 .view.bamco-view-settling>*{visibility:visible!important;pointer-events:auto!important}
 .view.bamco-view-settling:after{content:none!important;display:none!important}
@@ -36,19 +36,17 @@ function cleanTransientLoading(root=document){
 }
 
 function patchTabs(){
-  const tabs=window.bamcoTabs;if(!tabs?.render||tabs.__instantV4)return !!tabs;
+  const tabs=window.bamcoTabs;if(!tabs?.render||tabs.__instantV5)return !!tabs;
   rawTabRender=tabs.render.bind(tabs);
   const instantRender=(id)=>{
+    navigationEpoch++;
     const view=q('#'+id+'View');
-    // Preserve already-rendered content while silently refreshing it in place.
-    const hasContent=!!view?.querySelector('table,.catalog-section,.workspace-report-tools,.workspace-error');
     const p=Promise.resolve(rawTabRender(id,true));
-    if(hasContent)p.catch(()=>{});
     return p.finally(()=>{cleanTransientLoading(view||document);reveal(id)});
   };
   tabs.render=instantRender;
   tabs.prewarm=()=>warmTabs(true);
-  tabs.__instantV4=true;
+  tabs.__instantV5=true;
   return true;
 }
 
@@ -58,20 +56,23 @@ async function warmTabs(force=false){
   const key=(state.user?.id||state.profile?.id||'manager')+'|'+String(state.token).slice(-12);
   if(!force&&warmKey===key)return;
   warming=true;
+  const startEpoch=navigationEpoch;
   try{
-    // Message-center data can be fetched while its view stays hidden.
+    // Message center keeps its rows in memory, so loading it while hidden makes its first open immediate.
     try{q('#refreshMessageCenter')?.click()}catch{}
     try{void window.bamcoConversations?.refresh?.()}catch{}
-    // tab-workspace used one global request serial, so warm sequentially to avoid
-    // cancelling sibling report renders. All warming happens while views are hidden.
-    const order=['performanceReport','responseReport','requestReport','sentMessages','systemOptions','loginActivity','activeSessions'];
+    // tab-workspace currently uses one request serial. Warm sequentially and stop
+    // the instant a real navigation starts so background work can never cancel it.
+    const order=['performanceReport','responseReport','requestReport','systemOptions','loginActivity','activeSessions'];
     for(const id of order){
+      if(navigationEpoch!==startEpoch)break;
       if(!q('#'+id+'View'))continue;
       try{await rawTabRender(id,false)}catch{}
       cleanTransientLoading(q('#'+id+'View')||document);
       reveal(id);
+      if(navigationEpoch!==startEpoch)break;
     }
-    warmKey=key;
+    if(navigationEpoch===startEpoch)warmKey=key;
   }finally{warming=false}
 }
 
@@ -83,13 +84,13 @@ function scheduleWarm(){
 function boot(){
   document.documentElement.dataset.reportStability='instant';
   installCss();retireTemplates();cleanTransientLoading();patchTabs();
-  // A genuine refresh should update silently instead of replacing the table by a loader.
   document.addEventListener('click',e=>{
     const retired=e.target.closest?.('#nav [data-view="templates"]');
     if(retired){e.preventDefault();e.stopImmediatePropagation();retireTemplates();return}
     const refresh=e.target.closest?.('[data-tab-refresh]');
     const id=refresh?.dataset?.tabRefresh;
     if(refresh&&id&&window.bamcoTabs?.owns?.(id)&&rawTabRender){
+      navigationEpoch++;
       e.preventDefault();e.stopImmediatePropagation();
       Promise.resolve(rawTabRender(id,true)).then(()=>{cleanTransientLoading(q('#'+id+'View')||document);reveal(id)}).catch(err=>{if(typeof toast==='function')toast(err?.message||'تازه‌سازی انجام نشد.',true)});
     }
@@ -105,7 +106,6 @@ function boot(){
     cleanFrame=requestAnimationFrame(()=>{cleanFrame=0;retireTemplates();cleanTransientLoading();patchTabs()});
   });
   observer.observe(document.body,{childList:true,subtree:true});
-  // Handles restored sessions where the app state becomes available without a class flip.
   let tries=0;const poll=setInterval(()=>{if(typeof state!=='undefined'&&state?.token){clearInterval(poll);scheduleWarm()}else if(++tries>300)clearInterval(poll)},100);
 }
 
