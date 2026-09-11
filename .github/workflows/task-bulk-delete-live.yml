@@ -89,11 +89,11 @@ jobs:
               }""", initial)
               body='#archiveBody' if archived else '#kanbanBody'
               delete='#archiveDeleteBtn' if archived else '#kanbanDeleteBtn'
-              await page.wait_for_function("sel => [...document.querySelectorAll(sel+' input.task-pick')].length===4 && [...document.querySelectorAll(sel+' input.task-pick')].every(x=>x.type==='checkbox')", body)
+              await page.wait_for_function("sel => [...document.querySelectorAll(sel+' input.task-pick')].length===4 && [...document.querySelectorAll(sel+' input.task-pick')].every(x=>x.type==='checkbox')", arg=body)
               rows=page.locator(f'{body} tr[data-task-id]')
               await rows.nth(0).click()
               await rows.nth(2).click()
-              await page.wait_for_function("sel => window.bamcoTaskSelection.ids(sel).length===2", scope)
+              await page.wait_for_function("sel => window.bamcoTaskSelection.ids(sel).length===2", arg=scope)
               assert await page.locator(delete).is_enabled(), f'{scope} delete button remained disabled'
               await page.locator(delete).click()
               await page.wait_for_function('() => state.tasks.length===2 && state.tasks.map(x=>Number(x.legacy_id)).sort((a,b)=>a-b).join(",")==="1,2"')
