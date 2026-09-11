@@ -3,7 +3,7 @@
 const models=new Map(),q=(s,r=document)=>r.querySelector(s);
 const tableOf=value=>typeof value==='string'?q(value)?.closest('table')||q(value+' table'):value?.matches('table')?value:value?.closest('table');
 const rows=t=>[...(t?.tBodies[0]?.rows||[])].filter(r=>!(r.cells.length===1&&r.cells[0].colSpan>1));
-const key=r=>String(r.dataset.taskId??r.dataset.id??r.dataset.workspaceIndex??r.dataset.requestId??r.dataset.delivery??r.dataset.selectionKey??r.textContent.trim());
+const key=r=>String(r.dataset.taskId??r.dataset.id??r.dataset.workspaceIndex??r.dataset.requestId??r.dataset.deliveryId??r.dataset.delivery??r.dataset.selectionKey??r.textContent.trim());
 function model(t){const view=t.closest('.view'),id=(view?.id||'dialog')+':'+(t.id||[...view.querySelectorAll('table')].indexOf(t));if(!models.has(id))models.set(id,{ids:new Set(),anchor:null,table:t});const m=models.get(id);m.table=t;return m}
 function paint(t){const m=model(t);t.setAttribute('aria-multiselectable','true');for(const r of rows(t)){const yes=m.ids.has(key(r));r.classList.toggle('suite-selected',yes);r.setAttribute('aria-selected',String(yes));r.tabIndex=0}}
 function notify(t){paint(t);t.dispatchEvent(new CustomEvent('bamco-selection-change',{bubbles:true,detail:{ids:[...model(t).ids]}}))}

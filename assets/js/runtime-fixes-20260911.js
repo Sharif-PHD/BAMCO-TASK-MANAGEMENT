@@ -81,9 +81,13 @@ function clearLegacyMobileShell(){
   }catch{}
   const normalize=()=>{
     const sidebar=q('#sidebar');if(!sidebar)return;
-    sidebar.classList.remove('collapsed','mobile-open','sidebar-open','drawer-open','open-mobile');
-    for(const p of ['width','max-width','min-width','height','max-height','left','right','top','bottom','transform','margin-left','margin-right'])sidebar.style.removeProperty(p);
-    q('#collapseBtn')?.setAttribute('aria-expanded','false');
+    // Only remove state that exists; unconditional classList.remove triggers
+    // another attribute mutation even when its value is already unchanged.
+    for(const name of ['collapsed','mobile-open','sidebar-open','drawer-open','open-mobile']){
+      if(sidebar.classList.contains(name))sidebar.classList.remove(name);
+    }
+    for(const p of ['width','max-width','min-width','height','max-height','left','right','top','bottom','transform','margin-left','margin-right'])if(sidebar.style.getPropertyValue(p))sidebar.style.removeProperty(p);
+    const toggle=q('#collapseBtn');if(toggle&&toggle.getAttribute('aria-expanded')!=='false')toggle.setAttribute('aria-expanded','false');
   };
   normalize();
   const sidebar=q('#sidebar');if(sidebar&&!sidebar.dataset.mobileShellGuard){
@@ -172,7 +176,7 @@ function postprocessDashboard(){
     const unscheduled=active.filter(t=>!t.start_date&&!t.due_date).length;
     for(const [key,value] of [['pending_requests',pending],['create_requests',created],['unscheduled',unscheduled]]){const strong=q(`article[data-key="${key}"] strong`,cards);if(strong)strong.textContent=fa(value)}
   }
-  const canvas=q('#workloadChart');if(canvas){canvas.dataset.logicalHeight='430';canvas.setAttribute('height','430');canvas.style.height='430px'}
+  // Canvas dimensions are owned by the chart renderer, not the card updater.
 }
 function patchDashboard(){
   const wrap=()=>{const original=window.renderDashboard;if(typeof original!=='function'||original.__bamcoSemanticCards)return false;const enhanced=function(...args){const out=original.apply(this,args);requestAnimationFrame(postprocessDashboard);return out};enhanced.__bamcoSemanticCards=true;window.renderDashboard=enhanced;return true};
@@ -212,7 +216,7 @@ async function exportFilteredReport(view,title){
   const X=await window.ensureBamcoXLSX(),ws=X.utils.aoa_to_sheet(data),wb=X.utils.book_new();fitSheet(X,ws,data);ws['!autofilter']={ref:X.utils.encode_range({s:{r:0,c:0},e:{r:data.length-1,c:(data[0]?.length||1)-1}})};ws['!freeze']={xSplit:0,ySplit:1,topLeftCell:'A2',activePane:'bottomLeft',state:'frozen'};wb.__bamcoPeopleBorders=true;wb.Workbook={Views:[{RTL:true}]};X.utils.book_append_sheet(wb,ws,'گزارش');X.writeFile(wb,title+'.xlsx',{compression:true});toast('فایل Excel فیلترشده، راست‌چین و خط‌کشی‌شده آماده شد.');
 }
 function enhanceRequestReport(){
-  const view=q('#requestReportView');if(!view)return;q('.workspace-metrics',view)?.remove();const exp=q('[data-report-export]',view);if(exp)exp.textContent='خروجی اکسل فیلترشده';
+  const view=q('#requestReportView');if(!view)return;q('.workspace-metrics',view)?.remove();const exp=q('[data-report-export]',view);if(exp&&exp.textContent!=='خروجی اکسل')exp.textContent='خروجی اکسل';
 }
 
 let responseRows=[],responseBusy=false,responseDateTarget=null;
