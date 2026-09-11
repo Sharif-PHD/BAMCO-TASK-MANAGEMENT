@@ -1,8 +1,17 @@
-/* Department entry and mandatory-password UI. Authorization remains server-owned. */
+/* Department entry: synchronous handoff to login; authorization remains server-owned. */
 (()=>{'use strict';
-const icons={product:'<path d="m12 3 9 5-9 5-9-5 9-5ZM3 12l9 5 9-5M3 16l9 5 9-5"/>',process:'<rect x="3" y="3" width="6" height="6" rx="1"/><rect x="15" y="15" width="6" height="6" rx="1"/><path d="M9 6h9v9M6 9v9h9"/>',quality:'<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6l8-3Z"/><path d="m8 12 3 3 5-6"/>'};
-function loadRuntimeFixes(){if(document.querySelector('script[data-runtime-fixes-20260911]'))return;const s=document.createElement('script');s.src='assets/js/runtime-fixes-20260911.js?v=20260911-1';s.defer=true;s.dataset.runtimeFixes20260911='1';document.head.append(s)}
-function boot(){loadRuntimeFixes();const login=document.querySelector('#loginView'),app=document.querySelector('#appView');if(!login||!app)return;let view=document.querySelector('#departmentEntry');if(!view){view=document.createElement('main');view.id='departmentEntry';view.innerHTML=`<header><img src="assets/images/bamco-white-cropped.png" alt="شرکت خودروسازان بم"><h1>سامانه مدیریت، پایش و پیگیری امور</h1><p>معاونت فنی و مهندسی و کیفیت</p></header><section aria-label="انتخاب مدیریت" class="department-grid">${[['product','مهندسی توسعه و تکوین محصول',true],['process','مدیریت فرآیند',false],['quality','کنترل کیفیت',false]].map(([key,title,enabled])=>`<button type="button" data-department="${key}" ${enabled?'':'disabled'}><span class="department-icon"><svg viewBox="0 0 24 24" aria-hidden="true">${icons[key]}</svg></span><strong>${title}</strong><span class="department-state">${enabled?'ورود به مدیریت ←':'به‌زودی'}</span></button>`).join('')}</section>`;document.body.prepend(view)}let selected=false;function sync(){const signedIn=!app.classList.contains('hidden');view.hidden=signedIn||selected;document.body.classList.toggle('department-pending',!signedIn&&!selected)}view.querySelector('[data-department=product]').onclick=()=>{selected=true;sync();document.querySelector('#email')?.focus()};const back=document.createElement('button');back.type='button';back.className='department-back';back.textContent='بازگشت به انتخاب مدیریت';back.onclick=()=>{selected=false;sync()};if(!login.querySelector('.department-back'))login.append(back);new MutationObserver(sync).observe(app,{attributes:true,attributeFilter:['class']});sync();
-const password=document.querySelector('#passwordDialog');password?.addEventListener('cancel',e=>{if(typeof state!=='undefined'&&state.profile?.must_change_password)e.preventDefault()});
+function boot(){
+ const login=document.querySelector('#loginView'),app=document.querySelector('#appView'),view=document.querySelector('#departmentEntry');if(!login||!app||!view)return;
+ let selected=false;
+ const sync=()=>{const signedIn=!app.classList.contains('hidden');view.hidden=signedIn||selected;document.body.classList.toggle('department-pending',!signedIn&&!selected);if(selected&&!signedIn){login.hidden=false;login.classList.remove('hidden')}};
+ const enter=()=>{if(selected)return;selected=true;sync();requestAnimationFrame(()=>document.querySelector('#email')?.focus())};
+ view.querySelector('[data-department="product"]')?.addEventListener('click',enter,{passive:true});
+ document.addEventListener('click',e=>{if(e.target.closest('#departmentEntry [data-department="product"]'))enter()},true);
+ let back=login.querySelector('.department-back');if(!back){back=document.createElement('button');back.type='button';back.className='department-back';back.textContent='بازگشت به انتخاب مدیریت';login.append(back)}
+ back.onclick=()=>{selected=false;sync()};
+ new MutationObserver(sync).observe(app,{attributes:true,attributeFilter:['class']});
+ sync();
+ const password=document.querySelector('#passwordDialog');password?.addEventListener('cancel',e=>{if(typeof state!=='undefined'&&state.profile?.must_change_password)e.preventDefault()});
 }
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();})();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();
