@@ -8,7 +8,7 @@ async def heartbeat(page):
  before=await page.evaluate('window.__testTicks');await page.wait_for_timeout(250);assert await page.evaluate('window.__testTicks')>before,'Browser event loop stopped'
 async def settled(page,tab,timeout=7500):
  view=page.locator('#'+tab+'View');await expect(view).to_be_visible();
- try: await page.wait_for_function("id=>{const v=document.querySelector('#'+id+'View');return v&&!v.classList.contains('bamco-view-settling')&&!v.querySelector('.workspace-loading')}",tab,timeout=timeout)
+ try: await page.wait_for_function("id=>{const v=document.querySelector('#'+id+'View');return v&&!v.classList.contains('bamco-view-settling')&&!v.querySelector('.workspace-loading')}",arg=tab,timeout=timeout)
  except Exception: raise AssertionError(f'{tab} did not settle')
 async def login(page,role):
  if role=='owner': await page.evaluate('__testApi.actor=__testApi.profiles[1]')
