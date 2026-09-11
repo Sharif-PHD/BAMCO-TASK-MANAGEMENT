@@ -1,5 +1,5 @@
 """Focused Chromium regression for performance/response reports and 15-second live sync."""
-import asyncio, functools, http.server, os, shutil, threading
+import asyncio, functools, http.server, threading
 from pathlib import Path
 from playwright.async_api import async_playwright, expect
 
@@ -20,6 +20,11 @@ async def login(page):
     await page.locator('.welcome-dismiss').click()
     await expect(page.locator('#homeView')).to_be_visible()
 
+async def open_home(page):
+    await page.evaluate('window.bamcoShowHome?.()')
+    await expect(page.locator('#homeView')).to_be_visible()
+    await page.wait_for_timeout(80)
+
 async def main():
     handler=functools.partial(http.server.SimpleHTTPRequestHandler,directory=ROOT)
     server=http.server.ThreadingHTTPServer(('127.0.0.1',0),handler)
@@ -33,24 +38,8 @@ async def main():
                 errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
                 await login(page)
 
-                # Performance report must open by a real nav click and expose one canonical DOM.
-                perf=page.locator('#nav [data-view="performanceReport"]')
-                await perf.click(force=True)
-                await page.wait_for_timeout(350)
-                diagnostic=await page.evaluate("""()=>({
-                    stateView:typeof state!=='undefined'?state.view:null,
-                    className:document.querySelector('#performanceReportView')?.className,
-                    display:getComputedStyle(document.querySelector('#performanceReportView')).display,
-                    runtime:!!window.bamcoProductionRuntime,
-                    runtimeBound:document.querySelector('#nav [data-view=\"performanceReport\"]')?.dataset.runtimeBound||null,
-                    canonical:!!window.bamcoCanonicalReports,
-                    finalNav:!!window.bamcoReportNavigation,
-                    showViewLexical:typeof showView,
-                    showViewWindow:typeof window.showView,
-                    activeButtons:[...document.querySelectorAll('#nav button.active')].map(x=>x.dataset.view),
-                    visibleViews:[...document.querySelectorAll('.workspace>.view')].filter(x=>!x.classList.contains('hidden')).map(x=>x.id)
-                })""")
-                print('REPORT_DIAGNOSTIC',width,diagnostic,'PAGEERRORS',errors,flush=True)
+                # Performance report: home -> real report nav click.
+                await page.locator('#nav [data-view="performanceReport"]').click(force=True)
                 await expect(page.locator('#performanceReportView')).to_be_visible()
                 await expect(page.locator('#performanceReportView .canonical-report')).to_have_count(1)
                 await expect(page.locator('#performanceReportView [data-performance-from]')).to_be_visible()
@@ -58,7 +47,8 @@ async def main():
                 await expect(page.locator('#performanceReportView [data-performance-clear]')).to_be_visible()
                 assert await page.evaluate("state.view")=='performanceReport'
 
-                # Response report must open by a real nav click and preserve row/delete contracts.
+                # The card-home UI hides nav while a report is open, so verify response from its real entry path too.
+                await open_home(page)
                 await page.locator('#nav [data-view="responseReport"]').click(force=True)
                 await expect(page.locator('#responseReportView')).to_be_visible()
                 await expect(page.locator('#responseReportView .canonical-report')).to_have_count(1)
@@ -70,7 +60,7 @@ async def main():
                 await expect(bulk).to_be_enabled()
                 assert await page.evaluate("state.view")=='responseReport'
 
-                # The app owns exactly one 15-second live-sync loop and exposes its contract.
+                # One 15-second live-sync contract; manual refresh must not reload the page.
                 assert await page.evaluate("window.bamcoLiveSync?.interval") == 15000
                 before=await page.evaluate("performance.getEntriesByType('navigation').length")
                 await page.evaluate("window.bamcoLiveSync.refresh()")
@@ -78,7 +68,7 @@ async def main():
                 after=await page.evaluate("performance.getEntriesByType('navigation').length")
                 assert before==after==1, (before,after)
                 assert not errors, errors
-                print(f'PASS width={width}: performance + response + live-sync')
+                print(f'PASS width={width}: performance + response + live-sync',flush=True)
                 await context.close()
             await browser.close()
     finally:
