@@ -22,8 +22,8 @@ jobs:
           from pathlib import Path
           p=Path('index.html')
           s=p.read_text(encoding='utf-8')
-          old='assets/js/login-avatar-workload-fix-20260911.js?v=20260911-1'
-          new='assets/js/login-avatar-workload-fix-20260911.js?v=20260911-2'
+          old='assets/js/login-avatar-workload-fix-20260911.js?v=20260911-2'
+          new='assets/js/login-avatar-workload-fix-20260911.js?v=20260911-3'
           if old in s:
               s=s.replace(old,new)
           elif new not in s:
@@ -43,5 +43,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
-          git commit -m 'Force fresh persistent topbar avatar fix'
+          git commit -m 'Force fresh coalesced topbar avatar fix'
           git push origin HEAD:main
