@@ -126,8 +126,11 @@ function install(){
  let welcomed=false;
  window.bamcoOpenHomeWelcome=()=>{if(welcomed||app.classList.contains('hidden'))return;if(typeof state!=='undefined'&&state.profile?.must_change_password)return;welcomed=true;clearHomeTimers();homeExpected=true;homeEpoch++;showHome();dialog.querySelector('.welcome-person').textContent=(q('#userName')?.textContent||'همکار')+' عزیز';dialog.showModal();void stickers()};
  dialog.querySelector('.welcome-dismiss').addEventListener('click',()=>dialog.close());
- dialog.addEventListener('close',()=>{settleHome();requestAnimationFrame(()=>home.focus({preventScroll:true}))});
- dialog.addEventListener('cancel',()=>{homeExpected=true;requestAnimationFrame(settleHome)});
+ dialog.addEventListener('close',()=>{
+  if(homeExpected&&(typeof state==='undefined'||state.view==='home'))settleHome();
+  if(homeExpected)requestAnimationFrame(()=>home.focus({preventScroll:true}));
+ });
+ dialog.addEventListener('cancel',()=>{if(homeExpected)requestAnimationFrame(settleHome)});
  top.querySelector('.home-return').addEventListener('click',()=>{settleHome();home.focus({preventScroll:true})});
  new MutationObserver(()=>{if(app.classList.contains('hidden')){leaveHome();welcomed=false;if(dialog.open)dialog.close();document.body.classList.remove('card-home-active','content-only')}else if(homeExpected&&!dialog.open)scheduleHomeRepair()}).observe(app,{attributes:true,attributeFilter:['class']});
  addEventListener('pageshow',()=>{if(homeExpected&&!dialog.open&&!app.classList.contains('hidden'))settleHome()});
