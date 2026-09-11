@@ -25,7 +25,7 @@ const load=()=>{
   const existing=document.querySelector('script[data-bamco-task-bulk-delete]');
   if(existing){if(existing.dataset.loaded==='1')loadColumns();else existing.addEventListener('load',loadColumns,{once:true});return}
   const s=document.createElement('script');
-  s.src='assets/js/task-bulk-delete-20260912.js?v=20260912-3';
+  s.src='assets/js/task-bulk-delete-20260912.js?v=20260912-4';
   s.dataset.bamcoTaskBulkDelete='1';
   s.async=false;
   s.addEventListener('load',()=>{s.dataset.loaded='1';loadColumns()},{once:true});

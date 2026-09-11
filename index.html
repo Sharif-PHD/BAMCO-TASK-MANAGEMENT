@@ -85,7 +85,7 @@
           <div class="panel-head"><div><h3>وظایف جاری</h3><small id="kanbanScope"></small></div><input id="kanbanSearch" class="search" placeholder="جست‌وجو در وظایف…" /></div>
           <input id="importFile" type="file" accept=".xlsx,.xls,.csv" hidden>
           <div class="task-toolbar"><button id="importBtn" class="ghost manager-only">ورود از اکسل</button><button id="kanbanExportBtn" class="ghost">خروجی اکسل</button><button id="kanbanEditBtn" class="ghost" disabled>ویرایش</button><button id="kanbanArchiveBtn" class="ghost" disabled>آرشیو فعالیت</button><button id="kanbanDeleteBtn" class="danger manager-only" disabled>حذف</button></div>
-          <div class="table-wrap"><table><thead><tr><th>شناسه</th><th>عنوان فعالیت</th><th>توضیحات</th><th>متولی</th><th>وضعیت</th><th>اولویت</th><th>تاریخ شروع</th><th>تاریخ انجام</th><th>تاریخ پایان</th><th>یادآور</th><th>آخرین به‌روزرسانی</th><th>وضعیت دیرکرد</th><th>توضیحات مدیر</th><th>انتخاب</th></tr><tr class="column-filters"></tr></thead><tbody id="kanbanBody"></tbody></table></div>
+          <div class="table-wrap"><table><thead><tr><th>شناسه</th><th>عنوان فعالیت</th><th>توضیحات</th><th>متولی</th><th>وضعیت</th><th>اولویت</th><th>تاریخ شروع</th><th>تاریخ انجام</th><th>تاریخ پایان</th><th>یادآور</th><th>آخرین به‌روزرسانی</th><th>وضعیت دیرکرد</th><th>توضیحات مدیر</th><th>تعجیل</th></tr><tr class="column-filters"></tr></thead><tbody id="kanbanBody"></tbody></table></div>
         </div>
       </section>
 
@@ -93,7 +93,7 @@
         <div class="panel table-panel">
           <div class="panel-head"><div><h3>وظایف آرشیو شده</h3><small id="archiveScope"></small></div><input id="archiveSearch" class="search" placeholder="جست‌وجو در آرشیو…" /></div>
           <div class="task-toolbar"><button id="archiveImportBtn" class="ghost manager-only">ورود از اکسل</button><button id="archiveExportBtn" class="ghost">خروجی اکسل</button><button id="archiveEditBtn" class="ghost" disabled>ویرایش</button><button id="archiveRestoreBtn" class="ghost manager-only" disabled>بازگردانی به کانبان</button><button id="archiveDeleteBtn" class="danger manager-only" disabled>حذف</button></div>
-          <div class="table-wrap"><table><thead><tr><th>شناسه</th><th>عنوان فعالیت</th><th>توضیحات</th><th>متولی</th><th>وضعیت</th><th>اولویت</th><th>تاریخ شروع</th><th>تاریخ انجام</th><th>تاریخ پایان</th><th>یادآور</th><th>آخرین به‌روزرسانی</th><th>وضعیت دیرکرد</th><th>توضیحات مدیر</th><th>تأخیر</th><th>تعجیل</th><th>انتخاب</th></tr><tr class="column-filters"></tr></thead><tbody id="archiveBody"></tbody></table></div>
+          <div class="table-wrap"><table><thead><tr><th>شناسه</th><th>عنوان فعالیت</th><th>توضیحات</th><th>متولی</th><th>وضعیت</th><th>اولویت</th><th>تاریخ شروع</th><th>تاریخ انجام</th><th>تاریخ پایان</th><th>یادآور</th><th>آخرین به‌روزرسانی</th><th>وضعیت دیرکرد</th><th>توضیحات مدیر</th><th>تأخیر</th><th>تعجیل</th></tr><tr class="column-filters"></tr></thead><tbody id="archiveBody"></tbody></table></div>
           <div id="archivePager" class="archive-pager" aria-label="صفحه‌بندی آرشیو"></div>
         </div>
       </section>
@@ -157,7 +157,7 @@
   <script defer src="assets/js/stickers.js?v=sticker-root-20260911-2"></script>
 
   <script defer src="assets/js/task-options.js?v=catalog-edit-20260910-2"></script>
-  <script defer src="assets/js/app.js?v=profile-counts-20260911-1"></script>
+  <script defer src="assets/js/app.js?v=task-table-root-20260912-1"></script>
   <script defer src="assets/js/people-task-transfer.js?v=people-transfer-20260910-1"></script>
   <script defer src="assets/js/auth-session.js?v=sessions-20260910-2"></script>
 
@@ -210,7 +210,7 @@
 <script defer src="assets/js/report-root-fixes-20260911.js?v=20260911-3"></script>
 <script defer src="assets/js/report-stability-fixes-20260911.js?v=20260911-4"></script>
 <script defer src="assets/js/messaging-history-root-20260911.js?v=profile-counts-20260911-1"></script>
-<script defer src="assets/js/avatar-final-20260911.js?v=20260911-1"></script>
+<script defer src="assets/js/avatar-final-20260911.js?v=task-table-root-20260912-1"></script>
 <style id="systemMessageCardLayoutRootFix">
 html body .chat-bubble.bamco-system-message .system-message-open{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;grid-template-areas:"title title" "date sender" "chips chips" "cta cta"!important;column-gap:12px!important;align-items:end!important;direction:ltr!important}
 html body .chat-bubble.bamco-system-message .system-message-open-head{display:contents!important}

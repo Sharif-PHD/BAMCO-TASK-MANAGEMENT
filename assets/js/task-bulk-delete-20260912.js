@@ -1,6 +1,7 @@
 (()=>{
 'use strict';
-if(window.__bamcoTaskBulkDelete20260912V3)return;
+if(window.__bamcoTaskBulkDelete20260912V4)return;
+window.__bamcoTaskBulkDelete20260912V4=true;
 window.__bamcoTaskBulkDelete20260912V3=true;
 window.__bamcoTaskBulkDelete20260912V2=true;
 window.__bamcoTaskBulkDelete20260912V1=true;
@@ -63,20 +64,13 @@ function scopeFromElement(el){
 }
 function visibleIds(scope){return qa(`${config[scope].body} tr[data-task-id]`).map(row=>String(row.dataset.taskId))}
 function ids(scope){return [...picked[scope]]}
-function ensureHeaderToggle(scope){
-  const th=q(`${config[scope].view} table thead tr:first-child th:last-child`);if(!th)return null;
-  let input=q('[data-bamco-task-select-all]',th);if(input)return input;
-  const label=document.createElement('label');label.className='task-select-all';label.style.cssText='display:inline-flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;cursor:pointer';
-  input=document.createElement('input');input.type='checkbox';input.dataset.bamcoTaskSelectAll=scope;input.setAttribute('aria-label',scope==='archive'?'انتخاب همه ردیف‌های قابل مشاهده آرشیو':'انتخاب همه ردیف‌های قابل مشاهده کانبان');
-  const text=document.createElement('span');text.textContent='انتخاب همه';label.append(input,text);th.replaceChildren(label);return input;
-}
+function removeLegacySelectAll(){qa('[data-bamco-task-select-all]').forEach(input=>{const label=input.closest('label');if(label)label.remove();else input.remove()})}
 function syncToolbar(scope){
   const list=ids(scope),count=list.length;
   if(typeof state!=='undefined'&&state?.selected)state.selected[scope]=count===1?Number(list[0]):null;
   const del=q(config[scope].del);if(del){del.disabled=count===0;del.textContent=count>1?`حذف (${faDigits(count)})`:'حذف';del.dataset.selectionCount=String(count)}
   for(const selector of config[scope].single){const button=q(selector);if(button)button.disabled=count!==1}
-  const visible=visibleIds(scope),all=ensureHeaderToggle(scope);
-  if(all){const selectedVisible=visible.filter(id=>picked[scope].has(id)).length;all.checked=visible.length>0&&selectedVisible===visible.length;all.indeterminate=selectedVisible>0&&selectedVisible<visible.length;all.disabled=visible.length===0}
+  removeLegacySelectAll();
 }
 function decorate(scope,{prune=true}={}){
   const body=q(config[scope].body);if(!body)return;
@@ -84,10 +78,8 @@ function decorate(scope,{prune=true}={}){
   if(picked[scope].size===0&&typeof state!=='undefined'&&state?.selected?.[scope]!=null&&visible.has(String(state.selected[scope])))picked[scope].add(String(state.selected[scope]));
   if(prune)for(const id of [...picked[scope]])if(!visible.has(id))picked[scope].delete(id);
   qa('tr[data-task-id]',body).forEach(row=>{
-    const id=String(row.dataset.taskId),input=q('input.task-pick',row);if(!input)return;
-    if(input.type!=='checkbox')input.type='checkbox';input.removeAttribute('name');
-    const selected=picked[scope].has(id);
-    input.checked=selected;input.setAttribute('aria-checked',selected?'true':'false');
+    const id=String(row.dataset.taskId),input=q('input.task-pick',row),selected=picked[scope].has(id);
+    if(input){input.checked=selected;input.setAttribute('aria-checked',selected?'true':'false');input.style.setProperty('display','none','important');input.setAttribute('aria-hidden','true')}
     row.classList.toggle('task-selected',selected);row.setAttribute('aria-selected',selected?'true':'false');row.dataset.bamcoSelected=selected?'1':'0';
   });
   syncToolbar(scope);
@@ -167,7 +159,7 @@ window.addEventListener('change',event=>{
 },true);
 
 function boot(){
-  ensureStyles();purgeRequestReport();
+  ensureStyles();removeLegacySelectAll();purgeRequestReport();
   const app=q('#appView');if(app)new MutationObserver(()=>purgeRequestReport()).observe(app,{childList:true,subtree:true});
   for(const scope of Object.keys(config)){
     const body=q(config[scope].body);if(body){new MutationObserver(()=>queueMicrotask(()=>decorate(scope))).observe(body,{childList:true,subtree:true});decorate(scope)}
