@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const VERSION='20260909-login-hotfix-2';
+const VERSION='20260911-login-logo-single-load-1';
 if(window.__bamcoAuthUiInstalled===VERSION)return;
 window.__bamcoAuthUiInstalled=VERSION;
 
@@ -48,9 +48,10 @@ async function requestJson(path,{method='GET',body,auth=false,timeout=12000}={})
   finally{clearTimeout(timer)}
 }
 
-
 function install(){
-  injectCss();const logo=q('#loginView .brand-lockup img');if(logo)logo.src='assets/images/bamco-white-cropped.png';
+  injectCss();
+  // The login logo is already declared in index.html. Do not rewrite its src here;
+  // assigning the same src again forces a second image load/decode and causes a flash.
   const form=buildLogin();if(!form)return;
   const password=q('#password'),toggle=q('.login-password-toggle'),box=q('#loginVerification'),display=q('#loginVerifyDisplay'),verify=q('#loginVerifyCode'),verifyError=q('#loginVerifyError'),refreshCode=q('#refreshLoginVerify');
   const digits=[...form.querySelectorAll('.verification-digit')];
