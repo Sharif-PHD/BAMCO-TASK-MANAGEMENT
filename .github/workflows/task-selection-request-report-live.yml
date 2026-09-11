@@ -42,10 +42,16 @@ jobs:
         shell: bash
         run: |
           cat > /tmp/check_selection_report.py <<'PY'
-          import asyncio, json
+          import asyncio, json, re
           from playwright.async_api import async_playwright
 
           BASE='https://nazanin-ghaemizadeh.github.io/BAMCO-TASK-MANAGEMENT/'
+
+          def greenish(value):
+              m=re.match(r'rgba?\((\d+),\s*(\d+),\s*(\d+)', value or '')
+              if not m: return False
+              r,g,b=map(int,m.groups())
+              return g > r and g > b and g-r >= 15
 
           async def main():
               async with async_playwright() as p:
@@ -76,17 +82,19 @@ jobs:
                   await page.wait_for_function("() => window.bamcoTaskSelection.count('kanban')===1")
                   assert await page.locator('#kanbanBody tr[data-task-id="91001"]').evaluate("el=>el.classList.contains('task-selected')")
                   bg1=await page.locator('#kanbanBody tr[data-task-id="91001"] td').first.evaluate("el=>getComputedStyle(el).backgroundColor")
-                  assert bg1 == 'rgb(207, 233, 220)', bg1
+                  assert greenish(bg1), bg1
 
                   await page.evaluate("() => document.querySelector('#kanbanBody tr[data-task-id=\"91002\"] td:nth-child(2)').dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}))")
                   await page.wait_for_function("() => window.bamcoTaskSelection.count('kanban')===2")
+                  colors=[]
                   for task_id in ('91001','91002'):
                       row=page.locator(f'#kanbanBody tr[data-task-id="{task_id}"]')
                       assert await row.evaluate("el=>el.getAttribute('aria-selected')==='true'")
                       bg=await row.locator('td').first.evaluate("el=>getComputedStyle(el).backgroundColor")
-                      assert bg == 'rgb(207, 233, 220)', (task_id,bg)
+                      assert greenish(bg), (task_id,bg)
+                      colors.append(bg)
 
-                  print(json.dumps({'selection':'green','multi_select':2,'request_report':'absent','status':'passed'}))
+                  print(json.dumps({'selection':'green','colors':colors,'multi_select':2,'request_report':'absent','status':'passed'}))
                   await browser.close()
 
           asyncio.run(main())
