@@ -1,0 +1,29 @@
+name: Department entry stability
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'assets/css/department-entry.css'
+      - 'assets/js/department-entry.js'
+      - 'assets/js/runtime-fixes-20260911.js'
+      - 'index.html'
+      - 'tests/browser/check_department_entry_stability.py'
+      - '.github/workflows/department-entry-stability.yml'
+  workflow_dispatch:
+
+jobs:
+  chromium:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Chromium test dependency
+        run: |
+          python -m pip install playwright==1.57.0
+          python -m playwright install --with-deps chromium
+      - name: Assert stable management selector
+        run: python tests/browser/check_department_entry_stability.py
