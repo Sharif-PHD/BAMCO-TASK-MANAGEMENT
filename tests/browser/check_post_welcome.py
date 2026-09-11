@@ -1,4 +1,4 @@
-"""Assert the workspace and profile avatar appear in the first viewport after welcome."""
+"""Assert the post-welcome workspace and final persistent profile avatar are visible."""
 import asyncio, functools, http.server, json, threading
 from pathlib import Path
 from playwright.async_api import async_playwright
@@ -20,7 +20,7 @@ async def one_case(browser,base,width,role):
       const groups=[...document.querySelectorAll('#homeView #nav>.nav-group')].filter(n=>{const c=getComputedStyle(n),r=n.getBoundingClientRect();return c.display!=='none'&&c.visibility!=='hidden'&&r.width>0&&r.height>0});
       const avatar=document.querySelector('#avatar'),avatarImg=avatar?.querySelector('img[data-profile-avatar]');
       const storageCalls=(window.__testApi?.calls||[]).filter(x=>String(x.endpoint||'').includes('avatar'));
-      return {innerHeight:innerHeight,scrollY:Math.round(scrollY),bodyClass:document.body.className,app:box('#appView'),topbar:box('#appView>.card-topbar'),home:box('#homeView'),nav:box('#homeView #nav'),firstGroup:groups[0]?(()=>{const r=groups[0].getBoundingClientRect();return {top:Math.round(r.top),bottom:Math.round(r.bottom),width:Math.round(r.width),height:Math.round(r.height)}})():null,groups:groups.length,login:box('#loginView'),entry:box('#departmentEntry'),profile:{id:typeof state!=='undefined'?state.profile?.id:null,avatarPath:typeof state!=='undefined'?state.profile?.avatar_path:null,token:!!(typeof state!=='undefined'&&state.token),mediaGet:typeof window.bamcoMedia?.get,avatarRefresh:typeof window.bamcoTopbarAvatar?.refresh},storageCalls,avatar:{html:avatar?.innerHTML||'',box:box('#avatar'),inTopbar:!!avatar?.closest('.card-topbar .header-tools'),hasImage:!!avatarImg,complete:!!avatarImg?.complete,naturalWidth:avatarImg?.naturalWidth||0}};
+      return {innerHeight:innerHeight,scrollY:Math.round(scrollY),bodyClass:document.body.className,app:box('#appView'),topbar:box('#appView>.card-topbar'),home:box('#homeView'),nav:box('#homeView #nav'),firstGroup:groups[0]?(()=>{const r=groups[0].getBoundingClientRect();return {top:Math.round(r.top),bottom:Math.round(r.bottom),width:Math.round(r.width),height:Math.round(r.height)}})():null,groups:groups.length,login:box('#loginView'),entry:box('#departmentEntry'),profile:{id:typeof state!=='undefined'?state.profile?.id:null,avatarPath:typeof state!=='undefined'?state.profile?.avatar_path:null,token:!!(typeof state!=='undefined'&&state.token),mediaGet:typeof window.bamcoMedia?.get,avatarRefresh:typeof window.bamcoTopbarAvatar?.refresh,finalAvatar:typeof window.bamcoFinalAvatar?.refresh},storageCalls,avatar:{html:avatar?.innerHTML||'',box:box('#avatar'),inTopbar:!!avatar?.closest('.card-topbar .header-tools'),hasImage:!!avatarImg,complete:!!avatarImg?.complete,naturalWidth:avatarImg?.naturalWidth||0}};
     }''')
     print('AVATAR_DIAG='+json.dumps({'width':width,'role':role,'diag':diag},ensure_ascii=False),flush=True)
     await page.screenshot(path=str(OUT/f'{width}-{role}.png'),full_page=False)
@@ -33,6 +33,7 @@ async def one_case(browser,base,width,role):
     assert diag['bodyClass'].find('card-home-active')>=0,result
     assert diag['avatar']['inTopbar'],result
     assert diag['profile']['avatarPath'],result
+    assert diag['profile']['finalAvatar']=='function',result
     assert diag['avatar']['hasImage'] and diag['avatar']['complete'] and diag['avatar']['naturalWidth']>0,result
     await ctx.close();return result
 
