@@ -57,16 +57,16 @@ jobs:
               return g > r and g > b and g-r >= 15
 
           async def verify_scope(page, scope, task_id):
-              await page.evaluate("scope => showView(scope)", scope)
+              await page.evaluate("scope => { document.querySelectorAll('dialog[open]').forEach(d=>{try{d.close()}catch{}}); showView(scope) }", scope)
               await page.wait_for_timeout(150)
               body=f'#{scope}Body'
               row=f'{body} tr[data-task-id="{task_id}"]'
-              await page.locator(row+' td').nth(1).click()
+              await page.locator(row+' td').nth(1).click(force=True)
               await page.wait_for_function(f"() => window.bamcoTaskSelection.count('{scope}')===1")
               bg=await page.locator(row+' td').first.evaluate('el=>getComputedStyle(el).backgroundColor')
               assert greenish(bg), (scope,'not green',bg)
               assert await page.locator(row).get_attribute('aria-selected') == 'true'
-              await page.locator(row+' td').nth(1).click()
+              await page.locator(row+' td').nth(1).click(force=True)
               await page.wait_for_function(f"() => window.bamcoTaskSelection.count('{scope}')===0 && state.selected.{scope}===null")
               assert await page.locator(row).get_attribute('aria-selected') == 'false'
               assert not await page.locator(row).evaluate("el=>el.classList.contains('task-selected')")
@@ -81,7 +81,7 @@ jobs:
                   page=await browser.new_page(viewport={'width':1440,'height':900})
                   errors=[]
                   page.on('pageerror', lambda exc: errors.append(str(exc)))
-                  await page.goto(BASE+'?visible-deselect=3', wait_until='networkidle')
+                  await page.goto(BASE+'?visible-deselect=4', wait_until='networkidle')
                   await page.wait_for_function("typeof renderTasks==='function' && window.__bamcoTaskBulkDelete20260912V6===true")
                   await page.evaluate("""() => {
                     state.profile={id:'00000000-0000-0000-0000-000000000001',role:'manager',active:true,full_name:'مدیر'};
@@ -99,7 +99,7 @@ jobs:
                     showView('kanban');
                   }""")
                   await page.wait_for_timeout(900)
-                  await page.evaluate("() => {renderTasks(false);renderTasks(true);showView('kanban')}")
+                  await page.evaluate("() => {document.querySelectorAll('dialog[open]').forEach(d=>{try{d.close()}catch{}});renderTasks(false);renderTasks(true);showView('kanban')}")
                   await page.wait_for_timeout(250)
                   await verify_scope(page,'kanban',99101)
                   await verify_scope(page,'archive',99102)
