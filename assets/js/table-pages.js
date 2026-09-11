@@ -55,7 +55,6 @@
      view.addEventListener('input',reset);view.addEventListener('change',reset);
     }
     const tables=[...view.querySelectorAll('table')].filter(t=>!t.closest('dialog'));
-    // Single-table screens fill the viewport. Multi-table forms keep normal content scrolling.
     if(tables.length===1){
      const table=tables[0];let wrap=table.parentElement;
      if(wrap.tagName==='TD'||wrap===view)return;
@@ -68,7 +67,7 @@
     }
    });
   }
-  function schedule(records){if(records?.every(r=>r.target.nodeType===1&&r.target.closest('.table-pagination,#archivePager')))return;if(!pending){pending=true;requestAnimationFrame(scan)}}
+  function schedule(records){if(records?.every(r=>r.target.nodeType===1&&r.target.closest('.table-pagination,#archivePager')))return;if(!pending){pending=true;queueMicrotask(scan)}}
   new MutationObserver(schedule).observe(workspace,{childList:true,subtree:true});scan();
   if(footer&&typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{document.documentElement.style.setProperty('--home-footer-height',footer.offsetHeight+'px')}).observe(footer);
  }
