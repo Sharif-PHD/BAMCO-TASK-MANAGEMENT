@@ -60,13 +60,13 @@ jobs:
                   browser=await p.chromium.launch()
                   page=await browser.new_page(viewport={'width':1900,'height':900})
                   await page.route('**/rest/v1/change_requests**', lambda route: route.fulfill(status=200,content_type='application/json',body='[]'))
-                  await page.goto(BASE+'?perf-toolbar-live=2',wait_until='networkidle')
+                  await page.goto(BASE+'?perf-toolbar-live=3',wait_until='networkidle')
                   await page.wait_for_function("window.__bamcoCanonicalReportsLiveSyncV5===true && window.bamcoCanonicalReports?.renderPerformance")
                   assert await page.locator('script[src*="report-root-fixes-20260911.js"]').count() == 0
                   assert await page.locator('script[src*="report-stability-fixes-20260911.js"]').count() == 1
                   assert await page.locator('script[src*="interior-ui.js"]').count() == 1
                   if not await page.evaluate("!!window.bamcoInteriorUI?.decorateView"):
-                      await page.add_script_tag(url=BASE+'assets/js/interior-ui.js?live-verify=2')
+                      await page.add_script_tag(url=BASE+'assets/js/interior-ui.js?live-verify=3')
                   await page.wait_for_function("!!window.bamcoInteriorUI?.decorateView")
                   await page.evaluate("""async () => {
                     document.body.classList.remove('department-pending');
@@ -107,7 +107,8 @@ jobs:
                   assert (await toolbar.locator('[data-canonical-export="performance"]').text_content()).strip()=='خروجی اکسل'
                   assert await view.locator('input[type=search]').count()==0
                   assert await view.locator('[data-performance-home]').count()==0
-                  headers=[(await view.locator('thead th').nth(i).text_content()).strip() for i in range(await view.locator('thead th').count())]
+                  header_cells=view.locator('thead tr').first.locator('th')
+                  headers=[(await header_cells.nth(i).text_content()).strip() for i in range(await header_cells.count())]
                   assert len(headers)==9,headers
                   assert headers[0]=='متولی',headers
                   row=view.locator('tbody tr[data-canonical-row]').first
