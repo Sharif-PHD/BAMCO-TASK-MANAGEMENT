@@ -1,0 +1,109 @@
+/* BAMCO app-wide mobile compatibility layer — 2026-09-11 */
+@media (max-width:760px){
+  html,body{width:100%;max-width:100%;overflow-x:hidden!important}
+  body{min-height:100dvh}
+  #appView{width:100%!important;max-width:100%!important;min-width:0!important;overflow:hidden!important}
+  #appView .workspace{width:100%!important;max-width:100%!important;min-width:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
+  #appView .workspace>header{min-width:0!important;padding:8px 10px!important;gap:8px!important;align-items:center!important;flex-wrap:wrap!important}
+  #appView .workspace>header>div:first-child{min-width:0!important;flex:1 1 170px!important}
+  #appView #viewTitle{font-size:19px!important;line-height:1.5!important;white-space:normal!important;overflow-wrap:anywhere!important}
+  #appView #viewSubtitle{font-size:13px!important;white-space:normal!important}
+  #appView .header-actions{display:flex!important;gap:6px!important;flex-wrap:wrap!important;max-width:100%!important}
+  #appView .header-actions button{min-height:40px!important;max-width:100%!important}
+
+  #sidebar{position:fixed!important;z-index:80!important;top:0!important;right:0!important;height:100dvh!important;max-height:100dvh!important;overflow-y:auto!important;overscroll-behavior:contain!important;box-shadow:-6px 0 24px rgba(15,61,45,.15)!important}
+  #sidebar:not(.collapsed){width:min(82vw,310px)!important}
+  #sidebar.collapsed{width:64px!important}
+  #sidebar .side-brand strong,#sidebar .account-copy{min-width:0!important}
+  #sidebar:not(.collapsed) #nav{padding-bottom:96px!important}
+  #nav .nav-group-items{min-width:0!important}
+  #nav button{min-width:0!important;max-width:100%!important}
+  #nav button span{white-space:normal!important;overflow-wrap:anywhere!important}
+
+  #appView .view{width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important;padding:0!important;overflow-x:hidden!important}
+  #appView .view>.panel,#appView .view>.table-panel,#appView .workspace-panel{width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important;margin:0!important;border-radius:0!important}
+  #appView .panel-head{display:flex!important;align-items:flex-start!important;gap:8px!important;flex-wrap:wrap!important;min-width:0!important;padding:9px 10px!important}
+  #appView .panel-head>div{min-width:0!important;flex:1 1 170px!important}
+  #appView .panel-head h3{font-size:18px!important;white-space:normal!important;overflow-wrap:anywhere!important}
+  #appView .panel-head small{white-space:normal!important;overflow-wrap:anywhere!important}
+  #appView .panel-head input.search,#appView .panel-head input[type=search]{width:100%!important;min-width:0!important;flex:1 1 100%!important}
+
+  #appView :is(.task-toolbar,.vehicle-toolbar,.prod-toolbar,.people-actions,.manager-toolbar,.workspace-actions,.workspace-report-tools,.suite-toolbar,.message-center-simple-toolbar,.sent-controls){display:flex!important;align-items:stretch!important;gap:6px!important;flex-wrap:wrap!important;width:100%!important;max-width:100%!important;min-width:0!important;padding:7px 8px!important;box-sizing:border-box!important;overflow:visible!important}
+  #appView :is(.task-toolbar,.vehicle-toolbar,.prod-toolbar,.people-actions,.manager-toolbar,.workspace-actions,.workspace-report-tools,.suite-toolbar,.message-center-simple-toolbar,.sent-controls)>*{min-width:0!important;max-width:100%!important}
+  #appView :is(.task-toolbar,.vehicle-toolbar,.prod-toolbar,.people-actions,.manager-toolbar,.workspace-actions,.workspace-report-tools,.suite-toolbar,.message-center-simple-toolbar,.sent-controls) button{flex:1 1 auto!important;min-height:38px!important;white-space:normal!important;line-height:1.35!important;padding:7px 9px!important}
+  #appView :is(.task-toolbar,.vehicle-toolbar,.prod-toolbar,.people-actions,.manager-toolbar,.workspace-actions,.workspace-report-tools,.suite-toolbar,.message-center-simple-toolbar,.sent-controls) :is(input[type=search],input.search,select){flex:1 1 150px!important;width:auto!important;min-width:0!important;min-height:38px!important;margin:0!important}
+
+  #appView :is(.table-wrap,.prod-table-wrap,.focus-scroll){width:100%!important;max-width:100%!important;min-width:0!important;overflow-x:auto!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;overscroll-behavior-inline:contain!important;touch-action:pan-x pan-y!important}
+  #appView table{width:max-content!important;min-width:100%!important;max-width:none!important;border-collapse:collapse!important}
+  #appView table :is(th,td){white-space:nowrap!important;max-width:260px!important}
+  #appView table td{overflow:hidden!important;text-overflow:ellipsis!important}
+  #appView table td:has(button){overflow:visible!important;text-overflow:clip!important}
+  #appView table button{min-height:34px!important}
+  #appView .suite-table-options{max-width:100%!important;margin:6px 8px!important}
+  #appView .suite-options-panel{max-width:calc(100vw - 28px)!important;overflow:auto!important}
+  #archivePager,.table-pagination{display:flex!important;gap:5px!important;max-width:100%!important;overflow-x:auto!important;padding:7px 8px!important}
+
+  dialog,.modal,.bamco-dialog{width:calc(100vw - 16px)!important;max-width:calc(100vw - 16px)!important;max-height:calc(100dvh - 16px)!important;margin:auto!important;padding:0!important;box-sizing:border-box!important}
+  dialog .modal-head{position:sticky!important;top:0!important;z-index:3!important;background:#fff!important;padding:10px 12px!important}
+  dialog :is(.modal-body,.workspace-detail,.sent-detail-body,.bsm-body,.bth-list){max-height:calc(100dvh - 84px)!important;overflow:auto!important;padding:12px!important;box-sizing:border-box!important}
+  dialog .manager-form,dialog .form-grid,dialog .sticker-upload-grid,dialog .sent-detail-meta{grid-template-columns:1fr!important}
+  dialog input,dialog select,dialog textarea{width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important}
+  dialog .modal-actions{display:flex!important;gap:7px!important;flex-wrap:wrap!important;padding:9px 10px!important}
+  dialog .modal-actions button{flex:1 1 120px!important;min-height:40px!important}
+
+  #dashboardView .desktop-dashboard-exact{grid-template-columns:1fr!important;padding:7px!important;gap:8px!important}
+  #dashboardView .dashboard-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  #dashboardView .dashboard-filter-grid{grid-template-columns:1fr!important}
+  #dashboardView .dashboard-performance-range .performance-range-controls{display:grid!important;grid-template-columns:1fr!important;align-items:stretch!important}
+  #dashboardView .dashboard-date-field{display:grid!important;grid-template-columns:minmax(0,1fr) 40px!important}
+  #dashboardView canvas{max-height:300px!important}
+
+  #performanceReportView .performance-date-controls{display:grid!important;grid-template-columns:1fr!important;width:100%!important}
+  #performanceReportView .performance-date-field{grid-template-columns:minmax(0,1fr) 38px!important;width:100%!important}
+
+  #messageCenterView .message-center-simple-toolbar label{flex:1 1 140px!important}
+  #messageCenterView #messageSelectionCount{flex:1 1 100%!important;margin:0!important;text-align:right!important}
+  #messageCenterView #sendSelectedMessages{flex:1 1 100%!important}
+
+  #sentMessagesView .sent-overview{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;padding:0 8px!important}
+  #sentMessagesView .sent-overview article{min-width:0!important;padding:9px!important}
+  #sentMessagesView .sent-overview strong{font-size:19px!important}
+  #sentMessagesView .sent-controls>span{flex:1 1 100%!important}
+  #sentMessagesView .sent-controls :is(input,select){flex:1 1 100%!important;width:100%!important}
+
+  .conversation-layout,.prod-chat{display:grid!important;grid-template-columns:1fr!important;min-height:0!important;height:auto!important}
+  .conversation-sidebar{max-height:230px!important;overflow:auto!important}
+  .conversation-stage{min-height:340px!important;max-width:100%!important;overflow:hidden!important}
+  .messenger-host{height:min(64dvh,520px)!important;min-height:390px!important}
+  .messenger-messages{padding:9px!important}
+  .chat-bubble{max-width:90%!important}
+  .messenger-compose{grid-template-columns:38px 38px minmax(0,1fr) 40px!important;gap:4px!important;padding:6px!important}
+  .messenger-compose>button{width:38px!important;height:38px!important}
+  .chat-stickers{grid-template-columns:repeat(6,56px)!important}
+  .chat-stickers button{width:54px!important;height:54px!important}
+
+  #peopleView .people-actions{padding:7px 8px!important}
+  #peopleView .people-actions button{flex:1 1 30%!important}
+  #settingsView .manager-form{grid-template-columns:1fr!important}
+  #settingsView .profile-photo-field,#settingsView .account-security-box{display:grid!important;grid-template-columns:1fr!important;gap:10px!important}
+
+  #taskTimelineView .tt-toolbar{grid-template-columns:1fr!important}
+  #taskTimelineView .tt-month{grid-column:1!important;justify-self:stretch!important;width:100%!important}
+  #taskTimelineView .tt-month>*{min-width:0!important}
+
+  #stickersView .sticker-toolbar{display:grid!important;grid-template-columns:1fr!important}
+  #stickersView .sticker-toolbar select{width:100%!important;min-width:0!important}
+  #stickersView .sticker-pair{grid-template-columns:1fr!important}
+
+  .vehicle-form,.vehicle-grid,.manager-form{grid-template-columns:1fr!important}
+  .workspace-metrics{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;padding:7px!important}
+  .workspace-metrics article{min-width:0!important}
+}
+
+@media (max-width:430px){
+  #dashboardView .dashboard-cards{grid-template-columns:1fr!important}
+  #sentMessagesView .sent-overview{grid-template-columns:1fr 1fr!important}
+  .workspace-metrics{grid-template-columns:1fr 1fr!important}
+  #appView button{font-size:14px!important}
+  #appView table :is(th,td){font-size:13px!important;padding:4px 6px!important}
+}
