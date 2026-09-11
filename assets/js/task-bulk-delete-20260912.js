@@ -1,6 +1,7 @@
 (()=>{
 'use strict';
-if(window.__bamcoTaskBulkDelete20260912V2)return;
+if(window.__bamcoTaskBulkDelete20260912V3)return;
+window.__bamcoTaskBulkDelete20260912V3=true;
 window.__bamcoTaskBulkDelete20260912V2=true;
 window.__bamcoTaskBulkDelete20260912V1=true;
 
@@ -16,23 +17,43 @@ const lastPicked={kanban:null,archive:null};
 let deleting=false;
 
 function ensureStyles(){
-  if(q('#bamcoTaskBulkDeleteSelectionStyleV2'))return;
+  if(q('#bamcoTaskBulkDeleteSelectionStyleV3'))return;
+  q('#bamcoTaskBulkDeleteSelectionStyleV2')?.remove();
   const style=document.createElement('style');
-  style.id='bamcoTaskBulkDeleteSelectionStyleV2';
+  style.id='bamcoTaskBulkDeleteSelectionStyleV3';
   style.textContent=`
-    #kanbanBody tr[data-task-id],#archiveBody tr[data-task-id]{cursor:pointer}
-    #kanbanBody tr.task-selected>td,#archiveBody tr.task-selected>td,
-    #kanbanBody tr[aria-selected="true"]>td,#archiveBody tr[aria-selected="true"]>td{
-      background:#dceee6!important;color:#173f33!important;
-      box-shadow:inset 0 1px 0 #a8cfbf,inset 0 -1px 0 #a8cfbf!important
+    #kanbanBody tr[data-task-id],#archiveBody tr[data-task-id]{cursor:pointer!important}
+    html body #kanbanBody tr.task-selected>td,html body #archiveBody tr.task-selected>td,
+    html body #kanbanBody tr[aria-selected="true"]>td,html body #archiveBody tr[aria-selected="true"]>td,
+    html body #kanbanBody tr[data-bamco-selected="1"]>td,html body #archiveBody tr[data-bamco-selected="1"]>td{
+      background:#cfe9dc!important;color:#173f33!important;
+      box-shadow:inset 0 1px 0 #86bea6,inset 0 -1px 0 #86bea6!important
     }
-    #kanbanBody tr.task-selected>td:first-child,#archiveBody tr.task-selected>td:first-child{
-      box-shadow:inset -4px 0 0 #218764,inset 0 1px 0 #a8cfbf,inset 0 -1px 0 #a8cfbf!important
+    html body #kanbanBody tr.task-selected>td:first-child,html body #archiveBody tr.task-selected>td:first-child,
+    html body #kanbanBody tr[aria-selected="true"]>td:first-child,html body #archiveBody tr[aria-selected="true"]>td:first-child{
+      box-shadow:inset -4px 0 0 #218764,inset 0 1px 0 #86bea6,inset 0 -1px 0 #86bea6!important
     }
-    #kanbanBody tr.task-selected:hover>td,#archiveBody tr.task-selected:hover>td{background:#d4eadf!important}
+    html body #kanbanBody tr.task-selected:hover>td,html body #archiveBody tr.task-selected:hover>td{background:#c6e4d6!important}
     #kanbanView .task-pick,#archiveView .task-pick,[data-bamco-task-select-all]{accent-color:#176b4d}
   `;
   document.head.appendChild(style);
+}
+
+function purgeRequestReport(){
+  q('#nav button[data-view="requestReport"]')?.remove();
+  q('#requestReportView')?.remove();
+  const tabs=window.bamcoTabs;
+  if(tabs&&!tabs.__bamcoRequestReportRemoved){
+    const owns=typeof tabs.owns==='function'?tabs.owns.bind(tabs):null;
+    const render=typeof tabs.render==='function'?tabs.render.bind(tabs):null;
+    tabs.owns=id=>id==='requestReport'?false:!!owns?.(id);
+    tabs.render=(id,...args)=>id==='requestReport'?Promise.resolve(false):render?.(id,...args);
+    tabs.__bamcoRequestReportRemoved=true;
+  }
+  if(typeof state!=='undefined'&&state?.view==='requestReport'){
+    state.view='dashboard';
+    try{typeof showView==='function'&&showView('dashboard')}catch{}
+  }
 }
 
 function scopeFromElement(el){
@@ -146,7 +167,8 @@ window.addEventListener('change',event=>{
 },true);
 
 function boot(){
-  ensureStyles();
+  ensureStyles();purgeRequestReport();
+  const app=q('#appView');if(app)new MutationObserver(()=>purgeRequestReport()).observe(app,{childList:true,subtree:true});
   for(const scope of Object.keys(config)){
     const body=q(config[scope].body);if(body){new MutationObserver(()=>queueMicrotask(()=>decorate(scope))).observe(body,{childList:true,subtree:true});decorate(scope)}
   }
