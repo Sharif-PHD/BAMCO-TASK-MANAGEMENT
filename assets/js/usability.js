@@ -2,6 +2,34 @@
 'use strict';
 const q=s=>document.querySelector(s),months=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
 const faDigits=value=>String(value??'').replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);
+const requestTypes={create:'تعریف فعالیت جدید',update:'ویرایش وظیفه',status:'تغییر وضعیت',priority:'تغییر اولویت',description:'تغییر توضیحات',complete:'اعلام انجام',delete:'درخواست حذف',due_date:'تغییر تاریخ پایان'};
+const requestStatuses={pending:'در انتظار بررسی',in_review:'در زنجیره تأیید',needs_revision:'برگشت جهت اصلاح',approved:'تأیید',rejected:'رد',cancelled:'لغوشده'};
+function important(el,name,value){el?.style?.setProperty(name,value,'important')}
+function fixFilterSelects(){
+ document.querySelectorAll('#kanbanView .column-filters select,#archiveView .column-filters select,#kanbanView .suite-filters select,#archiveView .suite-filters select').forEach(select=>{
+  select.setAttribute('dir','rtl');
+  important(select,'font-family',"'B Nazanin',BNazanin,serif");important(select,'direction','rtl');important(select,'text-align','right');important(select,'text-align-last','right');important(select,'padding-right','10px');important(select,'padding-left','28px');
+  [...select.options].forEach(option=>{option.setAttribute('dir','rtl');important(option,'font-family',"'B Nazanin',BNazanin,serif");important(option,'direction','rtl');important(option,'text-align','right')});
+ });
+}
+function mixedFontCell(cell){
+ if(!cell)return;const text=cell.textContent||'';if(cell.dataset.bamcoMixedSource===text)return;
+ const hasFa=/[\u0600-\u06ff]/.test(text),hasEn=/[A-Za-z]/.test(text);cell.dataset.bamcoMixedSource=text;
+ important(cell,'text-align','justify');important(cell,'text-align-last',hasFa?'right':'left');important(cell,'direction',hasFa?'rtl':'ltr');important(cell,'unicode-bidi','plaintext');
+ if(hasEn&&!hasFa)important(cell,'font-family',"'Times New Roman',Times,serif");else important(cell,'font-family',"'B Nazanin',BNazanin,serif");
+ if(!hasEn)return;
+ const re=/[A-Za-z][A-Za-z0-9@._%+\-/:;#&()'\"]*/g,frag=document.createDocumentFragment();let last=0,match;
+ while((match=re.exec(text))){if(match.index>last)frag.append(document.createTextNode(text.slice(last,match.index)));const span=document.createElement('span');span.className='latin-run';span.lang='en';span.dir='ltr';span.textContent=match[0];important(span,'font-family',"'Times New Roman',Times,serif");important(span,'direction','ltr');important(span,'unicode-bidi','isolate');frag.append(span);last=re.lastIndex}
+ if(last<text.length)frag.append(document.createTextNode(text.slice(last)));cell.replaceChildren(frag)
+}
+function polishTaskText(){document.querySelectorAll('#kanbanBody tr[data-task-id],#archiveBody tr[data-task-id]').forEach(row=>{mixedFontCell(row.cells?.[1]);mixedFontCell(row.cells?.[2])})}
+function widenTaskOptions(){
+ const view=q('#systemOptionsView');if(!view)return;important(view,'width','100%');important(view,'max-width','none');important(view,'margin','0');important(view,'padding','0');important(view,'box-sizing','border-box');
+ const panel=view.querySelector('.workspace-panel,.panel');if(panel){important(panel,'width','100%');important(panel,'max-width','none');important(panel,'margin','0');important(panel,'padding','0');important(panel,'box-sizing','border-box')}
+ view.querySelectorAll('.catalog-section').forEach(section=>{important(section,'width','100%');important(section,'max-width','none');important(section,'margin','0');important(section,'padding','0');important(section,'box-sizing','border-box')});
+ view.querySelectorAll('.catalog-section .table-wrap').forEach(wrap=>{important(wrap,'width','100%');important(wrap,'max-width','none');important(wrap,'margin','0');important(wrap,'padding','0');important(wrap,'box-sizing','border-box')});
+ view.querySelectorAll('.catalog-table').forEach(table=>{important(table,'width','100%');important(table,'min-width','100%');important(table,'max-width','none');important(table,'margin','0');important(table,'box-sizing','border-box')});
+}
 function install(){
  const dialog=q('#calendarDialog');
  if(dialog){
@@ -15,7 +43,7 @@ function install(){
  for(const [selector,clear]of [['#setDateBtn',false],['#clearDateBtn',true]])q(selector)?.addEventListener('click',e=>{if(!externalDate)return;e.preventDefault();e.stopImmediatePropagation();const field=externalDate;field.value=clear?'':fa(q('#calYear').value+'/'+q('#calMonth').value.padStart(2,'0')+'/'+q('#calDay').value.padStart(2,'0'));externalDate=null;dialog.close();field.dispatchEvent(new Event('input',{bubbles:true}))},true);
  dialog?.addEventListener('close',()=>externalDate=null);
  const tip=document.createElement('div');tip.className='task-preview-tip';tip.hidden=true;tip.setAttribute('role','tooltip');document.body.append(tip);
- function preview(el){const title=el.getAttribute('title')||el.dataset.preview;if(!title)return;el.dataset.preview=title;el.removeAttribute('title');tip.replaceChildren();title.split('\n').forEach((raw,i)=>{const line=faDigits(raw),part=document.createElement(i?'div':'strong');if(!/[\u0600-\u06ff]/.test(line)&&/[A-Za-z]/.test(line)){part.lang='en';part.dir='ltr'}let end=0;for(const match of line.matchAll(/[\p{Script=Latin}][\p{Script=Latin} \t@._%+\-/:;#&()'"]*/gu)){const text=match[0].trimEnd();part.append(document.createTextNode(line.slice(end,match.index)));const latin=document.createElement('bdi');latin.className='latin-run';latin.lang='en';latin.dir='ltr';latin.textContent=text;part.append(latin);end=match.index+text.length}part.append(document.createTextNode(line.slice(end)));tip.append(part)});tip.hidden=false;const r=el.getBoundingClientRect();tip.style.left=Math.max(8,Math.min(innerWidth-tip.offsetWidth-8,r.left))+'px';tip.style.top=Math.max(8,r.top-tip.offsetHeight-9)+'px'}
+ function preview(el){const title=el.getAttribute('title')||el.dataset.preview;if(!title)return;el.dataset.preview=title;el.removeAttribute('title');tip.replaceChildren();title.split('\n').forEach((raw,i)=>{const line=faDigits(raw),part=document.createElement(i?'div':'strong');if(!/[\u0600-\u06ff]/.test(line)&&/[A-Za-z]/.test(line)){part.lang='en';part.dir='ltr'}let end=0;for(const match of line.matchAll(/[\p{Script=Latin}][\p{Script=Latin} \t@._%+\-/:;#&()'\"]*/gu)){const text=match[0].trimEnd();part.append(document.createTextNode(line.slice(end,match.index)));const latin=document.createElement('bdi');latin.className='latin-run';latin.lang='en';latin.dir='ltr';latin.textContent=text;part.append(latin);end=match.index+text.length}part.append(document.createTextNode(line.slice(end)));tip.append(part)});tip.hidden=false;const r=el.getBoundingClientRect();tip.style.left=Math.max(8,Math.min(innerWidth-tip.offsetWidth-8,r.left))+'px';tip.style.top=Math.max(8,r.top-tip.offsetHeight-9)+'px'}
  document.addEventListener('pointerover',e=>{const b=e.target.closest('.tt-dot,.tt-bar,.conversation-task-tile,[data-task-preview]');if(b)preview(b)});document.addEventListener('focusin',e=>{if(e.target.matches('.tt-dot,.tt-bar,.conversation-task-tile,[data-task-preview]'))preview(e.target)});document.addEventListener('pointerout',e=>{if(e.target.closest('.tt-dot,.tt-bar,.conversation-task-tile,[data-task-preview]'))tip.hidden=true});document.addEventListener('focusout',()=>tip.hidden=true);document.addEventListener('click',()=>tip.hidden=true);document.addEventListener('scroll',()=>tip.hidden=true,true);
  // Use the same close glyph without altering any close handler.
  const root=q('#appView');const patch=()=>document.querySelectorAll('dialog button,.modal-head button,.panel-head button').forEach(b=>{if(b.dataset.cleanClose||!/^[×✕✖xX]$/.test(b.textContent.trim()))return;b.dataset.cleanClose='1';b.classList.add('clean-close');b.setAttribute('aria-label','بستن پنجره');b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>'});patch();let queued=false;new MutationObserver(()=>{if(!queued){queued=true;queueMicrotask(()=>{queued=false;patch()})}}).observe(document.body,{subtree:true,childList:true});
@@ -27,16 +55,21 @@ function install(){
  }
  const historyLabel=a=>({created:'ایجاد وظیفه',create:'ایجاد وظیفه',updated:'ویرایش وظیفه',update:'ویرایش وظیفه',status:'تغییر وضعیت',priority:'تغییر اولویت',description:'تغییر توضیحات',completed:'انجام وظیفه',complete:'انجام وظیفه',archived:'آرشیو وظیفه',restored:'بازگردانی وظیفه'}[String(a||'').toLowerCase()]||String(a||'رویداد'));
  async function openTaskHistory(taskId){
-  const d=ensureTaskHistoryDialog(),box=q('#taskHistoryEvents');q('#taskHistoryNo').textContent=faDigits(state.tasks.find(t=>String(t.id)===String(taskId))?.legacy_id||taskId);box.innerHTML='<div class="empty">در حال دریافت تاریخچه…</div>';d.showModal();
+  const d=ensureTaskHistoryDialog(),box=q('#taskHistoryEvents'),task=state.tasks.find(t=>String(t.id)===String(taskId));q('#taskHistoryNo').textContent=faDigits(task?.legacy_id||taskId);box.innerHTML='<div class="empty">در حال دریافت تاریخچه…</div>';d.showModal();
   try{
-   const rows=await select('task_history',`task_id=eq.${taskId}&select=*&order=created_at.desc`);
-   box.innerHTML=rows.map(x=>{const field=x.field_name?` — ${safe(x.field_name)}`:'',change=x.old_value!==null||x.new_value!==null?`<p>${safe(x.old_value??'—')} ← ${safe(x.new_value??'—')}</p>`:`<p>${safe(x.reason||'بدون توضیح')}</p>`,linked=x.request_id?`<button type="button" class="ghost request-timeline-btn" data-request="${x.request_id}">درخواست مرتبط ${faDigits(x.request_id)}</button>`:'';return `<article><i></i><div><b>${safe(historyLabel(x.action))}${field}</b><time>${jalaliDateTime(x.created_at)}</time>${change}${linked}</div></article>`}).join('')||'<div class="empty">برای این وظیفه هنوز سابقه‌ای ثبت نشده است.</div>';
+   const [rows,requests]=await Promise.all([select('task_history',`task_id=eq.${taskId}&select=*&order=created_at.desc`),select('change_requests',`or=(task_id.eq.${taskId},applied_task_id.eq.${taskId})&select=*&order=created_at.desc`).catch(()=>[])]);
+   const items=[...rows.map(row=>({kind:'task',at:row.created_at,row})),...requests.map(row=>({kind:'request',at:row.reviewed_at||row.completed_at||row.created_at,row}))].sort((a,b)=>new Date(b.at)-new Date(a.at));
+   box.innerHTML=items.map(item=>{if(item.kind==='request'){const r=item.row,type=requestTypes[r.request_type]||r.request_type||'درخواست',status=requestStatuses[r.request_status]||r.request_status||'—',note=r.manager_note||r.requester_note||'';return `<article class="task-history-request"><i></i><div><b>${safe(type)} — ${safe(status)}</b><time>${jalaliDateTime(item.at)}</time><p>${safe(note||r.proposed_data?.title||task?.title||'بدون توضیح')}</p><button type="button" class="ghost request-timeline-btn" data-request="${r.id}">خط زمانی درخواست ${faDigits(r.id)}</button></div></article>`}const x=item.row,field=x.field_name?` — ${safe(x.field_name)}`:'',change=x.old_value!==null||x.new_value!==null?`<p>${safe(x.old_value??'—')} ← ${safe(x.new_value??'—')}</p>`:`<p>${safe(x.reason||'بدون توضیح')}</p>`,linked=x.request_id?`<button type="button" class="ghost request-timeline-btn" data-request="${x.request_id}">خط زمانی درخواست ${faDigits(x.request_id)}</button>`:'';return `<article><i></i><div><b>${safe(historyLabel(x.action))}${field}</b><time>${jalaliDateTime(x.created_at)}</time>${change}${linked}</div></article>`}).join('')||'<div class="empty">برای این وظیفه هنوز سابقه‌ای ثبت نشده است.</div>';
   }catch(err){box.innerHTML=`<div class="empty">${safe(err.message||'دریافت تاریخچه انجام نشد.')}</div>`}
  }
- function decorateTaskRows(){
-  document.querySelectorAll('#kanbanBody tr[data-task-id]').forEach(row=>{if(row.dataset.historyLinked==='1')return;row.dataset.historyLinked='1';const first=row.cells?.[0];if(!first)return;const b=document.createElement('button');b.type='button';b.className='ghost task-history-link';b.textContent='سوابق';b.title='نمایش تاریخچه این وظیفه';b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();void openTaskHistory(row.dataset.taskId)});first.append(b)})
- }
- decorateTaskRows();const kanban=q('#kanbanBody');if(kanban)new MutationObserver(decorateTaskRows).observe(kanban,{childList:true});
+ function selectedKanbanTaskId(){try{const task=typeof selectedTask==='function'?selectedTask('kanban'):null;if(task?.id)return task.id}catch{}return q('#kanbanBody .task-pick:checked')?.value||q('#kanbanBody tr.task-selected')?.dataset.taskId||null}
+ document.addEventListener('click',e=>{const button=e.target.closest('#kanbanView .task-toolbar button,#kanbanView .bamco-command-bar button');if(!button||!/تاریخچه\s*وظیفه/.test(button.textContent||''))return;e.preventDefault();e.stopImmediatePropagation();const taskId=selectedKanbanTaskId();if(!taskId)return toast('ابتدا یک وظیفه را انتخاب کنید.',true);void openTaskHistory(taskId)},true);
+ // Remove the older per-row "سوابق" shortcut; the unified toolbar history is the single entry point.
+ document.querySelectorAll('.task-history-link').forEach(x=>x.remove());
+
+ let polishFrame=0;const applyRequestedFixes=()=>{polishFrame=0;fixFilterSelects();polishTaskText();widenTaskOptions()};applyRequestedFixes();
+ new MutationObserver(()=>{if(!polishFrame)polishFrame=requestAnimationFrame(applyRequestedFixes)}).observe(root||document.body,{childList:true,subtree:true});
+ document.addEventListener('bamco:task-options',()=>requestAnimationFrame(applyRequestedFixes));
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
