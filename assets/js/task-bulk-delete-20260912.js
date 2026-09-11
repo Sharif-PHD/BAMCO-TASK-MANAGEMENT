@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
-if(window.__bamcoTaskBulkDelete20260912V1)return;
-window.__bamcoTaskBulkDelete20260912V1=true;
+if(window.__bamcoTaskBulkDelete20260912V2)return;
+window.__bamcoTaskBulkDelete20260912V2=true;
 
 const q=(s,r=document)=>r?.querySelector?.(s)||null;
 const qa=(s,r=document)=>[...(r?.querySelectorAll?.(s)||[])];
@@ -13,6 +13,26 @@ const config={
 const picked={kanban:new Set(),archive:new Set()};
 const lastPicked={kanban:null,archive:null};
 let deleting=false;
+
+function ensureStyles(){
+  if(q('#bamcoTaskBulkDeleteSelectionStyleV2'))return;
+  const style=document.createElement('style');
+  style.id='bamcoTaskBulkDeleteSelectionStyleV2';
+  style.textContent=`
+    #kanbanBody tr[data-task-id],#archiveBody tr[data-task-id]{cursor:pointer}
+    #kanbanBody tr.task-selected>td,#archiveBody tr.task-selected>td,
+    #kanbanBody tr[aria-selected="true"]>td,#archiveBody tr[aria-selected="true"]>td{
+      background:#dceee6!important;color:#173f33!important;
+      box-shadow:inset 0 1px 0 #a8cfbf,inset 0 -1px 0 #a8cfbf!important
+    }
+    #kanbanBody tr.task-selected>td:first-child,#archiveBody tr.task-selected>td:first-child{
+      box-shadow:inset -4px 0 0 #218764,inset 0 1px 0 #a8cfbf,inset 0 -1px 0 #a8cfbf!important
+    }
+    #kanbanBody tr.task-selected:hover>td,#archiveBody tr.task-selected:hover>td{background:#d4eadf!important}
+    #kanbanView .task-pick,#archiveView .task-pick,[data-bamco-task-select-all]{accent-color:#176b4d}
+  `;
+  document.head.appendChild(style);
+}
 
 function scopeFromElement(el){
   if(el?.closest?.('#archiveView')||el?.closest?.('#archiveBody'))return'archive';
@@ -43,7 +63,10 @@ function decorate(scope,{prune=true}={}){
   if(prune)for(const id of [...picked[scope]])if(!visible.has(id))picked[scope].delete(id);
   qa('tr[data-task-id]',body).forEach(row=>{
     const id=String(row.dataset.taskId),input=q('input.task-pick',row);if(!input)return;
-    if(input.type!=='checkbox')input.type='checkbox';input.removeAttribute('name');input.checked=picked[scope].has(id);input.setAttribute('aria-checked',input.checked?'true':'false');row.classList.toggle('task-selected',input.checked);row.setAttribute('aria-selected',input.checked?'true':'false');
+    if(input.type!=='checkbox')input.type='checkbox';input.removeAttribute('name');
+    const selected=picked[scope].has(id);
+    input.checked=selected;input.setAttribute('aria-checked',selected?'true':'false');
+    row.classList.toggle('task-selected',selected);row.setAttribute('aria-selected',selected?'true':'false');row.dataset.bamcoSelected=selected?'1':'0';
   });
   syncToolbar(scope);
 }
@@ -90,7 +113,8 @@ async function deleteSelected(scope){
   const deleteButtons=[q('#kanbanDeleteBtn'),q('#archiveDeleteBtn')].filter(Boolean);deleteButtons.forEach(button=>{button.disabled=true;button.setAttribute('aria-busy','true')});
   state.tasks=(state.tasks||[]).filter(task=>!selectedSet.has(String(task.id)));optimisticResequence(state.tasks);clear(scope);renderBoth();
   try{
-    await rpc('delete_tasks_and_resequence',{p_task_ids:selected.map(Number)});
+    const deleted=await rpc('delete_tasks_and_resequence',{p_task_ids:selected.map(Number)});
+    if(Number(deleted)!==tasks.length)throw new Error('تعداد ردیف‌های حذف‌شده با انتخاب شما مطابقت ندارد.');
     try{const rows=await selectAll('task_status_view','select=*&order=id.desc');if(Array.isArray(rows))state.tasks=rows}catch(refreshError){console.warn('authoritative task refresh after delete failed',refreshError)}
     renderBoth();
     if(typeof toast==='function')toast(tasks.length===1?'وظیفه حذف شد و شناسه‌ها بازشماری شد.':`${faDigits(tasks.length)} وظیفه حذف شدند و شناسه‌ها بازشماری شد.`);
@@ -121,6 +145,7 @@ window.addEventListener('change',event=>{
 },true);
 
 function boot(){
+  ensureStyles();
   for(const scope of Object.keys(config)){
     const body=q(config[scope].body);if(body){new MutationObserver(()=>queueMicrotask(()=>decorate(scope))).observe(body,{childList:true,subtree:true});decorate(scope)}
   }
