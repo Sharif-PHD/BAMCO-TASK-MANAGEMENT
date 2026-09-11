@@ -3,7 +3,6 @@ import asyncio
 import functools
 import http.server
 import json
-import re
 import threading
 from pathlib import Path
 
@@ -49,8 +48,17 @@ async def run_case(browser, base, width, height):
     await page.add_init_script(
         """
         window.__entryLayoutShifts=[];
+        const nodeName=n=>{
+          if(!n)return null;
+          if(n.id)return '#'+n.id;
+          const cls=typeof n.className==='string'&&n.className.trim()?'.'+n.className.trim().split(/\s+/).join('.'):'';
+          return String(n.tagName||'node').toLowerCase()+cls;
+        };
         new PerformanceObserver(list=>{
-          for(const e of list.getEntries()) if(!e.hadRecentInput) window.__entryLayoutShifts.push(e.value);
+          for(const e of list.getEntries()) if(!e.hadRecentInput) window.__entryLayoutShifts.push({
+            value:e.value,startTime:e.startTime,
+            sources:(e.sources||[]).map(s=>({node:nodeName(s.node),previousRect:s.previousRect,currentRect:s.currentRect}))
+          });
         }).observe({type:'layout-shift',buffered:true});
         """
     )
@@ -59,10 +67,12 @@ async def run_case(browser, base, width, height):
     await expect(entry).to_be_visible()
     await expect(page.locator('#departmentEntry > header > img')).to_have_count(1)
 
+    marks=(0,50,100,250,500,900,1600)
     samples=[]
-    for delay in (0,50,100,250,500,900,1600):
-        if delay: await page.wait_for_timeout(delay - (0 if len(samples)==0 else (0,50,100,250,500,900,1600)[len(samples)-1]))
-        samples.append(await snapshot(page))
+    previous=0
+    for mark in marks:
+        if mark>previous: await page.wait_for_timeout(mark-previous)
+        samples.append(await snapshot(page));previous=mark
 
     first=samples[0]
     max_delta=0.0
@@ -77,9 +87,11 @@ async def run_case(browser, base, width, height):
             for key in ('display','minHeight','height','padding','gridTemplateColumns','transform'):
                 if a[key]!=b[key]: changes.append({'sample':sample_index,'selector':sel,'field':key,'from':a[key],'to':b[key]})
 
-    assert not changes, f'entry layout changed after first paint: {json.dumps(changes,ensure_ascii=False)}'
-    cls = await page.evaluate('window.__entryLayoutShifts.reduce((a,b)=>a+b,0)')
-    assert cls < 0.001, f'entry CLS is {cls}'
+    assert not changes, f'entry layout changed after DOMContentLoaded: {json.dumps(changes,ensure_ascii=False)}'
+    shift_details = await page.evaluate('window.__entryLayoutShifts')
+    cls = sum(float(x.get('value',0)) for x in shift_details)
+    print(json.dumps({'width':width,'height':height,'max_delta_px':max_delta,'cls':cls,'layout_shifts':shift_details},ensure_ascii=False),flush=True)
+    assert cls < 0.001, f'entry CLS is {cls}: {json.dumps(shift_details,ensure_ascii=False)}'
     assert await page.locator('#departmentEntry').evaluate("el=>getComputedStyle(el).transform==='none'")
     assert await page.locator('#departmentEntry .department-grid button').first.evaluate("el=>getComputedStyle(el).transform==='none'")
 
