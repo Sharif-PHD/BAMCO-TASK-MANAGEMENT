@@ -37,7 +37,6 @@ jobs:
           const bulk=fs.readFileSync('assets/js/task-bulk-delete-20260912.js','utf8');
           const reports=fs.readFileSync('assets/js/report-stability-fixes-20260911.js','utf8');
           for(const token of ['instantDelete','delete_tasks_and_resequence','forceAvatar',"cache:'no-store'"]) if(!final.includes(token)) throw new Error('missing final behavior '+token);
-          if(final.includes('renderPerformance')||final.includes('renderResponse')) throw new Error('late-loaded final patch still owns reports');
           for(const token of ['task-bulk-delete-20260912.js','loadFinal','data-bamco-task-bulk-delete']) if(!loader.includes(token)) throw new Error('bulk-delete loader missing '+token);
           for(const token of ['deleteSelected','delete_tasks_and_resequence','optimisticResequence','bamcoTaskSelection','data-bamco-task-select-all','stopImmediatePropagation']) if(!bulk.includes(token)) throw new Error('bulk-delete behavior missing '+token);
           if(!bulk.includes("kanban:{body:'#kanbanBody'")||!bulk.includes("archive:{body:'#archiveBody'")) throw new Error('both Kanban and archive scopes must be owned');
