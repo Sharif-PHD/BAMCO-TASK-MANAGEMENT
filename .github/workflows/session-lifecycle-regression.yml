@@ -1,0 +1,46 @@
+name: Session lifecycle regression
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'assets/js/session-runtime.js'
+      - 'assets/js/auth-session.js'
+      - 'assets/js/tab-workspace.js'
+      - 'supabase/functions/session-audit/index.ts'
+      - 'tests/session-lifecycle.test.cjs'
+      - 'tests/auth-session.test.cjs'
+      - '.github/workflows/session-lifecycle-regression.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'assets/js/session-runtime.js'
+      - 'assets/js/auth-session.js'
+      - 'assets/js/tab-workspace.js'
+      - 'supabase/functions/session-audit/index.ts'
+      - 'tests/session-lifecycle.test.cjs'
+      - 'tests/auth-session.test.cjs'
+
+permissions:
+  contents: read
+
+jobs:
+  session-lifecycle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Syntax
+        run: node --check assets/js/session-runtime.js
+      - name: Client and server session lifecycle
+        run: >-
+          node --test
+          --test-name-pattern="logout waits|failed session end|stale heartbeat|closing the page|server start|server end|server detects|connected legacy|confirmed historical|recent activity"
+          tests/session-lifecycle.test.cjs
+      - name: Native Auth logout fallback
+        run: >-
+          node --test
+          --test-name-pattern="logout still revokes"
+          tests/auth-session.test.cjs
