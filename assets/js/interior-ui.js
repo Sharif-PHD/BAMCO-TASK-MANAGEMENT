@@ -22,26 +22,29 @@
     }
     if(view.firstElementChild!==head)view.prepend(head);
     const h=head.querySelector('h3');if(h.textContent!==title)h.textContent=title;
+    const commandBack=ownedBack(view);
     let managementBar=null;
     if(eligible(view)){
-      managementBar=[...view.querySelectorAll(toolbarSelector)].find(bar=>!bar.closest('form,dialog,details')&&!bar.matches('.workspace-actions'));
-      if(!managementBar){
-        managementBar=document.createElement('div');managementBar.className='bamco-management-toolbar';
-        const panel=view.querySelector(':scope>.panel');
-        if(panel)panel.prepend(managementBar);else head.after(managementBar);
+      if(commandBack){
+        view.querySelectorAll('.bamco-management-toolbar').forEach(bar=>bar.remove());
+      }else{
+        managementBar=[...view.querySelectorAll(toolbarSelector)].find(bar=>!bar.closest('form,dialog,details')&&!bar.matches('.workspace-actions'));
+        if(!managementBar){
+          managementBar=document.createElement('div');managementBar.className='bamco-management-toolbar';
+          const panel=view.querySelector(':scope>.panel');
+          if(panel)panel.prepend(managementBar);else head.after(managementBar);
+        }
+        managementBar.classList.add('bamco-command-bar');
+        const nativeHead=view.querySelector('.panel-head,.vehicle-panel-head,.tt-head');
+        nativeHead?.querySelectorAll(':scope>.workspace-actions>button,:scope>button').forEach(button=>managementBar.append(button));
+        [...(nativeHead?.children||[])].filter(child=>child!==managementBar&&!child.contains(managementBar)&&child.matches('div')&&!child.querySelector('h1,h2,h3,p,small')&&child.querySelector('button,a,input,select')).forEach(group=>{
+          [...group.children].forEach(control=>managementBar.append(control));group.remove();
+        });
       }
-      managementBar.classList.add('bamco-command-bar');
-      const nativeHead=view.querySelector('.panel-head,.vehicle-panel-head,.tt-head');
-      nativeHead?.querySelectorAll(':scope>.workspace-actions>button,:scope>button').forEach(button=>managementBar.append(button));
-      [...(nativeHead?.children||[])].filter(child=>child!==managementBar&&!child.contains(managementBar)&&child.matches('div')&&!child.querySelector('h1,h2,h3,p,small')&&child.querySelector('button,a,input,select')).forEach(group=>{
-        [...group.children].forEach(control=>managementBar.append(control));group.remove();
-      });
       view.querySelectorAll('[data-empty-home]').forEach(button=>button.remove());
     }
-    const commandBack=ownedBack(view);
     if(commandBack){
       view.querySelectorAll('.content-back').forEach(button=>{if(button!==commandBack)button.remove()});
-      if(managementBar?.classList.contains('bamco-management-toolbar')&&!managementBar.children.length){managementBar.remove();managementBar=null}
     }else{
       let back=view.querySelector('.content-back');
       if(!back){back=document.createElement('button');back.type='button';back.className='content-back ghost';back.textContent='بازگشت به خانه';back.addEventListener('click',()=>window.bamcoShowHome?.())}
