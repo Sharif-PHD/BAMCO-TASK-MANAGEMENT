@@ -28,8 +28,8 @@ jobs:
             html="$(curl -fsSL --connect-timeout 10 "${BASE}?deselect-root=${GITHUB_SHA}-${i}" || true)"
             app="$(curl -fsSL --connect-timeout 10 "${BASE}assets/js/app.js?deselect-root=${GITHUB_SHA}-${i}" || true)"
             bulk="$(curl -fsSL --connect-timeout 10 "${BASE}assets/js/task-bulk-delete-20260912.js?deselect-root=${GITHUB_SHA}-${i}" || true)"
-            if grep -q 'app.js?v=task-row-deselect-root-20260912-2' <<<"$html" \
-              && grep -q 'avatar-final-20260911.js?v=task-row-deselect-root-20260912-2' <<<"$html" \
+            if grep -q 'app.js?v=task-row-deselect-root-20260912-3' <<<"$html" \
+              && grep -q 'avatar-final-20260911.js?v=task-row-deselect-root-20260912-3' <<<"$html" \
               && grep -q 'const next=String(state.selected\[scope\])===String(id)?null:Number(id)' <<<"$app" \
               && grep -q '__bamcoTaskBulkDelete20260912V6' <<<"$bulk"; then
               ready=1; break
@@ -79,7 +79,7 @@ jobs:
                   page=await browser.new_page(viewport={'width':1440,'height':900})
                   errors=[]
                   page.on('pageerror', lambda exc: errors.append(str(exc)))
-                  await page.goto(BASE+'?visible-deselect=1', wait_until='networkidle')
+                  await page.goto(BASE+'?visible-deselect=2', wait_until='networkidle')
                   await page.wait_for_function("typeof renderTasks==='function' && window.__bamcoTaskBulkDelete20260912V6===true")
                   await page.evaluate("""() => {
                     state.profile={id:'00000000-0000-0000-0000-000000000001',role:'manager',active:true,full_name:'مدیر'};
