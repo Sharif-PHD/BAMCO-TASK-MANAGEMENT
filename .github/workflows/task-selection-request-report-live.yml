@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'assets/js/task-bulk-delete-20260912.js'
+      - 'assets/js/task-terminal-columns-20260912.js'
       - 'assets/js/avatar-final-20260911.js'
       - 'assets/js/production-runtime.js'
       - '.github/workflows/task-selection-request-report-live.yml'
@@ -29,8 +30,9 @@ jobs:
           ready=0
           for i in $(seq 1 30); do
             bulk="$(curl -fsSL --connect-timeout 10 "${BASE}assets/js/task-bulk-delete-20260912.js?probe=${GITHUB_SHA}-${i}" || true)"
+            columns="$(curl -fsSL --connect-timeout 10 "${BASE}assets/js/task-terminal-columns-20260912.js?probe=${GITHUB_SHA}-${i}" || true)"
             runtime="$(curl -fsSL --connect-timeout 10 "${BASE}assets/js/production-runtime.js?probe=${GITHUB_SHA}-${i}" || true)"
-            if grep -q '__bamcoTaskBulkDelete20260912V3' <<<"$bulk" && grep -q "const REMOVED=new Set(\['requestReport'\])" <<<"$runtime"; then ready=1; break; fi
+            if grep -q '__bamcoTaskBulkDelete20260912V3' <<<"$bulk" && grep -q '__bamcoTaskTerminalColumns20260912' <<<"$columns" && grep -q "const REMOVED=new Set(\['requestReport'\])" <<<"$runtime"; then ready=1; break; fi
             sleep 10
           done
           test "$ready" = 1
@@ -38,7 +40,7 @@ jobs:
         run: |
           python -m pip install playwright==1.57.0
           python -m playwright install --with-deps chromium
-      - name: Verify selected task rows turn green and request report is absent
+      - name: Verify row selection, terminal columns and removed request report
         shell: bash
         run: |
           cat > /tmp/check_selection_report.py <<'PY'
@@ -57,44 +59,44 @@ jobs:
               async with async_playwright() as p:
                   browser=await p.chromium.launch()
                   page=await browser.new_page(viewport={'width':1365,'height':900})
-                  await page.goto(BASE+'?selection-report-live=1', wait_until='networkidle')
-                  await page.wait_for_function('window.__bamcoTaskBulkDelete20260912V3 === true')
-                  await page.wait_for_timeout(250)
+                  await page.goto(BASE+'?terminal-columns-live=1', wait_until='networkidle')
+                  await page.wait_for_function('window.__bamcoTaskBulkDelete20260912V3 === true && window.__bamcoTaskTerminalColumns20260912 === true')
+                  await page.wait_for_timeout(300)
 
                   assert await page.locator('#nav button[data-view="requestReport"]').count() == 0
                   assert await page.locator('#requestReportView').count() == 0
+                  assert await page.locator('[data-bamco-task-select-all]').count() == 0
+                  assert (await page.locator('#kanbanView thead tr').first.locator('th').last.text_content()).strip() == 'تعجیل'
+                  assert (await page.locator('#archiveView thead tr').first.locator('th').last.text_content()).strip() == 'تعجیل'
+                  assert await page.locator('#kanbanView thead tr').first.locator('th').count() == 14
+                  assert await page.locator('#archiveView thead tr').first.locator('th').count() == 15
 
                   await page.evaluate("""() => {
                     state.profile={id:'00000000-0000-0000-0000-000000000001',role:'manager',active:true,full_name:'مدیر'};
                     state.tasks=[
-                      {id:91001,legacy_id:1,title:'Task one',archived:false},
-                      {id:91002,legacy_id:2,title:'Task two',archived:false}
+                      {id:91001,legacy_id:1,title:'Task one',archived:false,advance_days:7},
+                      {id:92001,legacy_id:2,title:'Archived task',archived:true,delay_days:3,advance_days:5}
                     ];
                     state.selected={kanban:null,archive:null};
-                    const body=document.querySelector('#kanbanBody');
-                    body.innerHTML=`
-                      <tr data-task-id="91001" data-scope="kanban"><td>1</td><td>Task one</td><td><input class="task-pick" type="radio" value="91001"></td></tr>
-                      <tr data-task-id="91002" data-scope="kanban"><td>2</td><td>Task two</td><td><input class="task-pick" type="radio" value="91002"></td></tr>`;
+                    document.querySelector('#kanbanBody').innerHTML=`<tr data-task-id="91001" data-scope="kanban">${'<td>x</td>'.repeat(13)}<td><input class="task-pick" type="radio" value="91001"></td></tr>`;
+                    document.querySelector('#archiveBody').innerHTML=`<tr data-task-id="92001" data-scope="archive">${'<td>x</td>'.repeat(13)}<td>۳</td><td>۵</td><td><input class="task-pick" type="radio" value="92001"></td></tr>`;
                   }""")
-                  await page.wait_for_function("() => [...document.querySelectorAll('#kanbanBody input.task-pick')].every(x=>x.type==='checkbox')")
+                  await page.wait_for_function("() => document.querySelector('#kanbanBody tr').cells.length===14 && document.querySelector('#archiveBody tr').cells.length===15")
+                  assert (await page.locator('#kanbanBody tr td').last.text_content()).strip() == '۷'
+                  assert (await page.locator('#archiveBody tr td').last.text_content()).strip() == '۵'
+                  assert await page.locator('[data-bamco-task-select-all]').count() == 0
 
                   await page.evaluate("() => document.querySelector('#kanbanBody tr[data-task-id=\"91001\"] td:nth-child(2)').dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}))")
                   await page.wait_for_function("() => window.bamcoTaskSelection.count('kanban')===1")
-                  assert await page.locator('#kanbanBody tr[data-task-id="91001"]').evaluate("el=>el.classList.contains('task-selected')")
-                  bg1=await page.locator('#kanbanBody tr[data-task-id="91001"] td').first.evaluate("el=>getComputedStyle(el).backgroundColor")
-                  assert greenish(bg1), bg1
+                  row=page.locator('#kanbanBody tr[data-task-id="91001"]')
+                  assert await row.evaluate("el=>el.getAttribute('aria-selected')==='true'")
+                  bg=await row.locator('td').first.evaluate("el=>getComputedStyle(el).backgroundColor")
+                  assert greenish(bg), bg
+                  await page.wait_for_timeout(50)
+                  assert await page.locator('[data-bamco-task-select-all]').count() == 0
+                  assert (await page.locator('#kanbanView thead tr').first.locator('th').last.text_content()).strip() == 'تعجیل'
 
-                  await page.evaluate("() => document.querySelector('#kanbanBody tr[data-task-id=\"91002\"] td:nth-child(2)').dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}))")
-                  await page.wait_for_function("() => window.bamcoTaskSelection.count('kanban')===2")
-                  colors=[]
-                  for task_id in ('91001','91002'):
-                      row=page.locator(f'#kanbanBody tr[data-task-id="{task_id}"]')
-                      assert await row.evaluate("el=>el.getAttribute('aria-selected')==='true'")
-                      bg=await row.locator('td').first.evaluate("el=>getComputedStyle(el).backgroundColor")
-                      assert greenish(bg), (task_id,bg)
-                      colors.append(bg)
-
-                  print(json.dumps({'selection':'green','colors':colors,'multi_select':2,'request_report':'absent','status':'passed'}))
+                  print(json.dumps({'selection':'green','kanban_last':'تعجیل','archive_last':'تعجیل','select_all':'absent','request_report':'absent','status':'passed'},ensure_ascii=False))
                   await browser.close()
 
           asyncio.run(main())
