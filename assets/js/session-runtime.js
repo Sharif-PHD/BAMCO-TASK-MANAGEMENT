@@ -21,7 +21,7 @@ const call=async(action,extra={},options={})=>{
 };
 const channel=typeof BroadcastChannel==='function'?new BroadcastChannel('bamco-session-presence-v1'):null;
 function refreshVisibleSessionReport(){
- try{const id=state?.view,view=document.getElementById(id+'View');if(!state?.token||!['activeSessions','loginActivity','loginReport'].includes(id)||!view||view.classList.contains('hidden'))return;window.bamcoTabs?.render?.(id)?.catch?.(error=>console.warn('BAMCO session report',error.message))}catch{}
+ try{const id=state?.view,view=document.getElementById(id+'View');if(!state?.token||document.hidden||!['activeSessions','loginActivity','loginReport'].includes(id)||!view||view.classList.contains('hidden')||view.querySelector('.workspace-loading')||view.querySelector('[data-report-search]')?.value||view.contains(document.activeElement)||document.querySelector('dialog[open]')||window.bamcoSelection?.ids?.('#'+id+'View').length)return;window.bamcoTabs?.render?.(id,true)?.catch?.(error=>console.warn('BAMCO session report',error.message))}catch{}
 }
 function announce(type){const detail={type,at:Date.now(),device_id:DEVICE_ID};try{channel?.postMessage(detail)}catch{}try{localStorage.setItem(SIGNAL_KEY,JSON.stringify(detail));localStorage.removeItem(SIGNAL_KEY)}catch{}}
 channel?.addEventListener('message',refreshVisibleSessionReport);
@@ -66,7 +66,9 @@ function clear(){generation++;sessionStorage.removeItem(KEY);starting=null;confi
 window.bamcoSession={start,heartbeat,end,clear,currentId:()=>sessionStorage.getItem(KEY),deviceId:()=>DEVICE_ID};
 // Presence is independent from user activity: even an idle, open tab checks in.
 setInterval(()=>heartbeat().catch(error=>console.warn('BAMCO session heartbeat',error.message)),30000);
-document.addEventListener('visibilitychange',()=>{if(state?.token)heartbeat().catch(error=>console.warn('BAMCO session',error.message))});
+// Session management screens should not wait for the older 15-second report poll.
+setInterval(refreshVisibleSessionReport,5000);
+document.addEventListener('visibilitychange',()=>{if(state?.token)heartbeat().catch(error=>console.warn('BAMCO session',error.message));if(!document.hidden)refreshVisibleSessionReport()});
 // Closing/reloading a real page ends its visible presence immediately. BFCache
 // navigation is exempt because the same page instance can resume.
 window.addEventListener('pagehide',event=>{if(event.persisted||!state?.token||ending)return;void end('closed',{keepalive:true}).catch(()=>{})});
