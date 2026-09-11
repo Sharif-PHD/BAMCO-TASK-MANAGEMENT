@@ -11,7 +11,7 @@
   <link rel="icon" type="image/png" href="assets/images/bamco-white.png" />
   <link rel="stylesheet" href="assets/css/app.css?v=mobile-shell-20260911-1">
 <link rel="stylesheet" href="assets/css/department-entry.css?v=mobile-entry-20260911-1">
-<script defer src="assets/js/department-entry.js?v=mobile-entry-20260911-2"></script>
+<script defer src="assets/js/department-entry.js?v=mobile-entry-20260911-3"></script>
 <style id="entryCritical">html,body{margin:0;min-height:100%;background:#f4f8f5}body.department-pending>#loginView,body.department-pending>#appView{display:none!important}#departmentEntry{min-height:100vh;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 5vw;text-align:center;direction:rtl;color:#164d3b;font-family:"B Nazanin",Tahoma,serif}#departmentEntry[hidden]{display:none!important}#departmentEntry header{display:flex;flex-direction:column;align-items:center}#departmentEntry header img{width:244px;height:152px;box-sizing:border-box;object-fit:contain;background:#0c5842;border-radius:16px;padding:24px 30px}.department-grid{width:min(1020px,100%);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}.department-grid button{aspect-ratio:1;border:1px solid #caddcf;border-radius:22px;background:#fff;color:#18543e;font:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:22px}.department-icon{display:grid;place-items:center;width:86px;height:86px;border-radius:19px;background:#e5f2e9}.department-icon svg{width:48px;height:48px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}.department-grid strong{font-size:22px}.department-state{font-size:16px}@media(max-width:620px){#departmentEntry{min-height:100dvh;justify-content:flex-start;padding:18px 12px 24px;overflow:auto}#departmentEntry header{margin:0 auto 16px}#departmentEntry header img{width:166px;height:104px;padding:15px 20px;border-radius:14px}#departmentEntry h1{font-size:21px;line-height:1.7;margin:12px 0 2px}#departmentEntry header p{font-size:16px}.department-grid{grid-template-columns:1fr;gap:10px;max-width:430px}.department-grid button{aspect-ratio:auto;min-height:96px;display:grid;grid-template-columns:58px minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 14px;text-align:right;border-radius:14px}.department-grid strong{font-size:17px;text-align:right}.department-icon{width:54px;height:54px}.department-icon svg{width:32px;height:32px}.department-state{font-size:13px;white-space:nowrap}}</style>
 </head>
 <body class="department-pending">
@@ -68,145 +68,4 @@
         <div class="header-actions"><button id="addTaskBtn" class="primary">＋ افزودن وظیفه</button></div>
       </header>
       <section id="dashboardView" class="view">
-        <div class="desktop-dashboard-exact">
-          <fieldset class="dashboard-filters"><legend>اسلایسرها و فیلترها</legend><div class="dashboard-filter-grid"><label>متولی<select id="dashOwner"></select></label><label>اولویت<select id="dashPriority"></select></label><label>وضعیت جاری<select id="dashStatus"></select></label><label>شرایط دیرکرد<select id="dashBucket"></select></label></div><div class="dashboard-filter-actions"><button id="resetDashFilters" type="button" class="ghost">حذف فیلترها</button></div></fieldset>
-          <div id="dashboardCards" class="dashboard-cards"></div>
-          <div class="dashboard-chart-card"><canvas id="statusChart" height="290"></canvas></div>
-          <div class="dashboard-chart-card"><canvas id="priorityChart" height="290"></canvas></div>
-          <div class="dashboard-chart-card"><canvas id="bucketChart" height="290"></canvas></div>
-          <div class="dashboard-chart-card"><canvas id="workloadChart" height="360"></canvas></div>
-          <fieldset class="dashboard-performance-range"><legend>بازه زمانی نمودار عملکرد متولیان</legend><div class="performance-range-controls"><label>از تاریخ<span class="dashboard-date-field"><input id="perfFrom" class="jalali-input" readonly placeholder="۱۴۰۵/۰۱/۰۱"><button type="button" class="ghost dashboard-calendar-btn bamco-icon-button" data-dashboard-date="perfFrom" aria-label="تقویم از تاریخ">▦</button></span></label><label>تا تاریخ<span class="dashboard-date-field"><input id="perfTo" class="jalali-input" readonly placeholder="۱۴۰۵/۰۱/۰۱"><button type="button" class="ghost dashboard-calendar-btn bamco-icon-button" data-dashboard-date="perfTo" aria-label="تقویم تا تاریخ">▦</button></span></label><div class="performance-range-actions"><button id="applyPerf" type="button" class="primary">اعمال</button><button id="clearPerf" type="button" class="ghost">حذف</button></div></div></fieldset>
-          <div class="dashboard-chart-card"><canvas id="performanceChart" height="360"></canvas></div>
-        </div>
-      </section>
-
-      <section id="kanbanView" class="view hidden">
-        <div class="panel table-panel">
-          <div class="panel-head"><div><h3>وظایف جاری</h3><small id="kanbanScope"></small></div><input id="kanbanSearch" class="search" placeholder="جست‌وجو در وظایف…" /></div>
-          <input id="importFile" type="file" accept=".xlsx,.xls,.csv" hidden>
-          <div class="task-toolbar"><button id="importBtn" class="ghost manager-only">ورود از اکسل</button><button id="kanbanExportBtn" class="ghost">خروجی اکسل</button><button id="kanbanEditBtn" class="ghost" disabled>ویرایش</button><button id="kanbanArchiveBtn" class="ghost" disabled>آرشیو فعالیت</button><button id="kanbanDeleteBtn" class="danger manager-only" disabled>حذف</button></div>
-          <div class="table-wrap"><table><thead><tr><th>شناسه</th><th>عنوان فعالیت</th><th>توضیحات</th><th>متولی</th><th>وضعیت</th><th>اولویت</th><th>تاریخ شروع</th><th>تاریخ انجام</th><th>تاریخ پایان</th><th>یادآور</th><th>آخرین به‌روزرسانی</th><th>وضعیت دیرکرد</th><th>توضیحات مدیر</th><th>انتخاب</th></tr><tr class="column-filters"></tr></thead><tbody id="kanbanBody"></tbody></table></div>
-        </div>
-      </section>
-
-      <section id="archiveView" class="view hidden">
-        <div class="panel table-panel">
-          <div class="panel-head"><div><h3>وظایف آرشیو شده</h3><small id="archiveScope"></small></div><input id="archiveSearch" class="search" placeholder="جست‌وجو در آرشیو…" /></div>
-          <div class="task-toolbar"><button id="archiveImportBtn" class="ghost manager-only">ورود از اکسل</button><button id="archiveExportBtn" class="ghost">خروجی اکسل</button><button id="archiveEditBtn" class="ghost" disabled>ویرایش</button><button id="archiveRestoreBtn" class="ghost manager-only" disabled>بازگردانی به کانبان</button><button id="archiveDeleteBtn" class="danger manager-only" disabled>حذف</button></div>
-          <div class="table-wrap"><table><thead><tr><th>شناسه</th><th>عنوان فعالیت</th><th>توضیحات</th><th>متولی</th><th>وضعیت</th><th>اولویت</th><th>تاریخ شروع</th><th>تاریخ انجام</th><th>تاریخ پایان</th><th>یادآور</th><th>آخرین به‌روزرسانی</th><th>وضعیت دیرکرد</th><th>توضیحات مدیر</th><th>تأخیر</th><th>تعجیل</th><th>انتخاب</th></tr><tr class="column-filters"></tr></thead><tbody id="archiveBody"></tbody></table></div>
-          <div id="archivePager" class="archive-pager" aria-label="صفحه‌بندی آرشیو"></div>
-        </div>
-      </section>
-
-      <section id="approvalsView" class="view hidden">
-        <div class="panel table-panel"><div class="panel-head"><h3>درخواست‌های جاری</h3></div><div class="table-wrap"><table><thead><tr><th>شماره</th><th>درخواست‌دهنده</th><th>نوع</th><th>عنوان وظیفه</th><th>زمان</th><th>وضعیت</th><th>عملیات</th></tr></thead><tbody id="approvalBody"></tbody></table></div></div>
-      </section>
-      <section id="requestHistoryView" class="view hidden"><div class="panel table-panel"><div class="panel-head"><h3>سوابق درخواست‌ها</h3></div><div class="table-wrap"><table><thead><tr><th>شماره</th><th>درخواست‌دهنده</th><th>نوع</th><th>عنوان وظیفه</th><th>زمان</th><th>وضعیت</th><th>یادداشت مدیر</th></tr></thead><tbody id="requestHistoryBody"></tbody></table></div></div></section>
-
-      <section id="vehiclePermanentView" class="view hidden manager-only vehicle-view">
-        <div class="panel"><div class="panel-head"><h3>تحویل و تحول دائم</h3></div></div>
-      </section>
-      <section id="vehicleTemporaryView" class="view hidden manager-only vehicle-view">
-        <div class="panel"><div class="panel-head"><h3>تحویل و تحول موقت</h3></div></div>
-      </section>
-    </section>
-  </div>
-
-  <dialog id="taskDialog" class="modal">
-    <form id="taskForm" method="dialog">
-      <div class="modal-head"><div><h3 id="taskDialogTitle">افزودن وظیفه</h3><p id="taskDialogHint"></p></div><button type="button" data-close="taskDialog">×</button></div>
-      <div class="form-grid">
-        <label class="span-2">عنوان کار<input name="title" required /></label>
-        <label class="span-2">توضیحات<textarea name="description" rows="3"></textarea></label>
-        <label>متولی<select name="owner_id" required></select></label>
-        <label>وضعیت<select name="status"><option>ثبت شده</option><option>منتظر پاسخ</option><option>در حال انجام</option><option>انجام شده</option></select></label>
-        <label>اولویت<select name="priority"><option>کم</option><option selected>متوسط</option><option>فوری</option></select></label>
-        <label>یادآور (روز قبل)<input name="reminder_days" type="number" min="0" value="0" /></label>
-        <label>تاریخ شروع<div class="date-field"><input name="start_date_j" class="jalali-input" readonly placeholder="۱۴۰۵/۰۱/۰۱" data-iso-target="start_date"/><button type="button" class="calendar-btn" data-date-input="start_date_j">▦</button><input name="start_date" type="hidden"/></div></label>
-        <label>تاریخ پایان<div class="date-field"><input name="due_date_j" class="jalali-input" readonly placeholder="۱۴۰۵/۰۱/۰۱" data-iso-target="due_date"/><button type="button" class="calendar-btn" data-date-input="due_date_j">▦</button><input name="due_date" type="hidden"/></div></label>
-        <label>تاریخ انجام<div class="date-field"><input name="done_date_j" class="jalali-input" readonly placeholder="۱۴۰۵/۰۱/۰۱" data-iso-target="done_date"/><button type="button" class="calendar-btn" data-date-input="done_date_j">▦</button><input name="done_date" type="hidden"/></div></label>
-        <label class="span-2 manager-only">توضیحات مدیر<textarea name="manager_notes" rows="2"></textarea></label>
-      </div>
-      <div class="modal-actions"><button type="button" class="ghost" data-close="taskDialog">انصراف</button><button type="submit" class="primary" id="saveTaskBtn">ثبت وظیفه</button></div>
-    </form>
-  </dialog>
-
-  <dialog id="calendarDialog" class="modal calendar-modal">
-    <div class="modal-head"><div><h3>انتخاب تاریخ شمسی</h3><p id="calendarLabel"></p></div><button type="button" data-close="calendarDialog">×</button></div>
-    <div class="calendar-selects"><label>سال<select id="calYear"></select></label><label>ماه<select id="calMonth"></select></label><label>روز<select id="calDay"></select></label></div>
-    <div class="modal-actions"><button type="button" class="ghost" id="clearDateBtn">پاک کردن</button><button type="button" class="primary" id="setDateBtn">ثبت تاریخ</button></div>
-  </dialog>
-  <dialog id="reviewDialog" class="modal small">
-    <div class="modal-head"><div><h3>بررسی درخواست</h3><p>جزئیات تغییر پیشنهادی را بررسی کنید.</p></div><button type="button" data-close="reviewDialog">×</button></div>
-    <div id="reviewDetails" class="review-details"></div>
-    <label>یادداشت مدیر<textarea id="managerNote" rows="3"></textarea></label>
-    <div class="modal-actions"><button id="rejectBtn" class="danger">رد درخواست</button><button id="revisionBtn" class="ghost">نیاز به اصلاح</button><button id="editRequestBtn" class="ghost">ویرایش در فرم وظیفه</button><button id="approveBtn" class="primary">تأیید و اعمال</button></div>
-  </dialog>
-
-  <dialog id="passwordDialog" class="modal small first-login-dialog"><form id="passwordForm"><div class="first-login-brand"><img src="assets/images/bamco-white.png" alt="BAMCO"><div><h3>تغییر رمز عبور</h3><p>رمز جدید حساب کاربری را وارد کنید.</p></div></div><div class="first-login-fields"><label>رمز جدید<input id="newPassword" type="password" minlength="12" autocomplete="new-password" required></label><label>تکرار رمز جدید<input id="confirmPassword" type="password" minlength="12" autocomplete="new-password" required></label></div><p id="passwordError" class="form-error"></p><div class="modal-actions"><button id="cancelPasswordBtn" class="ghost" type="button" data-close="passwordDialog">انصراف</button><button class="primary" type="submit">ثبت رمز جدید</button></div></form></dialog>
-
-  <dialog id="importDialog" class="modal"><div class="modal-head"><div><h3>پیش‌نمایش ورود از اکسل</h3><p id="importSummary"></p></div><button type="button" data-close="importDialog">×</button></div><label>رفتار با شناسه تکراری<select id="duplicateMode"><option value="reject">رد رکورد</option><option value="update">به‌روزرسانی رکورد موجود</option><option value="create">ایجاد رکورد جدید</option></select></label><div class="table-wrap"><table><thead><tr><th>ردیف</th><th>شناسه</th><th>عنوان</th><th>متولی</th><th>وضعیت</th></tr></thead><tbody id="importPreviewBody"></tbody></table></div><div class="modal-actions"><button type="button" class="ghost" data-close="importDialog">انصراف</button><button id="commitImportBtn" class="primary">ورود رکوردهای معتبر</button></div></dialog>
-
-  <dialog id="avatarCropDialog" class="modal avatar-crop-dialog"><div class="modal-head"><div><h3>تنظیم تصویر پروفایل</h3><p>تصویر را جابه‌جا کنید و با نوار زیر اندازه را تنظیم کنید.</p></div><button type="button" data-close="avatarCropDialog">×</button></div><div class="crop-stage"><canvas id="avatarCropCanvas" width="360" height="360"></canvas></div><label class="crop-zoom">اندازه تصویر<input id="avatarCropZoom" type="range" min="1" max="3" value="1" step="0.01"></label><div class="modal-actions"><button type="button" class="ghost" data-close="avatarCropDialog">انصراف</button><button id="applyAvatarCrop" type="button" class="primary">تأیید محدوده تصویر</button></div></dialog>
-
-  <script defer src="assets/js/message-renderer.js?v=details-20260910-1"></script>
-  <script defer src="assets/js/media-cache.js?v=details-20260910-1"></script>
-  <script defer src="assets/js/notices.js?v=details-20260910-1"></script>
-  <script defer src="assets/js/table-selection.js?v=details-20260910-1"></script>
-  <script defer src="assets/js/shell.js?v=account-hint-20260910-1"></script>
-
-  <script defer src="assets/js/stickers.js?v=sticker-root-20260911-2"></script>
-
-  <script defer src="assets/js/task-options.js?v=catalog-edit-20260910-2"></script>
-  <script defer src="assets/js/app.js?v=catalog-20260910-1"></script>
-  <script defer src="assets/js/people-task-transfer.js?v=people-transfer-20260910-1"></script>
-  <script defer src="assets/js/auth-session.js?v=sessions-20260910-2"></script>
-
-<script defer src="assets/js/excel.js?v=excel-root-20260911-4"></script>
-  <script defer src="assets/js/vehicles.js?v=details-20260910-1"></script>
-  <script defer src="assets/js/tasks-io.js?v=catalog-20260910-1"></script>
-  <script defer src="assets/js/table-ui.js?v=details-20260910-1"></script>
-  <script defer src="assets/js/timeline.js?v=catalog-20260910-1"></script>
-  <script defer src="assets/js/tables.js?v=details-20260910-1"></script>
-  <script defer src="assets/js/ui-helpers.js?v=details-20260910-1"></script>
-
-  <script defer src="assets/js/sticker-assets.js?v=details-20260910-1"></script>
-  <script defer src="assets/js/sidebar.js?v=details-20260910-1" data-sidebar-groups></script>
-  <script defer src="assets/js/phase1-workflow.js?v=details-20260910-1"></script>
-<script defer src="assets/js/phase2-message-engine.js?v=details-20260910-1"></script>
-<script defer src="assets/js/phase3-response-tracking.js?v=details-20260910-1"></script>
-<script defer src="assets/js/task-ui.js?v=welcome-20260910-1" data-user-request-fixes-v2></script>
-  
-  <script defer src="assets/js/templates.js?v=template-root-20260911-5"></script>
-<script defer src="assets/js/ux.js?v=details-20260910-1" data-final-polish></script>
-  <script defer src="assets/js/unified-ui.js?v=details-20260910-1"></script>
-  <link rel="stylesheet" href="assets/css/navigation-completeness.css?v=details-20260910-1">
-  <script defer src="assets/js/production-runtime.js?v=details-20260910-1"></script>
-<script defer src="assets/js/tab-workspace.js?v=catalog-20260910-1"></script>
-<script defer src="assets/js/conversations.js?v=distinct-colors-20260910-3"></script>
-<script defer src="assets/js/session-runtime.js?v=session-confirmation-20260910-1"></script>
-<script defer src="assets/js/request-sync.js?v=approval-sync-20260910-1"></script>
-
-  <link rel="stylesheet" href="assets/css/card-home.css?v=details-20260910-1">
-<script defer src="assets/js/card-home.js?v=quick-fixes-20260910-1"></script>
-<script defer src="assets/js/interior-ui.js?v=details-20260910-1"></script>
-<script defer src="assets/js/table-pages.js?v=details-20260910-1"></script>
-<link rel="stylesheet" href="assets/css/interface-refinement.css?v=details-20260910-1">
-<script defer src="assets/js/table-suite.js?v=details-20260910-1"></script>
-<link rel="stylesheet" href="assets/css/visual-polish.css?v=welcome-close-20260910-2">
-<script defer src="assets/js/visual-polish.js?v=details-20260910-1"></script>
-<link rel="stylesheet" href="assets/css/usability.css?v=preview-fonts-20260910-1">
-<script defer src="assets/js/usability.js?v=preview-fonts-20260910-1"></script>
-<script defer src="assets/js/styled-excel.js?v=catalog-20260910-1"></script>
-<script defer src="assets/js/excel-io-fixes.js?v=excel-flex-20260911-1"></script>
-<script defer src="assets/js/chat-ui.js?v=inbox-emoji-20260910-1"></script>
-<link rel="stylesheet" href="assets/css/tab-workspace.css?v=details-20260910-1">
-<link rel="stylesheet" href="assets/css/release-fixes.css?v=login-spacing-20260910-1">
-<link rel="stylesheet" href="assets/css/unified-ui.css?v=catalog-20260910-1">
-<link rel="stylesheet" href="assets/css/home-stable.css?v=details-20260910-1">
-<script defer src="assets/js/runtime-fixes-20260911.js?v=20260911-2"></script>
-<script defer src="assets/js/dashboard-response-fixes-20260911.js?v=20260911-3"></script>
-<script defer src="assets/js/admin-root-fixes-20260911.js?v=20260911-4"></script>
-<script defer src="assets/js/report-root-fixes-20260911.js?v=20260911-1"></script>
-</body>
-</html>
+     ��="27b�b�b�n0�j�fn3b�����𽑥�����ѽ���������ѽ�����ф����͔�ɕ٥���������\���ѽ��𽑥��(�����؁���ɕ٥���х��̈�������ɕ٥�ܵ��х��̈�𽑥��(����񱅉���n3b�b�b�b�b�b��fb�n3b��ѕ�хɕ����􉵅�����9�є��ɽ���̈��ѕ�хɕ��𽱅����(�����؁�����􉵽������ѥ��̈����ѽ�����ɕ����	Ѹ�������􉑅���Ȉ�b�b��b�b�b�f#b�b�b����ѽ�����ѽ�����ɕ٥ͥ��	Ѹ�������􉝡��Ј�fn3b�bȃb�f�b�b�fb�b����ѽ�����ѽ����􉕑��I��Օ��	Ѹ�������􉝡��Ј�f#n3b�b�n3bЃb�băfb�f�f#b�n3ff���ѽ�����ѽ�������ɽٕ	Ѹ���������ɥ�����b�b�n3n3b��f �b�b�fb�f��'WGF�����F�c���F���sࠢ�F���r�C�'77v�&DF���r"6�73�&��F�6���f�'7B���v���F���r#��f�&��C�'77v�&Df�&�#��F�b6�73�&f�'7B���v���'&�B#�Ɩ�r7&3�&76WG2���vW2�&�6��v��FR��r"�C�$$�4�#��F�c�ƃ3튭�m���͋��]�"����������3����]�"�͊��͊��݋=�}�����}��������r���}������m�͊�������F�c���F�c��F�b6�73�&f�'7B���v���f�V�G2#���&V��]�]�r�͊��͊��)�؝��j�0��mʗ
