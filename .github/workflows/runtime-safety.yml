@@ -51,7 +51,10 @@ jobs:
           assert "navigation-completeness.js" not in page
           assert "[300,900,1800]" not in rt
           assert "setTimeout(()=>{qa('#appView .view')" not in ui
-          assert "session-audit" in sess and "120000" in sess
+          assert "session-audit" in sess
+          assert "30000" in sess and "120000" not in sess
+          assert "pagehide" in sess and "keepalive:true" in sess
+          assert "device_id" in sess and "BroadcastChannel" in sess
           assert "chat_ensure_task_direct" in ui
           assert "گفت‌وگوی مرتبط با وظیفه" in ui
           assert "تسک" not in ui
