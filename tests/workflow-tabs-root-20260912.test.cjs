@@ -4,13 +4,14 @@ const {fixture,until,pause}=require('./helpers/app-fixture.cjs');
 
 function directTexts(node){return [...node.children].map(el=>el.textContent.replace(/\s+/g,' ').trim()).filter(Boolean)}
 
-test('response tracking owns requested command order, current-month dates and has no tracking id',async t=>{
+test('response tracking owns requested command order, current-month dates, selection and has no tracking id',async t=>{
  const f=await fixture({tables:{message_response_tracking:[{delivery_id:11,recipient_id:'test-owner',recipient_name:'متولی آزمایشی',recipient_email:'owner@example.test',channel:'portal',subject:'پیام آزمایشی',sent_at:new Date().toISOString(),delivery_status:'sent',response_status:'awaiting',reminder_count:0}]}});t.after(()=>f.dispose());
  await f.open('responseTracking');
  const bar=f.d.querySelector('#responseTrackingView .response-command-row');assert.ok(bar);
  const texts=directTexts(bar);assert.match(texts[0],/بازگشت به خانه/);assert.match(texts[1],/از تاریخ/);assert.match(texts[2],/تازه‌سازی/);assert.match(texts[3],/خروجی اکسل/);assert.match(texts[4],/ارسال یادآوری/);
  assert.ok(f.d.querySelector('#responseFrom').value);assert.ok(f.d.querySelector('#responseTo').value);
  assert.doesNotMatch(f.d.querySelector('#responseTrackingView table').textContent,/شناسه پیگیری/);
+ const row=f.d.querySelector('#responseTrackingBody tr[data-delivery="11"]');assert.ok(row);assert.equal(f.d.querySelector('#sendResponseReminder').disabled,true);row.click();await pause(20);assert.equal(row.classList.contains('suite-selected'),true);assert.equal(f.d.querySelector('#sendResponseReminder').disabled,false);
  assert.equal(f.errors.length,0,f.errors.join('\n'));
 });
 
@@ -26,12 +27,13 @@ test('response report has requested command order, month defaults and filtered t
  assert.equal(f.errors.length,0,f.errors.join('\n'));
 });
 
-test('message center command row is home, excel, refresh, green send',async t=>{
+test('message center command row is home, excel, refresh, green send and local row selection enables send',async t=>{
  const f=await fixture({tables:{message_recipient_live_state:[{recipient_id:'test-owner',recipient_name:'متولی آزمایشی',email:'owner@example.test',active_count:2,warning_count:1,overdue_count:0,sticker_state:1,last_sent_at:null}]}});t.after(()=>f.dispose());
  await f.open('messageCenter');await until(()=>f.d.querySelector('#messageCenterView .message-command-row'));
  const bar=f.d.querySelector('#messageCenterView .message-command-row'),texts=directTexts(bar);
  assert.deepEqual(texts.slice(0,4),['بازگشت به خانه','خروجی اکسل','تازه‌سازی','ارسال']);
  assert.match(f.d.querySelector('#bamcoMessageCenterCommandCss').textContent,/sendSelectedMessages[^}]*background:#218764/);
+ const row=f.d.querySelector('#messageCenterBody tr[data-id="test-owner"]'),send=f.d.querySelector('#sendSelectedMessages');assert.ok(row);assert.equal(send.disabled,true);row.click();await pause(20);assert.equal(row.classList.contains('suite-selected'),true);assert.equal(send.disabled,false);assert.match(f.d.querySelector('#messageSelectionCount').textContent,/۱ نفر/);
  assert.equal(f.errors.length,0,f.errors.join('\n'));
 });
 
