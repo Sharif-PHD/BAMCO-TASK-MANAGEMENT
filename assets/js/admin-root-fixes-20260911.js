@@ -8,7 +8,7 @@ function loadFreshTemplates(){
   if(q('script[data-bamco-fresh-templates]'))return;
   const s=document.createElement('script');
   s.src='assets/js/templates.js?v=template-root-20260911-4';
-  s.defer=true;s.setAttribute('data-bamco-fresh-templates','');
+  s.async=false;s.setAttribute('data-bamco-fresh-templates','');
   s.onload=()=>{removeTemplateHelp();setTimeout(removeTemplateHelp,80)};
   (document.head||document.documentElement).appendChild(s);
 }
@@ -83,7 +83,11 @@ function primeStickerView(){
   pair.innerHTML=['female','male'].map(g=>{const row=cache.rows.find(r=>Number(r.set_id)===setId&&r.state_key===stateKey&&r.gender===g),src=row?cache.urls.get(String(row.storage_path)):'';return `<article data-side="${g}">${src?`<img src="${src}" alt="${stateKey}">`:'<div>تصویری تعریف نشده است</div>'}<strong>${meta[g]}</strong></article>`}).join('');
 }
 function watchStickerNav(){
-  const attempt=()=>{if(state?.token&&state?.profile?.role==='manager')warmStickers();else setTimeout(attempt,120)};
+  let tries=0;
+  const attempt=()=>{
+    if(state?.profile){if(state.profile.role==='manager'&&state.token)warmStickers();return}
+    if(++tries<100)setTimeout(attempt,120);
+  };
   setTimeout(attempt,0);
   document.addEventListener('click',e=>{
     if(!e.target.closest('#nav [data-view="stickers"]'))return;
