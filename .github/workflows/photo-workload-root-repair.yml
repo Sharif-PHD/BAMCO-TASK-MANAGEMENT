@@ -20,11 +20,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Apply guarded source corrections without overwriting unrelated edits
+      - name: Correct image cleanup and competing chart renderers
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import hashlib
           import re
           changes = {}
           def replace_once(path, old, new):
@@ -34,7 +33,7 @@ jobs:
               if old not in text and new in text:
                   return
               if text.count(old) != 1:
-                  raise SystemExit(f'Unexpected source in {path}; review concurrent edits before retrying')
+                  raise SystemExit(f'Unexpected source in {path}: {old!r}; review concurrent edits')
               changes[path] = text.replace(old, new, 1)
           replace_once('assets/js/messaging-history-root-20260911.js',
               "['#departmentEntry header img','#loginView .brand-lockup img','#appView>.card-topbar img']",
@@ -48,9 +47,10 @@ jobs:
           replace_once('assets/js/dashboard-response-fixes-20260911.js',
               'function drawWorkload(){\n',
               "function drawWorkload(){\n if(typeof window.bamcoDrawWorkload==='function')return window.bamcoDrawWorkload();\n")
-          replace_once('assets/js/login-avatar-workload-fix-20260911.js',
-              'function drawSimpleWorkload(){\n',
-              "function drawSimpleWorkload(){\n  if(typeof window.bamcoDrawWorkload==='function')return window.bamcoDrawWorkload();\n")
+          # The current avatar module no longer draws workload charts. Preserve it.
+          avatar = Path('assets/js/login-avatar-workload-fix-20260911.js').read_text(encoding='utf-8')
+          if 'function drawSimpleWorkload' in avatar:
+              raise SystemExit('Unexpected legacy avatar/workload module; reconcile before applying')
           replace_once('assets/js/workload-segment-labels-20260911.js',
               'scale=(bottom-top)/max;',
               'tickStep=Math.max(1,Math.ceil(max/5)),axisMax=Math.ceil(max/tickStep)*tickStep,scale=(bottom-top)/axisMax;')
@@ -62,86 +62,9 @@ jobs:
           replace_once('assets/js/workload-segment-labels-20260911.js',
               'function schedule(){',
               '// Use one renderer for navigation, filters, refresh and delayed resize events.\nwindow.bamcoDrawWorkload=draw;\nfunction schedule(){')
-          new_avatar = r'''let avatarObjectUrl='',avatarRun=0,avatarKey='',avatarOwner='',avatarPending=null;
-          function avatarInitial(){
-            const p=typeof state!=='undefined'?state.profile:null;
-            return String(p?.display_name||p?.full_name||'ب').trim().charAt(0)||'ب';
-          }
-          function paintAvatar(el,url=''){
-            if(!el)return;
-            const existing=el.querySelector(':scope > img');
-            if(url){
-              if(existing?.getAttribute('src')!==url){
-                const img=document.createElement('img');img.alt='تصویر پروفایل';img.src=url;
-                img.style.cssText='width:100%!important;height:100%!important;object-fit:cover!important;display:block!important;border-radius:50%!important';
-                el.replaceChildren(img);
-              }
-              if(!el.classList.contains('has-image'))el.classList.add('has-image');
-            }else{
-              const initial=avatarInitial();if(existing||el.textContent!==initial)el.textContent=initial;
-              if(el.classList.contains('has-image'))el.classList.remove('has-image');
-            }
-            if(el.style.backgroundImage)el.style.removeProperty('background-image');
-          }
-          function resetAvatar(){
-            avatarRun++;avatarPending=null;avatarKey='';avatarOwner='';
-            if(avatarObjectUrl)URL.revokeObjectURL(avatarObjectUrl);avatarObjectUrl='';
-            paintAvatar(q('#avatar'));paintAvatar(q('#profileAvatarPreview'));
-          }
-          function refreshAvatarAfterLogin(){
-            const p=typeof state!=='undefined'?state.profile:null,token=typeof state!=='undefined'?state.token:'';
-            if(!p||!token){resetAvatar();return Promise.resolve()}
-            if(!p.avatar_path){resetAvatar();return Promise.resolve()}
-            const owner=p.id,pathValue=p.avatar_path,key=[owner,pathValue,p.updated_at||''].join('|');
-            if(avatarKey===key&&avatarObjectUrl){
-              paintAvatar(q('#avatar'),avatarObjectUrl);paintAvatar(q('#profileAvatarPreview'),avatarObjectUrl);
-              return Promise.resolve();
-            }
-            if(avatarPending?.key===key)return avatarPending.promise;
-            if(avatarOwner!==owner){resetAvatar();avatarOwner=owner}
-            const run=++avatarRun;
-            const promise=(async()=>{
-              let nextUrl='';
-              try{
-                const path=String(pathValue).split('/').map(encodeURIComponent).join('/');
-                const res=await fetch(`${SB_URL}/storage/v1/object/authenticated/avatars/${path}`,{headers:{apikey:SB_KEY,Authorization:`Bearer ${token}`},cache:'no-store'});
-                if(!res.ok)throw new Error(`avatar ${res.status}`);
-                nextUrl=URL.createObjectURL(await res.blob());
-                const image=new Image();image.src=nextUrl;await image.decode();
-                if(run!==avatarRun||!state.token||state.profile?.id!==owner||state.profile?.avatar_path!==pathValue){URL.revokeObjectURL(nextUrl);return}
-                const previous=avatarObjectUrl;avatarObjectUrl=nextUrl;avatarKey=key;
-                paintAvatar(q('#avatar'),nextUrl);paintAvatar(q('#profileAvatarPreview'),nextUrl);
-                if(previous)URL.revokeObjectURL(previous);
-              }catch(err){
-                if(nextUrl)URL.revokeObjectURL(nextUrl);
-                // Keep the last decoded picture while a same-user refresh fails.
-                if(run===avatarRun)console.error('post-login-avatar-sync',err);
-              }finally{if(avatarPending?.run===run)avatarPending=null}
-            })();
-            avatarPending={key,run,promise};return promise;
-          }
-          function scheduleAvatar(){
-            const app=q('#appView');if(app&&!app.classList.contains('hidden'))void refreshAvatarAfterLogin();
-          }
-          window.refreshProfileAvatar=refreshAvatarAfterLogin;
-
-          '''
-          path = 'assets/js/login-avatar-workload-fix-20260911.js'
-          text = changes.get(path, Path(path).read_text(encoding='utf-8'))
-          start = text.index("let avatarObjectUrl=''")
-          end = text.index('function filteredTasks()', start)
-          old_avatar = text[start:end]
-          if old_avatar != new_avatar:
-              if hashlib.sha256(old_avatar.encode()).hexdigest() != '543ece4a9c144e557478aa934734a00b04b98fe80f7e9e03ecdbf3c8a0808ebd':
-                  raise SystemExit('Avatar implementation changed; review before applying')
-              changes[path] = text[:start] + new_avatar + text[end:]
-          replace_once(path,
-              "new MutationObserver(()=>{if(!app.classList.contains('hidden'))scheduleAvatar()})",
-              "new MutationObserver(()=>{if(!app.classList.contains('hidden'))scheduleAvatar();else resetAvatar()})")
           path = 'index.html'
           text = Path(path).read_text(encoding='utf-8')
-          for name in ['app.js','messaging-history-root-20260911.js','dashboard-response-fixes-20260911.js',
-                       'login-avatar-workload-fix-20260911.js','workload-segment-labels-20260911.js']:
+          for name in ['app.js','messaging-history-root-20260911.js','dashboard-response-fixes-20260911.js','workload-segment-labels-20260911.js']:
               pattern = r'(assets/js/' + re.escape(name) + r'\?v=)[^"\s>]+'
               text, count = re.subn(pattern, r'\g<1>profile-counts-20260911-1', text)
               if count != 1:
@@ -154,7 +77,7 @@ jobs:
               Path(path).write_text(text,encoding='utf-8')
               print('Updated '+path)
           PY
-          for f in assets/js/app.js assets/js/messaging-history-root-20260911.js assets/js/dashboard-response-fixes-20260911.js assets/js/login-avatar-workload-fix-20260911.js assets/js/workload-segment-labels-20260911.js; do
+          for f in assets/js/app.js assets/js/messaging-history-root-20260911.js assets/js/dashboard-response-fixes-20260911.js assets/js/workload-segment-labels-20260911.js; do
             node --check "$f"
           done
       - name: Install pinned browser test dependency
@@ -182,6 +105,6 @@ jobs:
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add assets/js/app.js assets/js/messaging-history-root-20260911.js assets/js/dashboard-response-fixes-20260911.js assets/js/login-avatar-workload-fix-20260911.js assets/js/workload-segment-labels-20260911.js index.html
+          git add assets/js/app.js assets/js/messaging-history-root-20260911.js assets/js/dashboard-response-fixes-20260911.js assets/js/workload-segment-labels-20260911.js index.html
           git commit -m 'Preserve profile photos and use consistent plain workload counts'
           git push origin HEAD:main
