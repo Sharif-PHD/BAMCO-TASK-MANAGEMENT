@@ -1,9 +1,9 @@
 (()=>{
 'use strict';
-if(window.__bamcoTopbarAvatarFix20260911V2)return;
-window.__bamcoTopbarAvatarFix20260911V2=true;
+if(window.__bamcoTopbarAvatarFix20260911V3)return;
+window.__bamcoTopbarAvatarFix20260911V3=true;
 const q=(s,r=document)=>r?.querySelector?.(s)||null;
-let refreshRun=0,repairFrame=0;
+let repairFrame=0,loadingPath='',loadingPromise=null,lastPath='',lastSource='';
 
 function profile(){return typeof state!=='undefined'?state.profile:null}
 function token(){return typeof state!=='undefined'?state.token:''}
@@ -26,7 +26,7 @@ function paintInitial(el){
 function paintImage(el,src,path){
   if(!el||!src)return;
   const current=el.querySelector('img[data-profile-avatar]');
-  if(current&&current.src===src&&el.dataset.avatarLoaded===String(path))return;
+  if(current&&el.dataset.avatarLoaded===String(path))return;
   const img=document.createElement('img');
   img.dataset.profileAvatar='1';
   img.alt='تصویر پروفایل';
@@ -39,6 +39,7 @@ function paintImage(el,src,path){
   el.style.removeProperty('background-image');
 }
 async function avatarSource(path){
+  if(lastPath===path&&lastSource)return lastSource;
   if(window.bamcoMedia?.get)return window.bamcoMedia.get('avatars',path);
   const encoded=String(path).split('/').map(encodeURIComponent).join('/');
   const res=await fetch(`${SB_URL}/storage/v1/object/authenticated/avatars/${encoded}`,{headers:{apikey:SB_KEY,Authorization:`Bearer ${token()}`},cache:'no-cache'});
@@ -46,26 +47,38 @@ async function avatarSource(path){
   return URL.createObjectURL(await res.blob());
 }
 async function refresh(){
-  const run=++refreshRun,p=profile(),auth=token();
+  const p=profile(),auth=token();
   if(!p||!auth)return false;
   ensureHeaderAccount();
+  const path=String(p.avatar_path||'');
   const targets=[q('#avatar'),q('#profileAvatarPreview')].filter(Boolean);
-  if(!p.avatar_path){targets.forEach(paintInitial);return true}
-  try{
-    const src=await avatarSource(p.avatar_path);
-    if(run!==refreshRun)return false;
-    ensureHeaderAccount();
-    targets.forEach(el=>paintImage(el,src,p.avatar_path));
-    return true;
-  }catch(err){
-    console.error('topbar-avatar-load',err);
-    if(!targets.some(el=>el.querySelector('img[data-profile-avatar]')))targets.forEach(paintInitial);
-    return false;
-  }
+  if(!path){targets.forEach(paintInitial);return true}
+  if(targets.some(el=>el.querySelector('img[data-profile-avatar]')&&el.dataset.avatarLoaded===path))return true;
+  if(loadingPath===path&&loadingPromise)return loadingPromise;
+  loadingPath=path;
+  loadingPromise=(async()=>{
+    try{
+      const src=await avatarSource(path);
+      const now=profile();
+      if(!now||String(now.avatar_path||'')!==path)return false;
+      lastPath=path;lastSource=src;
+      ensureHeaderAccount();
+      [q('#avatar'),q('#profileAvatarPreview')].filter(Boolean).forEach(el=>paintImage(el,src,path));
+      return true;
+    }catch(err){
+      console.error('topbar-avatar-load',err);
+      const currentTargets=[q('#avatar'),q('#profileAvatarPreview')].filter(Boolean);
+      if(!currentTargets.some(el=>el.querySelector('img[data-profile-avatar]')))currentTargets.forEach(paintInitial);
+      return false;
+    }finally{
+      if(loadingPath===path){loadingPath='';loadingPromise=null}
+    }
+  })();
+  return loadingPromise;
 }
 function schedule(){
   ensureHeaderAccount();
-  [0,80,250,700,1500,3000].forEach(ms=>setTimeout(()=>{
+  [0,100,350,900,1800].forEach(ms=>setTimeout(()=>{
     const app=q('#appView');
     if(app&&!app.classList.contains('hidden'))void refresh();
   },ms));
@@ -75,9 +88,8 @@ function repair(){
   repairFrame=requestAnimationFrame(()=>{
     repairFrame=0;
     const app=q('#appView');if(!app||app.classList.contains('hidden'))return;
-    const moved=ensureHeaderAccount();
-    const avatar=q('#avatar'),p=profile();
-    if(moved&&p?.avatar_path&&!avatar?.querySelector('img[data-profile-avatar]'))void refresh();
+    const ready=ensureHeaderAccount(),avatar=q('#avatar'),p=profile(),path=String(p?.avatar_path||'');
+    if(ready&&path&&(!avatar?.querySelector('img[data-profile-avatar]')||avatar.dataset.avatarLoaded!==path))void refresh();
   });
 }
 function boot(){
@@ -85,7 +97,9 @@ function boot(){
   window.bamcoTopbarAvatar={refresh,repair:ensureHeaderAccount};
   const app=q('#appView');
   if(app)new MutationObserver(()=>{if(!app.classList.contains('hidden'))schedule()}).observe(app,{attributes:true,attributeFilter:['class']});
-  new MutationObserver(repair).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+  const avatar=q('#avatar');if(avatar)new MutationObserver(repair).observe(avatar,{childList:true,subtree:true,attributes:true,attributeFilter:['class','style']});
+  new MutationObserver(repair).observe(document.body,{childList:true,subtree:true});
+  document.addEventListener('click',e=>{if(e.target.closest('.welcome-dismiss,.home-return'))setTimeout(()=>void refresh(),0)},true);
   addEventListener('pageshow',schedule);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)schedule()});
   if(app&&!app.classList.contains('hidden'))schedule();
