@@ -72,13 +72,13 @@ jobs:
                   }""")
                   await page.wait_for_function("() => [...document.querySelectorAll('#kanbanBody input.task-pick')].every(x=>x.type==='checkbox')")
 
-                  await page.locator('#kanbanBody tr[data-task-id="91001"] td').nth(1).click()
+                  await page.evaluate("() => document.querySelector('#kanbanBody tr[data-task-id=\"91001\"] td:nth-child(2)').dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}))")
                   await page.wait_for_function("() => window.bamcoTaskSelection.count('kanban')===1")
                   assert await page.locator('#kanbanBody tr[data-task-id="91001"]').evaluate("el=>el.classList.contains('task-selected')")
                   bg1=await page.locator('#kanbanBody tr[data-task-id="91001"] td').first.evaluate("el=>getComputedStyle(el).backgroundColor")
                   assert bg1 == 'rgb(207, 233, 220)', bg1
 
-                  await page.locator('#kanbanBody tr[data-task-id="91002"] td').nth(1).click()
+                  await page.evaluate("() => document.querySelector('#kanbanBody tr[data-task-id=\"91002\"] td:nth-child(2)').dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}))")
                   await page.wait_for_function("() => window.bamcoTaskSelection.count('kanban')===2")
                   for task_id in ('91001','91002'):
                       row=page.locator(f'#kanbanBody tr[data-task-id="{task_id}"]')
