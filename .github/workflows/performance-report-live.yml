@@ -61,7 +61,8 @@ jobs:
                   page=await browser.new_page(viewport={'width':1600,'height':900})
                   errors=[]
                   page.on('pageerror',lambda exc: errors.append(str(exc)))
-                  await page.goto(BASE+'?perf-live=1',wait_until='networkidle')
+                  await page.route('**/rest/v1/change_requests**', lambda route: route.fulfill(status=200,content_type='application/json',body='[]'))
+                  await page.goto(BASE+'?perf-live=2',wait_until='networkidle')
                   await page.wait_for_function("window.__bamcoCanonicalReportsLiveSyncV4===true && window.bamcoCanonicalReports?.renderPerformance")
                   assert await page.locator('script[src*="report-root-fixes-20260911.js"]').count() == 0
                   assert await page.locator('script[src*="report-stability-fixes-20260911.js"]').count() == 1
@@ -71,7 +72,6 @@ jobs:
                     document.querySelector('#loginView')?.classList.add('hidden');
                     document.querySelector('#appView')?.classList.remove('hidden');
                     document.querySelectorAll('dialog[open]').forEach(d=>{try{d.close()}catch{}});
-                    state.view='performanceReport';
                     state.profile={id:'manager',role:'manager',active:true,full_name:'مدیر'};
                     state.profiles=[
                       {id:'owner-a',display_name:'متولی نمونه الف',active:true},
@@ -81,11 +81,11 @@ jobs:
                     const due=jalaliToISO(p.y,p.m,Math.min(5,p.d||5));
                     const make=(id,owner,done)=>({id,legacy_id:id,title:'کار '+id,owner_id:owner,status:done?'انجام شده':'در حال انجام',priority:'متوسط',due_date:due,start_date:due,done_date:done?due:null,archived:done,due_state:'',_testDone:done});
                     state.tasks=[make(1,'owner-a',true),make(2,'owner-a',true),make(3,'owner-a',true),make(4,'owner-a',true),make(5,'owner-a',false),make(6,'owner-b',false)];
-                    window.selectAll=async()=>[];
                     if(window.bamcoOptions){window.bamcoOptions.completed=t=>!!t._testDone;window.bamcoOptions.terminal=t=>!!t._testDone;}
+                    state.view='performanceReport';
                     await window.bamcoCanonicalReports.renderPerformance(true);
                   }""")
-                  await page.wait_for_timeout(200)
+                  await page.wait_for_timeout(250)
                   headers=[(await page.locator('#performanceReportView thead th').nth(i).text_content()).strip() for i in range(await page.locator('#performanceReportView thead th').count())]
                   assert len(headers)==9,headers
                   assert headers[0]=='متولی',headers
