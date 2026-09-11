@@ -1,0 +1,37 @@
+name: Post-welcome viewport regression
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'assets/js/card-home.js'
+      - 'assets/css/home-post-welcome-fix-20260911.css'
+      - 'assets/css/home-stable.css'
+      - 'tests/browser/check_post_welcome.py'
+      - '.github/workflows/post-welcome.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  chromium:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Chromium test dependency
+        run: |
+          python -m pip install playwright==1.57.0
+          python -m playwright install --with-deps chromium
+      - name: Verify post-welcome workspace is in first viewport
+        run: python tests/browser/check_post_welcome.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: post-welcome-results
+          path: test-results/post-welcome/
+          retention-days: 7
