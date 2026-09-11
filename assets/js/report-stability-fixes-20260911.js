@@ -1,16 +1,114 @@
 (()=>{
 'use strict';
-if(window.__bamcoReportStabilityFixes20260911V3)return;window.__bamcoReportStabilityFixes20260911V3=true;
-const q=(s,r=document)=>r.querySelector(s),qa=(s,r=document)=>[...r.querySelectorAll(s)];
-const timers=new Map(),observers=new Map();
-function installCss(){if(q('#bamcoReportStabilityCss'))return;const s=document.createElement('style');s.id='bamcoReportStabilityCss';s.textContent=`
+if(window.__bamcoReportStabilityFixes20260911V4)return;
+window.__bamcoReportStabilityFixes20260911V4=true;
+const q=(s,r=document)=>r?.querySelector?.(s)||null,qa=(s,r=document)=>[...(r?.querySelectorAll?.(s)||[])];
+let rawTabRender=null,warmKey='',warming=false,cleanFrame=0;
+
+function installCss(){
+  q('#bamcoReportStabilityCss')?.remove();
+  const s=document.createElement('style');s.id='bamcoReportStabilityCss';s.textContent=`
 #performanceReportView [data-performance-clear]{font-weight:400!important;font-family:BamcoPersian,"B Nazanin",BNazanin,Tahoma,sans-serif!important}
-.view.bamco-view-settling{position:relative!important;min-height:160px!important}.view.bamco-view-settling>*{visibility:hidden!important;pointer-events:none!important}.view.bamco-view-settling:after{content:'در حال دریافت اطلاعات…';visibility:visible!important;position:absolute;inset:10px 8px auto 8px;min-height:120px;display:grid;place-items:center;background:#fff;border:1px solid #d6e1dc;border-radius:14px;color:#60796f;font-family:BamcoPersian,"B Nazanin",BNazanin,Tahoma,sans-serif;font-size:15px;z-index:40}
-`;document.head.append(s)}
-function reveal(id){const view=q('#'+id+'View');if(!view)return;clearTimeout(timers.get(id));timers.delete(id);view.classList.remove('bamco-view-settling');view.dataset.bamcoSettled='1'}
-function settleSoon(id,delay=170){clearTimeout(timers.get(id));timers.set(id,setTimeout(()=>{const view=q('#'+id+'View');if(!view)return;if(view.querySelector('.workspace-loading,[aria-busy="true"]'))return settleSoon(id,140);reveal(id)},delay))}
-function begin(id){const view=q('#'+id+'View');if(!view)return;view.classList.add('bamco-view-settling');view.dataset.bamcoSettled='0';clearTimeout(timers.get(id));timers.set(id,setTimeout(()=>reveal(id),7000));let observer=observers.get(id);if(!observer){observer=new MutationObserver(()=>{if(view.classList.contains('bamco-view-settling'))settleSoon(id)});observer.observe(view,{childList:true,subtree:true,attributes:true,attributeFilter:['class','hidden']});observers.set(id,observer)}settleSoon(id,220)}
-function boot(){document.documentElement.dataset.reportStability='1';installCss();qa('.view:not(.hidden)').forEach(v=>{if(v.id?.endsWith('View'))settleSoon(v.id.replace(/View$/,''),40)});document.addEventListener('click',e=>{const nav=e.target.closest('#nav [data-view]');if(nav)begin(nav.dataset.view);const refresh=e.target.closest('[data-tab-refresh],[data-response-refresh],[data-sent-log-refresh]');if(refresh){const view=refresh.closest('.view');if(view?.id)begin(view.id.replace(/View$/,''))}},true);document.addEventListener('bamco-view-data-ready',e=>{const view=e.target.closest?.('.view')||e.target;if(view?.id)settleSoon(view.id.replace(/View$/,''),80)})}
+/* Never cover a tab with an intermediate loading page. */
+.view.bamco-view-settling{position:static!important;min-height:0!important}
+.view.bamco-view-settling>*{visibility:visible!important;pointer-events:auto!important}
+.view.bamco-view-settling:after{content:none!important;display:none!important}
+.workspace-loading{display:none!important}
+`;
+  document.head.append(s);
+}
+
+function reveal(id){const view=q('#'+id+'View');if(view){view.classList.remove('bamco-view-settling');view.dataset.bamcoSettled='1'}}
+function begin(id){reveal(id)}
+
+function retireTemplates(){
+  const wasActive=typeof state!=='undefined'&&state?.view==='templates';
+  qa('#nav [data-view="templates"],#templatesView,#desktopTemplateEditor').forEach(x=>x.remove());
+  try{delete window.bamcoTemplateEditor}catch{}
+  if(wasActive){try{window.bamcoShowHome?.()}catch{}}
+}
+
+function cleanTransientLoading(root=document){
+  qa('.bamco-view-settling',root).forEach(v=>v.classList.remove('bamco-view-settling'));
+  qa('.workspace-loading',root).forEach(x=>x.remove());
+  qa('.prod-empty',root).forEach(x=>{if(/در حال\s+(?:بارگذاری|دریافت)/.test(x.textContent||''))x.remove()});
+  qa('.sent-log-summary span',root).forEach(x=>{if(/در حال\s+دریافت/.test(x.textContent||''))x.remove()});
+}
+
+function patchTabs(){
+  const tabs=window.bamcoTabs;if(!tabs?.render||tabs.__instantV4)return !!tabs;
+  rawTabRender=tabs.render.bind(tabs);
+  const instantRender=(id)=>{
+    const view=q('#'+id+'View');
+    // Preserve already-rendered content while silently refreshing it in place.
+    const hasContent=!!view?.querySelector('table,.catalog-section,.workspace-report-tools,.workspace-error');
+    const p=Promise.resolve(rawTabRender(id,true));
+    if(hasContent)p.catch(()=>{});
+    return p.finally(()=>{cleanTransientLoading(view||document);reveal(id)});
+  };
+  tabs.render=instantRender;
+  tabs.prewarm=()=>warmTabs(true);
+  tabs.__instantV4=true;
+  return true;
+}
+
+async function warmTabs(force=false){
+  if(warming||typeof state==='undefined'||!state?.token||typeof isManager!=='function'||!isManager())return;
+  patchTabs();if(!rawTabRender)return;
+  const key=(state.user?.id||state.profile?.id||'manager')+'|'+String(state.token).slice(-12);
+  if(!force&&warmKey===key)return;
+  warming=true;
+  try{
+    // Message-center data can be fetched while its view stays hidden.
+    try{q('#refreshMessageCenter')?.click()}catch{}
+    try{void window.bamcoConversations?.refresh?.()}catch{}
+    // tab-workspace used one global request serial, so warm sequentially to avoid
+    // cancelling sibling report renders. All warming happens while views are hidden.
+    const order=['performanceReport','responseReport','requestReport','sentMessages','systemOptions','loginActivity','activeSessions'];
+    for(const id of order){
+      if(!q('#'+id+'View'))continue;
+      try{await rawTabRender(id,false)}catch{}
+      cleanTransientLoading(q('#'+id+'View')||document);
+      reveal(id);
+    }
+    warmKey=key;
+  }finally{warming=false}
+}
+
+function scheduleWarm(){
+  if(typeof state==='undefined'||!state?.token)return;
+  setTimeout(()=>warmTabs(false),80);
+}
+
+function boot(){
+  document.documentElement.dataset.reportStability='instant';
+  installCss();retireTemplates();cleanTransientLoading();patchTabs();
+  // A genuine refresh should update silently instead of replacing the table by a loader.
+  document.addEventListener('click',e=>{
+    const retired=e.target.closest?.('#nav [data-view="templates"]');
+    if(retired){e.preventDefault();e.stopImmediatePropagation();retireTemplates();return}
+    const refresh=e.target.closest?.('[data-tab-refresh]');
+    const id=refresh?.dataset?.tabRefresh;
+    if(refresh&&id&&window.bamcoTabs?.owns?.(id)&&rawTabRender){
+      e.preventDefault();e.stopImmediatePropagation();
+      Promise.resolve(rawTabRender(id,true)).then(()=>{cleanTransientLoading(q('#'+id+'View')||document);reveal(id)}).catch(err=>{if(typeof toast==='function')toast(err?.message||'تازه‌سازی انجام نشد.',true)});
+    }
+  },true);
+
+  const app=q('#appView');
+  if(app){
+    new MutationObserver(()=>{if(!app.classList.contains('hidden'))scheduleWarm()}).observe(app,{attributes:true,attributeFilter:['class']});
+    if(!app.classList.contains('hidden'))scheduleWarm();
+  }
+  const observer=new MutationObserver(()=>{
+    if(cleanFrame)return;
+    cleanFrame=requestAnimationFrame(()=>{cleanFrame=0;retireTemplates();cleanTransientLoading();patchTabs()});
+  });
+  observer.observe(document.body,{childList:true,subtree:true});
+  // Handles restored sessions where the app state becomes available without a class flip.
+  let tries=0;const poll=setInterval(()=>{if(typeof state!=='undefined'&&state?.token){clearInterval(poll);scheduleWarm()}else if(++tries>300)clearInterval(poll)},100);
+}
+
 window.bamcoViewSettling={begin,reveal};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
