@@ -19,14 +19,11 @@ function scopeFromElement(el){
   if(el?.closest?.('#kanbanView')||el?.closest?.('#kanbanBody'))return'kanban';
   return null;
 }
-function visibleIds(scope){
-  return qa(`${config[scope].body} tr[data-task-id]`).map(row=>String(row.dataset.taskId));
-}
+function visibleIds(scope){return qa(`${config[scope].body} tr[data-task-id]`).map(row=>String(row.dataset.taskId))}
 function ids(scope){return [...picked[scope]]}
 function ensureHeaderToggle(scope){
   const th=q(`${config[scope].view} table thead tr:first-child th:last-child`);if(!th)return null;
-  let input=q('[data-bamco-task-select-all]',th);
-  if(input)return input;
+  let input=q('[data-bamco-task-select-all]',th);if(input)return input;
   const label=document.createElement('label');label.className='task-select-all';label.style.cssText='display:inline-flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;cursor:pointer';
   input=document.createElement('input');input.type='checkbox';input.dataset.bamcoTaskSelectAll=scope;input.setAttribute('aria-label',scope==='archive'?'انتخاب همه ردیف‌های قابل مشاهده آرشیو':'انتخاب همه ردیف‌های قابل مشاهده کانبان');
   const text=document.createElement('span');text.textContent='انتخاب همه';label.append(input,text);th.replaceChildren(label);return input;
@@ -46,7 +43,7 @@ function decorate(scope,{prune=true}={}){
   if(prune)for(const id of [...picked[scope]])if(!visible.has(id))picked[scope].delete(id);
   qa('tr[data-task-id]',body).forEach(row=>{
     const id=String(row.dataset.taskId),input=q('input.task-pick',row);if(!input)return;
-    if(input.type!=='checkbox')input.type='checkbox';input.removeAttribute('name');input.checked=picked[scope].has(id);input.setAttribute('aria-checked',input.checked?'true':'false');row.classList.toggle('task-selected',input.checked);
+    if(input.type!=='checkbox')input.type='checkbox';input.removeAttribute('name');input.checked=picked[scope].has(id);input.setAttribute('aria-checked',input.checked?'true':'false');row.classList.toggle('task-selected',input.checked);row.setAttribute('aria-selected',input.checked?'true':'false');
   });
   syncToolbar(scope);
 }
@@ -94,10 +91,7 @@ async function deleteSelected(scope){
   state.tasks=(state.tasks||[]).filter(task=>!selectedSet.has(String(task.id)));optimisticResequence(state.tasks);clear(scope);renderBoth();
   try{
     await rpc('delete_tasks_and_resequence',{p_task_ids:selected.map(Number)});
-    try{
-      const rows=await selectAll('task_status_view','select=*&order=id.desc');
-      if(Array.isArray(rows))state.tasks=rows;
-    }catch(refreshError){console.warn('authoritative task refresh after delete failed',refreshError)}
+    try{const rows=await selectAll('task_status_view','select=*&order=id.desc');if(Array.isArray(rows))state.tasks=rows}catch(refreshError){console.warn('authoritative task refresh after delete failed',refreshError)}
     renderBoth();
     if(typeof toast==='function')toast(tasks.length===1?'وظیفه حذف شد و شناسه‌ها بازشماری شد.':`${faDigits(tasks.length)} وظیفه حذف شدند و شناسه‌ها بازشماری شد.`);
     window.dispatchEvent(new CustomEvent('bamco:tasks-deleted',{detail:{scope,ids:selected,count:tasks.length}}));
@@ -109,29 +103,28 @@ async function deleteSelected(scope){
   }
 }
 
-// Register before the late final-production patch so this handler owns task deletion.
+// Own task selection and deletion at the earliest practical capture point so
+// legacy single-selection handlers cannot collapse a multi-row selection.
 window.addEventListener('click',event=>{
-  const button=event.target?.closest?.('#kanbanDeleteBtn,#archiveDeleteBtn');if(!button)return;
-  event.preventDefault();event.stopImmediatePropagation();void deleteSelected(button.id.startsWith('archive')?'archive':'kanban');
-},true);
-
-document.addEventListener('click',event=>{
+  const button=event.target?.closest?.('#kanbanDeleteBtn,#archiveDeleteBtn');
+  if(button){event.preventDefault();event.stopImmediatePropagation();void deleteSelected(button.id.startsWith('archive')?'archive':'kanban');return}
   const row=event.target?.closest?.('#kanbanBody tr[data-task-id],#archiveBody tr[data-task-id]');if(!row)return;
   if(event.target?.closest?.('button,a,select,textarea'))return;
   const scope=scopeFromElement(row);if(!scope)return;
   event.preventDefault();event.stopImmediatePropagation();toggleRow(scope,row.dataset.taskId,!!event.shiftKey);
 },true);
 
-document.addEventListener('change',event=>{
+window.addEventListener('change',event=>{
   const all=event.target?.closest?.('[data-bamco-task-select-all]');if(!all)return;
-  const scope=all.dataset.bamcoTaskSelectAll;if(!config[scope])return;setVisible(scope,all.checked);
+  const scope=all.dataset.bamcoTaskSelectAll;if(!config[scope])return;
+  event.stopImmediatePropagation();setVisible(scope,all.checked);
 },true);
 
 function boot(){
   for(const scope of Object.keys(config)){
     const body=q(config[scope].body);if(body){new MutationObserver(()=>queueMicrotask(()=>decorate(scope))).observe(body,{childList:true,subtree:true});decorate(scope)}
   }
-  window.bamcoTaskSelection={ids,clear,setVisible,deleteSelected,count:scope=>picked[scope]?.size||0};
+  window.bamcoTaskSelection={ids,clear,setVisible,toggle:toggleRow,deleteSelected,count:scope=>picked[scope]?.size||0};
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
