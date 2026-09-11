@@ -61,6 +61,7 @@ async def manager_checks(page,result):
     result['message_text_removed']='pass'
     assert await page.locator('#nav [data-view="requestReport"],#requestReportView').count()==0,'removed request report returned'
     result['removed_request_report_stays_removed']='pass'
+    await page.evaluate('__testApi.responseTrackingFixture=__testApi.deliveries.map(x=>({...x}))')
 
     await open_tab(page,'responseReport')
     controls=await command_texts(page,'#responseReportView .response-command-row')
@@ -81,6 +82,7 @@ async def manager_checks(page,result):
     await rows.nth(0).click(); await rows.nth(1).click(modifiers=['Control']); await expect(delete).to_have_text('حذف ۲ رکورد')
     await delete.click(); await page.locator('[data-notice-ok]').click(); await expect(rows).to_have_count(0); await page.locator('[data-notice-ok]').click()
     await home(page); result['response_report_root_controls_and_delete']='pass'
+    await page.evaluate('__testApi.deliveries=__testApi.responseTrackingFixture.map(x=>({...x}))')
 
     await open_tab(page,'performanceReport')
     await expect(page.locator('[data-performance-from]')).to_be_visible(); await expect(page.locator('[data-performance-to]')).to_be_visible()
