@@ -49,7 +49,7 @@ test('task history resolves deleted owner from task snapshot instead of UUID',as
  const f=await fixture();t.after(()=>f.dispose());await until(()=>f.w.bamcoTaskHistory?.ownerValue);
  const row={old_value:'"00000000-0000-0000-0000-000000000001"',new_value:null,old_data:{owner_id:'00000000-0000-0000-0000-000000000001'},new_data:{owner_id:null,former_owner_name:'متولی سابق'}};
  assert.equal(f.w.bamcoTaskHistory.ownerValue(row,'old',{}),'متولی سابق');
- assert.equal(f.w.bamcoTaskHistory.ownerValue(row,'new',{}),'متولی سابق');
+ assert.equal(f.w.bamcoTaskHistory.ownerValue(row,'new',{}),'بدون متولی');
  assert.equal(f.errors.length,0,f.errors.join('\n'));
 });
 
