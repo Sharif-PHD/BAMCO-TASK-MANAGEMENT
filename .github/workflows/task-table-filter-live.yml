@@ -64,7 +64,9 @@ jobs:
               async with async_playwright() as p:
                   browser=await p.chromium.launch()
                   page=await browser.new_page(viewport={'width':1440,'height':900})
-                  await page.goto(BASE+'?task-filter-live=1', wait_until='networkidle')
+                  page_errors=[]
+                  page.on('pageerror', lambda exc: page_errors.append(str(exc)))
+                  await page.goto(BASE+'?task-filter-live=2', wait_until='networkidle')
                   await page.wait_for_function("typeof renderTasks==='function' && window.__bamcoTaskBulkDelete20260912V4===true")
                   await page.wait_for_timeout(300)
 
@@ -85,12 +87,27 @@ jobs:
                     renderTasks(false);
                     renderTasks(true);
                   }""")
-                  await page.wait_for_timeout(150)
+                  await page.wait_for_timeout(250)
 
-                  assert await page.locator('#kanbanView .column-filters th').count() == 13
-                  assert await page.locator('#archiveView .column-filters th').count() == 15
-                  assert await page.locator('#kanbanView .column-filters select').count() == 13
-                  assert await page.locator('#archiveView .column-filters select').count() == 15
+                  diag=await page.evaluate("""() => ({
+                    kanbanFilterHtml:document.querySelector('#kanbanView .column-filters')?.outerHTML||null,
+                    archiveFilterHtml:document.querySelector('#archiveView .column-filters')?.outerHTML||null,
+                    kanbanFilterTh:document.querySelectorAll('#kanbanView .column-filters th').length,
+                    archiveFilterTh:document.querySelectorAll('#archiveView .column-filters th').length,
+                    kanbanFilterSelect:document.querySelectorAll('#kanbanView .column-filters select').length,
+                    archiveFilterSelect:document.querySelectorAll('#archiveView .column-filters select').length,
+                    kanbanRows:document.querySelectorAll('#kanbanBody tr[data-task-id]').length,
+                    archiveRows:document.querySelectorAll('#archiveBody tr[data-task-id]').length,
+                    taskSuite:document.querySelector('#kanbanView table')?.className||'',
+                    appViewClass:document.querySelector('#appView')?.className||''
+                  })""")
+                  print('DIAG='+json.dumps(diag,ensure_ascii=False))
+                  print('PAGE_ERRORS='+json.dumps(page_errors,ensure_ascii=False))
+
+                  assert diag['kanbanFilterTh'] == 13, diag
+                  assert diag['archiveFilterTh'] == 15, diag
+                  assert diag['kanbanFilterSelect'] == 13, diag
+                  assert diag['archiveFilterSelect'] == 15, diag
                   assert await page.locator('#kanbanBody tr[data-task-id="99001"] td').count() == 13
                   assert await page.locator('#archiveBody tr[data-task-id="99002"] td').count() == 15
                   assert (await page.locator('#kanbanBody tr[data-task-id="99001"] td').last.text_content()).strip() == 'یادداشت'
