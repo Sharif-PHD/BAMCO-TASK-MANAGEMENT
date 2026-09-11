@@ -1,5 +1,6 @@
 /* Single owner of the message template editor. */
 (()=>{
+  'use strict';
   const META={
     state1:'وضعیت مطلوب',state2:'یادآوری',state3:'نیازمند توجه',state4:'پیگیری جدی',state5:'اقدام فوری',followup:'یادآوری مجدد'
   };
@@ -18,17 +19,32 @@
   const textToHtml=text=>esc(String(text||'')).replace(/\r\n/g,'\n').replace(/\n/g,'<br>');
   const settingValue=row=>typeof row?.value==='string'?row.value:(row?.value?.value??'');
 
-  async function getSubject(key){
-    const rows=await select('app_settings',`key=eq.email_subject_${encodeURIComponent(key)}&select=*`);return rows.length?settingValue(rows[0]):'';
+  function ensureStyles(){
+    if(document.querySelector('#bamcoTemplateEditorFixCss'))return;
+    const style=document.createElement('style');style.id='bamcoTemplateEditorFixCss';style.textContent=`
+      #templatesView .template-toolbar-left{display:flex!important;align-items:center!important;gap:9px!important;justify-content:flex-start!important;direction:ltr!important;width:100%!important;margin-top:12px!important}
+      #templatesView .template-picker{display:flex!important;align-items:center!important;gap:7px!important;direction:rtl!important;margin-right:0!important;margin-left:auto!important}
+      #templatesView .template-picker label{margin:0!important;white-space:nowrap!important}
+      #templatesView #templateState{min-width:210px!important;text-align:right!important;text-align-last:right!important;font-family:"B Nazanin",BNazanin,Tahoma,sans-serif!important}
+      #templatesView #openDesktopTemplateEditor{min-width:116px!important}
+      #desktopTemplateEditor{width:min(860px,94vw)!important;max-width:860px!important}
+      #desktopTemplateEditor form{display:flex!important;flex-direction:column!important;gap:12px!important}
+      #desktopTemplateEditor label{display:flex!important;flex-direction:column!important;gap:6px!important;text-align:right!important;font-family:"B Nazanin",BNazanin,Tahoma,sans-serif!important}
+      #desktopTemplateEditor #dteSubject{width:100%!important;box-sizing:border-box!important;min-height:42px!important}
+      #desktopTemplateEditor #dteBody{width:100%!important;box-sizing:border-box!important;min-height:430px!important;resize:vertical!important;line-height:1.9!important;text-align:right!important;direction:rtl!important;font-family:"B Nazanin",BNazanin,Tahoma,sans-serif!important}
+      @media(max-width:700px){#templatesView .template-toolbar-left{flex-wrap:wrap!important}#templatesView .template-picker{width:100%!important;margin:0!important}#templatesView #templateState{min-width:0!important;flex:1!important}#desktopTemplateEditor #dteBody{min-height:55vh!important}}
+    `;document.head.append(style);
   }
-  async function setSubject(key,value){
-    const sk=`email_subject_${key}`,rows=await select('app_settings',`key=eq.${encodeURIComponent(sk)}&select=key`);
-    if(rows.length)await update('app_settings',`key=eq.${encodeURIComponent(sk)}`,{value:{value}});else await insert('app_settings',{key:sk,value:{value}});
+
+  async function getSubject(key){
+    try{const rows=await select('app_settings',`key=eq.email_subject_${encodeURIComponent(key)}&select=*`);return rows.length?settingValue(rows[0]):''}catch{return''}
   }
   async function loadTemplate(key){
+    const fallback=DEFAULTS[key]||DEFAULTS.state1;
     const rows=await select('email_templates',`template_key=eq.${encodeURIComponent(key)}&select=*`),row=rows[0]||null;
-    const subject=await getSubject(key);
-    return {id:row?.id||null,subject:row?.subject_template||subject||DEFAULTS[key].subject,body:row?.body_html?htmlToText(row.body_html):DEFAULTS[key].body};
+    let subject=row?.subject_template||'';
+    if(!subject)subject=await getSubject(key);
+    return {id:row?.id||null,subject:subject||fallback.subject,body:row?.body_html?htmlToText(row.body_html):fallback.body};
   }
   async function saveTemplate(key,subject,body){
     const cleanSubject=String(subject||'').replace(/\u200f/g,'').trim(),cleanBody=String(body||'').trim();
@@ -37,29 +53,47 @@
     const rows=await select('email_templates',`template_key=eq.${encodeURIComponent(key)}&select=*`);
     const payload={body_html:textToHtml(cleanBody),subject_template:cleanSubject};
     if(rows.length)await update('email_templates',`id=eq.${rows[0].id}`,payload);else await insert('email_templates',{template_key:key,...payload});
-
-
   }
 
   function ensureDialog(){
-    if(document.querySelector('#desktopTemplateEditor'))return;
-    const d=document.createElement('dialog');d.id='desktopTemplateEditor';d.className='modal bamco-dialog template-editor-dialog';
+    let d=document.querySelector('#desktopTemplateEditor');
+    const valid=d?.querySelector('#templateEditorForm')&&d.querySelector('#dteSubject')&&d.querySelector('#dteBody');
+    if(d&&!valid){d.remove();d=null}
+    if(d)return d;
+    d=document.createElement('dialog');d.id='desktopTemplateEditor';d.className='modal bamco-dialog template-editor-dialog';
     d.innerHTML='<form id="templateEditorForm"><div class="modal-head"><h3>ویرایش متن پیام</h3><button type="button" class="ghost bamco-icon-button" id="dteClose" aria-label="بستن">×</button></div><label>موضوع<input id="dteSubject" required></label><label class="template-body-label">متن پیام<textarea id="dteBody" required spellcheck="false"></textarea></label><p id="dteError" class="form-error" role="alert"></p><div class="modal-actions"><button id="dteSave" class="primary" type="submit">ثبت تغییرات</button><button id="dteCancel" class="ghost" type="button">انصراف</button></div></form>';
-    document.body.append(d);d.querySelector('#dteCancel').onclick=d.querySelector('#dteClose').onclick=()=>d.close();
-    d.querySelector('form').onsubmit=async e=>{e.preventDefault();const button=d.querySelector('#dteSave');if(button.disabled)return;button.disabled=true;d.querySelector('#dteError').textContent='';try{await saveTemplate(activeKey,d.querySelector('#dteSubject').value,d.querySelector('#dteBody').value);d.close();toast('موضوع و متن پیام ذخیره شد.')}catch(error){d.querySelector('#dteError').textContent=error.message}finally{button.disabled=false}};
+    document.body.append(d);
+    d.querySelector('#dteCancel').onclick=d.querySelector('#dteClose').onclick=()=>d.close();
+    d.querySelector('form').onsubmit=async e=>{e.preventDefault();const button=d.querySelector('#dteSave');if(button.disabled)return;button.disabled=true;d.querySelector('#dteError').textContent='';try{await saveTemplate(activeKey,d.querySelector('#dteSubject').value,d.querySelector('#dteBody').value);d.close();toast('موضوع و متن پیام ذخیره شد.')}catch(error){d.querySelector('#dteError').textContent=error.message||'ذخیره متن پیام انجام نشد.'}finally{button.disabled=false}};
+    return d;
   }
 
-  async function openEditor(){const key=document.querySelector('#templateState')?.value||'state1',epoch=++loadEpoch,d=document.querySelector('#desktopTemplateEditor'),button=document.querySelector('#openDesktopTemplateEditor');button.disabled=true;d.querySelector('#dteSave').disabled=true;try{const t=await loadTemplate(key);if(epoch!==loadEpoch)return;activeKey=key;d.querySelector('#dteError').textContent='';d.querySelector('#dteSubject').value=t.subject;d.querySelector('#dteBody').value=t.body;d.showModal();setTimeout(()=>{if(!d.open)return;const b=d.querySelector('#dteBody');b.selectionStart=0;b.selectionEnd=0;b.scrollTop=0;b.focus()},30)}catch(e){if(epoch===loadEpoch)toast(e.message||'متن ایمیل بارگذاری نشد.',true)}finally{button.disabled=false;d.querySelector('#dteSave').disabled=false}}
-  document.addEventListener('click',e=>{if(e.target.closest('.content-back,#nav [data-view],#logoutBtn'))loadEpoch++},true);
-
-  function install(){
-    const view=document.querySelector('#templatesView');if(!view||view.dataset.templateEditor==='1')return;
-    view.dataset.templateEditor='1';ensureDialog();
-    view.innerHTML=`<div class="panel"><div class="panel-head"><h3>ویرایش متن پیام‌ها</h3></div><div class="manager-toolbar"><label for="templateState">الگو</label><select id="templateState">${Object.entries(META).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select><button id="openDesktopTemplateEditor" type="button" class="ghost">ویرایش متن</button></div><div class="template-help"><p>الگو را انتخاب کنید و موضوع و متن پیام را ویرایش کنید.</p></div></div>`;
-    view.querySelector('#openDesktopTemplateEditor').addEventListener('click',openEditor);
-    view.querySelector('#templateState').addEventListener('change',e=>{activeKey=e.target.value});
+  async function openEditor(){
+    const key=document.querySelector('#templateState')?.value||activeKey||'state1',epoch=++loadEpoch,d=ensureDialog(),button=document.querySelector('#openDesktopTemplateEditor');
+    if(button)button.disabled=true;d.querySelector('#dteSave').disabled=true;
+    try{
+      const t=await loadTemplate(key);if(epoch!==loadEpoch)return;activeKey=key;
+      d.querySelector('#dteError').textContent='';d.querySelector('#dteSubject').value=t.subject;d.querySelector('#dteBody').value=t.body;
+      if(!d.open)d.showModal();
+      setTimeout(()=>{if(!d.open)return;const b=d.querySelector('#dteBody');b.selectionStart=0;b.selectionEnd=0;b.scrollTop=0;b.focus()},30);
+    }catch(error){if(epoch===loadEpoch)toast(error.message||'متن الگو بارگذاری نشد.',true)}
+    finally{if(button)button.disabled=false;d.querySelector('#dteSave').disabled=false}
   }
+  document.addEventListener('click',e=>{if(e.target.closest('.content-back,#nav [data-view],#logoutBtn')&&!e.target.closest('#nav [data-view="templates"]'))loadEpoch++},true);
 
-  function boot(){install();requestAnimationFrame(install)}
+  function renderView(view){
+    view.innerHTML=`<div class="panel"><div class="panel-head"><h3>ویرایش متن پیام‌ها</h3></div><div class="template-toolbar-left"><div class="template-picker"><label for="templateState">الگو</label><select id="templateState">${Object.entries(META).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select><button id="openDesktopTemplateEditor" type="button" class="primary">ویرایش متن</button></div></div><div class="template-help"><p>الگو را انتخاب کنید؛ با زدن «ویرایش متن»، موضوع و متن ذخیره‌شده همان الگو باز می‌شود.</p></div></div>`;
+    const selectEl=view.querySelector('#templateState');selectEl.value=activeKey;
+    view.querySelector('#openDesktopTemplateEditor').onclick=openEditor;
+    selectEl.onchange=e=>{activeKey=e.target.value};
+  }
+  function install(force=false){
+    const view=document.querySelector('#templatesView');if(!view)return;
+    ensureStyles();ensureDialog();
+    if(!force&&view.dataset.templateEditor==='2'&&view.querySelector('#openDesktopTemplateEditor'))return;
+    view.dataset.templateEditor='2';renderView(view);
+  }
+  function boot(){install(true);setTimeout(()=>install(false),120);setTimeout(()=>install(false),600)}
+  document.addEventListener('click',e=>{if(e.target.closest('#nav [data-view="templates"]'))setTimeout(()=>install(false),40)},true);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
