@@ -22,14 +22,17 @@ jobs:
           from pathlib import Path
           p=Path('index.html')
           s=p.read_text(encoding='utf-8')
-          tag='<script defer src="assets/js/report-stability-fixes-20260911.js?v=20260911-1"></script>'
-          if tag not in s:
+          old='<script defer src="assets/js/report-stability-fixes-20260911.js?v=20260911-1"></script>'
+          new='<script defer src="assets/js/report-stability-fixes-20260911.js?v=20260911-2"></script>'
+          if old in s:
+              s=s.replace(old,new)
+          elif new not in s:
               if '</body>' not in s:
                   raise SystemExit('missing body close')
-              s=s.replace('</body>',tag+'\n</body>')
+              s=s.replace('</body>',new+'\n</body>')
           p.write_text(s,encoding='utf-8')
           check=p.read_text(encoding='utf-8')
-          assert '\ufffd' not in check and tag in check
+          assert '\ufffd' not in check and new in check
           print('UTF-8 and report stability loader: PASS')
           PY
       - name: Commit cache repair
@@ -41,5 +44,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
-          git commit -m 'Load report stability fix'
+          git commit -m 'Bump report stability asset version'
           git push origin HEAD:main
