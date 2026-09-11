@@ -34,7 +34,23 @@ async def main():
                 await login(page)
 
                 # Performance report must open by a real nav click and expose one canonical DOM.
-                await page.locator('#nav [data-view="performanceReport"]').click(force=True)
+                perf=page.locator('#nav [data-view="performanceReport"]')
+                await perf.click(force=True)
+                await page.wait_for_timeout(350)
+                diagnostic=await page.evaluate("""()=>({
+                    stateView:typeof state!=='undefined'?state.view:null,
+                    className:document.querySelector('#performanceReportView')?.className,
+                    display:getComputedStyle(document.querySelector('#performanceReportView')).display,
+                    runtime:!!window.bamcoProductionRuntime,
+                    runtimeBound:document.querySelector('#nav [data-view=\"performanceReport\"]')?.dataset.runtimeBound||null,
+                    canonical:!!window.bamcoCanonicalReports,
+                    finalNav:!!window.bamcoReportNavigation,
+                    showViewLexical:typeof showView,
+                    showViewWindow:typeof window.showView,
+                    activeButtons:[...document.querySelectorAll('#nav button.active')].map(x=>x.dataset.view),
+                    visibleViews:[...document.querySelectorAll('.workspace>.view')].filter(x=>!x.classList.contains('hidden')).map(x=>x.id)
+                })""")
+                print('REPORT_DIAGNOSTIC',width,diagnostic,'PAGEERRORS',errors,flush=True)
                 await expect(page.locator('#performanceReportView')).to_be_visible()
                 await expect(page.locator('#performanceReportView .canonical-report')).to_have_count(1)
                 await expect(page.locator('#performanceReportView [data-performance-from]')).to_be_visible()
@@ -56,7 +72,6 @@ async def main():
 
                 # The app owns exactly one 15-second live-sync loop and exposes its contract.
                 assert await page.evaluate("window.bamcoLiveSync?.interval") == 15000
-                # Manual invocation uses the exact same sync iteration without a page reload.
                 before=await page.evaluate("performance.getEntriesByType('navigation').length")
                 await page.evaluate("window.bamcoLiveSync.refresh()")
                 await page.wait_for_timeout(400)
