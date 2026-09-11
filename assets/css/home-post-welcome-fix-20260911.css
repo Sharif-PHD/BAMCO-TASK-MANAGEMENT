@@ -1,10 +1,22 @@
-/* Post-welcome home must start at the viewport origin. Legacy login/entry shells
-   live before #appView in DOM and must never reserve a viewport after sign-in. */
-html body.card-home-active > #departmentEntry,
-html body.card-home-active > #loginView{
+/* Root fix: release-fixes.css gives #loginView.login-shell a high-specificity
+   display:grid!important. After sign-in the .hidden rule must win completely,
+   otherwise the invisible login shell still reserves exactly one viewport and
+   pushes the home workspace below the fold. */
+html body #loginView#loginView.login-shell.hidden{
   display:none!important;
   visibility:hidden!important;
   position:absolute!important;
+  width:0!important;
+  height:0!important;
+  min-height:0!important;
+  max-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+}
+html body #departmentEntry#departmentEntry[hidden]{
+  display:none!important;
+  visibility:hidden!important;
   width:0!important;
   height:0!important;
   min-height:0!important;
@@ -13,26 +25,10 @@ html body.card-home-active > #loginView{
   overflow:hidden!important;
 }
 html body.card-home-active #appView.app:not(.hidden){
-  position:fixed!important;
-  inset:0!important;
-  top:0!important;
-  right:0!important;
-  bottom:0!important;
-  left:0!important;
-  width:100vw!important;
-  height:100dvh!important;
-  min-height:100dvh!important;
-  max-width:none!important;
   margin:0!important;
   transform:none!important;
-  overflow:auto!important;
-  z-index:20!important;
 }
-html body.card-home-active #appView.app > .card-topbar{
-  position:relative!important;
-  top:0!important;
-  margin-top:0!important;
-}
+html body.card-home-active #appView.app > .card-topbar,
 html body.card-home-active #appView.app > .workspace{
   margin-top:0!important;
 }
