@@ -729,7 +729,7 @@ showLogin();
     latestRows[scope]=rows;latestArchived[scope]=archived;
     const table=qs(`#${scope}View table`);if(table)normalizeHeaderRows(table);
     const tr=qs(`#${scope}View .column-filters`);if(!tr)return;
-    const filters=tableFilters[scope],count=archived?15:14;
+    const filters=tableFilters[scope],count=archived?15:13;
     while(tr.children.length>count)tr.lastElementChild.remove();
     while(tr.children.length<count)tr.insertAdjacentHTML('beforeend','<th><select><option value="">همه</option></select></th>');
     [...tr.children].forEach((th,index)=>{
