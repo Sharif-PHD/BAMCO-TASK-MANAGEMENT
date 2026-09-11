@@ -8,10 +8,10 @@ if(typeof document==='undefined')return;
 window.BAMCO_COMPARE_VALUES=compareValues;window.BAMCO_TASK_SORT=window.BAMCO_TASK_SORT||{};
 function install(){
  const root=document.querySelector('#appView');if(!root)return;document.body.classList.add('table-suite');
- const settings=new WeakMap();let frame=0;
+ const settings=new WeakMap();let scheduled=false;
  const observer=new MutationObserver(records=>{if(records.every(r=>r.target.nodeType===1&&r.target.closest('.table-pagination,#archivePager,.suite-table-options')))return;schedule()});
  const observe=()=>observer.observe(root,{childList:true,subtree:true});
- function schedule(){if(!frame)frame=requestAnimationFrame(()=>{frame=0;observer.disconnect();scan();observe()})}
+ function schedule(){if(scheduled)return;scheduled=true;queueMicrotask(()=>{scheduled=false;observer.disconnect();scan();observe()})}
  function dataRows(table){return [...(table.tBodies[0]?.rows||[])].filter(r=>!(r.cells.length===1&&r.cells[0].colSpan>1))}
  function clear(){window.bamcoSelection?.clear();root.querySelectorAll('tr.suite-selected').forEach(r=>{r.classList.remove('suite-selected');r.setAttribute('aria-selected','false')})}
  function sort(table,index,direction){
@@ -50,7 +50,6 @@ function install(){
  }
  function decorate(table){
   const heads=table.tHead?.rows[0];if(!heads||table.closest('dialog'))return;
-  // Remove dedicated selection columns; no synthetic record identifiers are introduced.
   const first=heads.cells[0];if(first&&(first.textContent.trim()==='انتخاب'||first.classList.contains('unified-select-head'))){table.querySelectorAll('tr').forEach(row=>{if(row.cells.length>1)row.cells[0].remove()});table.querySelector('colgroup')?.children[0]?.remove()}
   let model=settings.get(table);if(!model){const view=table.closest('.view');const key='bamco.table.widths.v4.'+(view?.id||'table')+'.'+[...view.querySelectorAll('table')].indexOf(table);let widths={};try{widths=JSON.parse(localStorage.getItem(key)||'{}')}catch{}model={key,widths};settings.set(table,model)}
   table.classList.add('suite-table','suite-compact');table.setAttribute('aria-multiselectable','true');
