@@ -166,7 +166,7 @@ function updateColumnFilters(scope,rows,archived){const tr=$(`#${scope}View .col
 $$('.column-filters').forEach(tr=>tr.addEventListener('change',e=>{if(e.target.tagName!=='SELECT')return;const scope=tr.closest('.view').id.startsWith('archive')?'archive':'kanban';tableFilters[scope][e.target.closest('th').cellIndex]=e.target.value;renderTasks(scope==='archive')}));
 function selectedTask(scope){return state.tasks.find(t=>String(t.id)===String(state.selected[scope]))}
 function updateTaskToolbar(scope){const picked=!!selectedTask(scope);for(const suffix of ['EditBtn','DeleteBtn'])$(`#${scope}${suffix}`)?.toggleAttribute('disabled',!picked);if(scope==='kanban')$('#kanbanArchiveBtn')?.toggleAttribute('disabled',!picked);else $('#archiveRestoreBtn')?.toggleAttribute('disabled',!picked)}
-function chooseTask(scope,id){state.selected[scope]=Number(id);renderTasks(scope==='archive')}
+function chooseTask(scope,id){const next=String(state.selected[scope])===String(id)?null:Number(id);state.selected[scope]=next;renderTasks(scope==='archive')}
 for(const body of [$('#kanbanBody'),$('#archiveBody')])body.addEventListener('click',e=>{const row=e.target.closest('tr[data-task-id]');if(row)chooseTask(row.dataset.scope,row.dataset.taskId)});
 function renderRequests(){const names=Object.fromEntries(state.profiles.map(p=>[p.id,p.full_name||p.email]));const types={create:'تعریف فعالیت جدید',update:'ویرایش وظیفه',status:'تغییر وضعیت',priority:'تغییر اولویت',description:'تغییر توضیحات',complete:'اعلام انجام',delete:'درخواست حذف',due_date:'تغییر تاریخ پایان'},statuses={pending:'در انتظار بررسی',in_review:'در زنجیره تأیید',needs_revision:'برگشت جهت اصلاح'},routeById=new Map((state.requestRoutes||[]).map(x=>[String(x.request_id),x]));$('#approvalBadge').textContent=fa(state.requests.length);$('#approvalBadge').classList.toggle('hidden',!state.requests.length);
   $('#approvalBody').innerHTML=state.requests.length?state.requests.map(r=>{const route=routeById.get(String(r.id)),routeText=route?.stage_title?`مرحله ${fa(route.stage_no)}: ${safe(route.stage_title)} — ${safe(route.approver_names||'بدون تأییدکننده')}`:statuses[r.request_status]||r.request_status,action=r.request_status==='needs_revision'&&!isManager()?`<button class="primary" data-revise-request="${r.id}">اصلاح و ارسال مجدد</button>`:isManager()&&route?.actionable?`<button class="primary" data-review-request="${r.id}">بررسی</button>`:isManager()?'در انتظار تأییدکننده این مرحله':'در انتظار تأیید';return`<tr><td>${fa(r.id)}</td><td>${safe(names[r.requested_by]||r.requester_name_snapshot||'—')}</td><td>${types[r.request_type]||r.request_type}</td><td>${safe(r.proposed_data?.title||state.tasks.find(t=>String(t.id)===String(r.task_id))?.title||'—')}</td><td>${jalaliDateTime(r.created_at)}</td><td>${routeText}</td><td>${action}</td></tr>`}).join(''):'<tr><td colspan="7" class="empty">درخواست بازی وجود ندارد.</td></tr>';
@@ -802,12 +802,12 @@ showLogin();
   });
 
   chooseTask=function(scope,id){
-    state.selected[scope]=Number(id);
+    const next=String(state.selected[scope])===String(id)?null:Number(id);
+    state.selected[scope]=next;
     const body=scope==='archive'?qs('#archiveBody'):qs('#kanbanBody');
     if(body){
       qsa('tr.task-selected',body).forEach(row=>{row.classList.remove('task-selected');row.setAttribute('aria-selected','false')});
-      const row=qsa('tr[data-task-id]',body).find(r=>String(r.dataset.taskId)===String(id));
-      if(row){row.classList.add('task-selected');row.setAttribute('aria-selected','true')}
+      if(next!==null){const row=qsa('tr[data-task-id]',body).find(r=>String(r.dataset.taskId)===String(id));if(row){row.classList.add('task-selected');row.setAttribute('aria-selected','true')}}
     }
     updateTaskToolbar(scope);
   };

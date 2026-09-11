@@ -1,6 +1,8 @@
 (()=>{
 'use strict';
-if(window.__bamcoTaskBulkDelete20260912V4)return;
+if(window.__bamcoTaskBulkDelete20260912V6)return;
+window.__bamcoTaskBulkDelete20260912V6=true;
+window.__bamcoTaskBulkDelete20260912V5=true;
 window.__bamcoTaskBulkDelete20260912V4=true;
 window.__bamcoTaskBulkDelete20260912V3=true;
 window.__bamcoTaskBulkDelete20260912V2=true;
@@ -15,6 +17,7 @@ const config={
 };
 const picked={kanban:new Set(),archive:new Set()};
 const lastPicked={kanban:null,archive:null};
+const seeded={kanban:false,archive:false};
 let deleting=false;
 
 function ensureStyles(){
@@ -75,7 +78,7 @@ function syncToolbar(scope){
 function decorate(scope,{prune=true}={}){
   const body=q(config[scope].body);if(!body)return;
   const visible=new Set(visibleIds(scope));
-  if(picked[scope].size===0&&typeof state!=='undefined'&&state?.selected?.[scope]!=null&&visible.has(String(state.selected[scope])))picked[scope].add(String(state.selected[scope]));
+  if(!seeded[scope]){if(picked[scope].size===0&&typeof state!=='undefined'&&state?.selected?.[scope]!=null&&visible.has(String(state.selected[scope])))picked[scope].add(String(state.selected[scope]));seeded[scope]=true;}
   if(prune)for(const id of [...picked[scope]])if(!visible.has(id))picked[scope].delete(id);
   qa('tr[data-task-id]',body).forEach(row=>{
     const id=String(row.dataset.taskId),input=q('input.task-pick',row),selected=picked[scope].has(id);
