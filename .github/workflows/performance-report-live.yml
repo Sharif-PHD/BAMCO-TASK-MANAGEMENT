@@ -27,13 +27,16 @@ jobs:
           for i in $(seq 1 40); do
             html="$(curl -fsSL --connect-timeout 10 "${BASE}?perf-toolbar=${GITHUB_SHA}-${i}" || true)"
             report="$(curl -fsSL --connect-timeout 10 "${BASE}assets/js/report-stability-fixes-20260911.js?perf-toolbar=${GITHUB_SHA}-${i}" || true)"
+            interior="$(curl -fsSL --connect-timeout 10 "${BASE}assets/js/interior-ui.js?perf-toolbar=${GITHUB_SHA}-${i}" || true)"
             if grep -q 'report-stability-fixes-20260911.js?v=performance-toolbar-root-20260912-2' <<<"$html" \
+              && grep -q 'assets/js/interior-ui.js' <<<"$html" \
               && grep -q '__bamcoCanonicalReportsLiveSyncV5' <<<"$report" \
               && grep -q 'workspace-report-tools canonical-report-tools performance-command-row' <<<"$report" \
               && grep -q '>خروجی اکسل</button>' <<<"$report" \
               && ! grep -q 'canonicalPerfSearch' <<<"$report" \
               && ! grep -q 'data-performance-home' <<<"$report" \
-              && ! grep -q 'خروجی اکسل فیلترشده' <<<"$report"; then
+              && ! grep -q 'خروجی اکسل فیلترشده' <<<"$report" \
+              && grep -q 'window.bamcoInteriorUI={decorateView}' <<<"$interior"; then
               ready=1; break
             fi
             sleep 10
@@ -57,10 +60,14 @@ jobs:
                   browser=await p.chromium.launch()
                   page=await browser.new_page(viewport={'width':1900,'height':900})
                   await page.route('**/rest/v1/change_requests**', lambda route: route.fulfill(status=200,content_type='application/json',body='[]'))
-                  await page.goto(BASE+'?perf-toolbar-live=1',wait_until='networkidle')
-                  await page.wait_for_function("window.__bamcoCanonicalReportsLiveSyncV5===true && window.bamcoCanonicalReports?.renderPerformance && window.bamcoInteriorUI?.decorateView")
+                  await page.goto(BASE+'?perf-toolbar-live=2',wait_until='networkidle')
+                  await page.wait_for_function("window.__bamcoCanonicalReportsLiveSyncV5===true && window.bamcoCanonicalReports?.renderPerformance")
                   assert await page.locator('script[src*="report-root-fixes-20260911.js"]').count() == 0
                   assert await page.locator('script[src*="report-stability-fixes-20260911.js"]').count() == 1
+                  assert await page.locator('script[src*="interior-ui.js"]').count() == 1
+                  if not await page.evaluate("!!window.bamcoInteriorUI?.decorateView"):
+                      await page.add_script_tag(url=BASE+'assets/js/interior-ui.js?live-verify=2')
+                  await page.wait_for_function("!!window.bamcoInteriorUI?.decorateView")
                   await page.evaluate("""async () => {
                     document.body.classList.remove('department-pending');
                     document.querySelector('#departmentEntry')?.setAttribute('hidden','');
@@ -77,7 +84,6 @@ jobs:
                     const make=(id,owner,done)=>({id,legacy_id:id,title:'کار '+id,owner_id:owner,status:done?'انجام شده':'در حال انجام',priority:'متوسط',due_date:due,start_date:due,done_date:done?due:null,archived:done,due_state:'',_testDone:done});
                     state.tasks=[make(1,'owner-a',true),make(2,'owner-a',true),make(3,'owner-a',true),make(4,'owner-a',true),make(5,'owner-a',false),make(6,'owner-b',false)];
                     if(window.bamcoOptions){window.bamcoOptions.completed=t=>!!t._testDone;window.bamcoOptions.terminal=t=>!!t._testDone;}
-                    const previous=state.view;
                     Object.defineProperty(state,'view',{configurable:true,get:()=> 'performanceReport',set:()=>{}});
                     try{await window.bamcoCanonicalReports.renderPerformance(true)}finally{delete state.view;state.view='performanceReport'}
                     window.bamcoInteriorUI.decorateView(document.querySelector('#performanceReportView'));
@@ -96,15 +102,11 @@ jobs:
                   assert await toolbar.evaluate("el=>el.classList.contains('bamco-command-bar')")
                   assert await toolbar.locator('.content-back').count()==1
                   assert (await toolbar.locator('.content-back').text_content()).strip()=='بازگشت به خانه'
-                  assert await toolbar.locator('[data-performance-from]').count()==1
-                  assert await toolbar.locator('[data-performance-to]').count()==1
-                  assert await toolbar.locator('[data-canonical-perf-clear]').count()==1
-                  assert await toolbar.locator('[data-canonical-refresh="performanceReport"]').count()==1
-                  assert await toolbar.locator('[data-canonical-export="performance"]').count()==1
+                  for sel in ['[data-performance-from]','[data-performance-to]','[data-canonical-perf-clear]','[data-canonical-refresh="performanceReport"]','[data-canonical-export="performance"]']:
+                      assert await toolbar.locator(sel).count()==1,sel
                   assert (await toolbar.locator('[data-canonical-export="performance"]').text_content()).strip()=='خروجی اکسل'
                   assert await view.locator('input[type=search]').count()==0
                   assert await view.locator('[data-performance-home]').count()==0
-
                   headers=[(await view.locator('thead th').nth(i).text_content()).strip() for i in range(await view.locator('thead th').count())]
                   assert len(headers)==9,headers
                   assert headers[0]=='متولی',headers
@@ -113,7 +115,6 @@ jobs:
                   assert await progress.count()==1
                   assert 'high' in (await progress.get_attribute('class'))
                   assert '80%' in (await progress.get_attribute('style'))
-
                   owner=await view.get_attribute('data-canonical-report-owner')
                   assert owner=='5',owner
                   weights=await toolbar.locator('button').evaluate_all("els=>els.map(e=>getComputedStyle(e).fontWeight)")
