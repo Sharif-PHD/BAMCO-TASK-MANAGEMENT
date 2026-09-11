@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
-if(window.__bamcoReportStabilityFixes20260911V5)return;
-window.__bamcoReportStabilityFixes20260911V5=true;
+if(window.__bamcoReportStabilityFixes20260911V6)return;
+window.__bamcoReportStabilityFixes20260911V6=true;
 const q=(s,r=document)=>r?.querySelector?.(s)||null,qa=(s,r=document)=>[...(r?.querySelectorAll?.(s)||[])];
 let rawTabRender=null,warmKey='',warming=false,cleanFrame=0,navigationEpoch=0;
 
@@ -9,7 +9,6 @@ function installCss(){
   q('#bamcoReportStabilityCss')?.remove();
   const s=document.createElement('style');s.id='bamcoReportStabilityCss';s.textContent=`
 #performanceReportView [data-performance-clear]{font-weight:400!important;font-family:BamcoPersian,"B Nazanin",BNazanin,Tahoma,sans-serif!important}
-/* Tabs must never be covered by an intermediate loading page. */
 .view.bamco-view-settling{position:static!important;min-height:0!important}
 .view.bamco-view-settling>*{visibility:visible!important;pointer-events:auto!important}
 .view.bamco-view-settling:after{content:none!important;display:none!important}
@@ -36,7 +35,7 @@ function cleanTransientLoading(root=document){
 }
 
 function patchTabs(){
-  const tabs=window.bamcoTabs;if(!tabs?.render||tabs.__instantV5)return !!tabs;
+  const tabs=window.bamcoTabs;if(!tabs?.render||tabs.__instantV6)return !!tabs;
   rawTabRender=tabs.render.bind(tabs);
   const instantRender=(id)=>{
     navigationEpoch++;
@@ -46,7 +45,7 @@ function patchTabs(){
   };
   tabs.render=instantRender;
   tabs.prewarm=()=>warmTabs(true);
-  tabs.__instantV5=true;
+  tabs.__instantV6=true;
   return true;
 }
 
@@ -58,12 +57,12 @@ async function warmTabs(force=false){
   warming=true;
   const startEpoch=navigationEpoch;
   try{
-    // Message center keeps its rows in memory, so loading it while hidden makes its first open immediate.
     try{q('#refreshMessageCenter')?.click()}catch{}
     try{void window.bamcoConversations?.refresh?.()}catch{}
-    // tab-workspace currently uses one request serial. Warm sequentially and stop
-    // the instant a real navigation starts so background work can never cancel it.
-    const order=['performanceReport','responseReport','requestReport','systemOptions','loginActivity','activeSessions'];
+    // Performance and response reports now have one canonical renderer loaded last.
+    // Never pre-render their legacy versions in the background: that was the source
+    // of the visible old-version flash and unnecessary report lag.
+    const order=['requestReport','systemOptions','loginActivity','activeSessions'];
     for(const id of order){
       if(navigationEpoch!==startEpoch)break;
       if(!q('#'+id+'View'))continue;
