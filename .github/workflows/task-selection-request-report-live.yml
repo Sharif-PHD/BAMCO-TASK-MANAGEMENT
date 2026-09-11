@@ -40,7 +40,7 @@ jobs:
         run: |
           python -m pip install playwright==1.57.0
           python -m playwright install --with-deps chromium
-      - name: Verify row selection, terminal columns and removed request report
+      - name: Verify both task tables, green selection and terminal columns
         shell: bash
         run: |
           cat > /tmp/check_selection_report.py <<'PY'
@@ -59,7 +59,7 @@ jobs:
               async with async_playwright() as p:
                   browser=await p.chromium.launch()
                   page=await browser.new_page(viewport={'width':1365,'height':900})
-                  await page.goto(BASE+'?terminal-columns-live=1', wait_until='networkidle')
+                  await page.goto(BASE+'?terminal-columns-live-both=1', wait_until='networkidle')
                   await page.wait_for_function('window.__bamcoTaskBulkDelete20260912V3 === true && window.__bamcoTaskTerminalColumns20260912 === true')
                   await page.wait_for_timeout(300)
 
@@ -82,21 +82,39 @@ jobs:
                     document.querySelector('#archiveBody').innerHTML=`<tr data-task-id="92001" data-scope="archive">${'<td>x</td>'.repeat(13)}<td>۳</td><td>۵</td><td><input class="task-pick" type="radio" value="92001"></td></tr>`;
                   }""")
                   await page.wait_for_function("() => document.querySelector('#kanbanBody tr').cells.length===14 && document.querySelector('#archiveBody tr').cells.length===15")
+
                   assert (await page.locator('#kanbanBody tr td').last.text_content()).strip() == '۷'
                   assert (await page.locator('#archiveBody tr td').last.text_content()).strip() == '۵'
                   assert await page.locator('[data-bamco-task-select-all]').count() == 0
 
                   await page.evaluate("() => document.querySelector('#kanbanBody tr[data-task-id=\"91001\"] td:nth-child(2)').dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}))")
                   await page.wait_for_function("() => window.bamcoTaskSelection.count('kanban')===1")
-                  row=page.locator('#kanbanBody tr[data-task-id="91001"]')
-                  assert await row.evaluate("el=>el.getAttribute('aria-selected')==='true'")
-                  bg=await row.locator('td').first.evaluate("el=>getComputedStyle(el).backgroundColor")
-                  assert greenish(bg), bg
+                  kanban_row=page.locator('#kanbanBody tr[data-task-id="91001"]')
+                  assert await kanban_row.evaluate("el=>el.getAttribute('aria-selected')==='true'")
+                  kanban_bg=await kanban_row.locator('td').first.evaluate("el=>getComputedStyle(el).backgroundColor")
+                  assert greenish(kanban_bg), kanban_bg
+
+                  await page.evaluate("() => document.querySelector('#archiveBody tr[data-task-id=\"92001\"] td:nth-child(2)').dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}))")
+                  await page.wait_for_function("() => window.bamcoTaskSelection.count('archive')===1")
+                  archive_row=page.locator('#archiveBody tr[data-task-id="92001"]')
+                  assert await archive_row.evaluate("el=>el.getAttribute('aria-selected')==='true'")
+                  archive_bg=await archive_row.locator('td').first.evaluate("el=>getComputedStyle(el).backgroundColor")
+                  assert greenish(archive_bg), archive_bg
+
                   await page.wait_for_timeout(50)
                   assert await page.locator('[data-bamco-task-select-all]').count() == 0
                   assert (await page.locator('#kanbanView thead tr').first.locator('th').last.text_content()).strip() == 'تعجیل'
+                  assert (await page.locator('#archiveView thead tr').first.locator('th').last.text_content()).strip() == 'تعجیل'
 
-                  print(json.dumps({'selection':'green','kanban_last':'تعجیل','archive_last':'تعجیل','select_all':'absent','request_report':'absent','status':'passed'},ensure_ascii=False))
+                  print(json.dumps({
+                    'kanban_selection':'green',
+                    'archive_selection':'green',
+                    'kanban_last':'تعجیل',
+                    'archive_last':'تعجیل',
+                    'select_all':'absent',
+                    'request_report':'absent',
+                    'status':'passed'
+                  },ensure_ascii=False))
                   await browser.close()
 
           asyncio.run(main())
