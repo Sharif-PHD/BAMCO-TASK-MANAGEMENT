@@ -1,15 +1,37 @@
 (()=>{
 'use strict';
-if(window.__bamcoAdminRootFixes20260911V5)return;
-window.__bamcoAdminRootFixes20260911V5=true;
-const q=(s,r=document)=>r.querySelector(s);
+if(window.__bamcoAdminRootFixes20260911V6)return;
+window.__bamcoAdminRootFixes20260911V6=true;
+const q=(s,r=document)=>r.querySelector(s),qa=(s,r=document)=>[...r.querySelectorAll(s)];
 
-// Observer callbacks must reach a fixed point: assigning identical textContent
-// still replaces a text node and would enqueue this observer indefinitely.
-function removeTemplateHelp(){
- const view=q('#templatesView');if(!view)return;
- q('.template-help',view)?.remove();
- const btn=q('#openDesktopTemplateEditor',view);if(btn){if(btn.type!=='button')btn.type='button';if(btn.textContent!=='ویرایش متن')btn.textContent='ویرایش متن'}
+function purgeMessageTextUi(){
+  qa('#nav button[data-view="templates"],#nav [data-view="templates"]').forEach(x=>x.remove());
+  qa('#templatesView,#desktopTemplateEditor,#openDesktopTemplateEditor,#templateBody,#templateState,#saveTemplateBtn').forEach(x=>x.remove());
+  const custom=q('#messageCustomText');
+  if(custom){
+    const host=custom.closest('[data-message-text-section],.message-text-section,.message-custom-text,.custom-message-text')||custom.closest('label')||custom;
+    host.remove();
+  }
+  qa('#messageCenterView button,#messageCenterView a').filter(x=>/ویرایش\s*متن|متن\s*پیام(?:‌|\s)*ها?/i.test((x.textContent||'').trim())).forEach(x=>x.remove());
+  if(typeof state!=='undefined'&&state.view==='templates'){
+    if(typeof window.bamcoShowHome==='function')window.bamcoShowHome();
+    else if(typeof showView==='function')showView('messageCenter');
+  }
+}
+function installMessageTextPurge(){
+  purgeMessageTextUi();
+  if(document.body&&!document.body.dataset.messageTextPurge){
+    document.body.dataset.messageTextPurge='1';
+    let queued=false;
+    new MutationObserver(()=>{
+      if(queued)return;queued=true;
+      queueMicrotask(()=>{queued=false;purgeMessageTextUi()});
+    }).observe(document.body,{childList:true,subtree:true});
+  }
+  document.addEventListener('click',e=>{
+    const dead=e.target.closest?.('[data-view="templates"],#openDesktopTemplateEditor,#saveTemplateBtn');
+    if(!dead)return;e.preventDefault();e.stopImmediatePropagation();purgeMessageTextUi();
+  },true);
 }
 function normalizeRequestExport(){const b=q('#requestReportView [data-report-export]');if(b&&b.textContent!=='خروجی اکسل')b.textContent='خروجی اکسل'}
 function installRequestGuard(){
@@ -17,6 +39,6 @@ function installRequestGuard(){
  const view=q('#requestReportView');if(view&&!view.dataset.rootRequestWatch){view.dataset.rootRequestWatch='1';new MutationObserver(normalizeRequestExport).observe(view,{childList:true,subtree:true,characterData:true})}
  document.addEventListener('click',e=>{if(e.target.closest('#nav [data-view="requestReport"]'))setTimeout(normalizeRequestExport,40)},true)
 }
-function boot(){installRequestGuard();removeTemplateHelp();normalizeRequestExport()}
+function boot(){installRequestGuard();installMessageTextPurge();normalizeRequestExport()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
