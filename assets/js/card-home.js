@@ -12,18 +12,15 @@ function install(){
  workspace.append(home);home.append(nav);
  nav.querySelector('.nav-login-root')?.remove();
  const footer=document.createElement('footer');footer.id='homeFixedFooter';footer.innerHTML='<a href="https://www.linkedin.com/company/bam-automotive-company/" target="_blank" rel="noopener noreferrer">شرکت خودروسازان بم</a> | واحد توسعه و تکوین محصول | <a href="https://www.linkedin.com/in/shahab-tanhaiyan-b1156a10a/" target="_blank" rel="noopener noreferrer">شهاب‌الدین تنهائیان</a> و <a href="https://www.linkedin.com/in/nazanin-ghaemizadeh/" target="_blank" rel="noopener noreferrer">نازنین قائمی</a>';app.append(footer);
- // One order, matching the approved three-column RTL reference.
  const groups=[
   ['people',['people','loginActivity','activeSessions']],
-  ['messages',['messages','messageCenter','sentMessages','responseTracking','templates','stickers']],
+  ['messages',['messages','messageCenter','sentMessages','responseTracking','stickers']],
   ['reports',['dashboard','performanceReport','responseReport','requestReport']],
   ['configuration',['systemOptions','alertSettings','emailSettings','settings']],
   ['tasks',['kanban','archive','taskTimeline','approvals','requestHistory','approvalChains']],
   ['vehicle',['vehiclePermanent','vehicleTemporary']],
   ['conversations',['groupChat','directMessages','taskChats']]
  ];
- // These aliases share the same renderer and data. Keep the pages/data intact;
- // remove only the duplicate shortcut when its canonical shortcut exists.
  const aliases={loginReport:'loginActivity',messageReport:'sentMessages'};
  const groupObserver=new MutationObserver(()=>syncGroups());
  function syncGroups(){
@@ -37,7 +34,6 @@ function install(){
     const key=button.dataset.view;
     if(routes.has(key)){
      const kept=buttons.get(key);
-     // Prefer the original bound element; moving it preserves its handlers.
      if(!kept.id&&!kept.dataset.runtimeBound&&!kept.onclick&&(button.id||button.dataset.runtimeBound||button.onclick)){kept.remove();buttons.set(key,button)}else button.remove();
     }else{routes.add(key);buttons.set(key,button)}
    });
@@ -57,7 +53,6 @@ function install(){
     const toggle=group.querySelector('button.nav-group-toggle');
     if(toggle){const heading=document.createElement('h3');heading.className='nav-group-toggle';heading.innerHTML=toggle.innerHTML;toggle.replaceWith(heading)}
    }
-   // Do not hide or discard a unique route merely because it arrived late.
    nav.querySelectorAll('.nav-group').forEach(group=>{
     const visible=[...group.querySelectorAll('[data-view]')].some(b=>!b.classList.contains('hidden'));
     if(group.classList.contains('hidden')===visible)group.classList.toggle('hidden',!visible);
@@ -65,7 +60,6 @@ function install(){
   }finally{groupObserver.observe(nav,{childList:true,subtree:true,attributes:true,attributeFilter:['class']})}
  }
  syncGroups();
- // Section headings are non-interactive. Only existing subpage buttons navigate.
  const dialog=document.createElement('dialog');dialog.className='home-welcome-dialog';dialog.setAttribute('aria-labelledby','homeWelcomeTitle');dialog.innerHTML='<button class="welcome-dismiss" type="button" aria-label="بستن خوشامدگویی" autofocus><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button><div class="home-welcome-copy"><p class="welcome-person"></p><h2 id="homeWelcomeTitle">به سامانه مدیریت، پایش و پیگیری امور خوش آمدید</h2></div><img class="home-sticker female" alt="استیکر زن در وضعیت مطلوب"><img class="home-sticker male" alt="استیکر مرد در وضعیت مطلوب">';document.body.append(dialog);
  let welcomeStickerUrls=[],welcomeStickerPromise=null,welcomeStickerReady=false;
  async function loadWelcomeStickers(){
@@ -75,31 +69,58 @@ function install(){
  }
  function stickers(force=false){if(welcomeStickerReady&&!force)return Promise.resolve();if(!welcomeStickerPromise||force)welcomeStickerPromise=loadWelcomeStickers().finally(()=>{welcomeStickerPromise=null});return welcomeStickerPromise}
  window.bamcoPrepareWelcomeStickers=()=>stickers();stickers();window.addEventListener('bamco-stickers-ready',()=>stickers(true));
+ let homeExpected=false,repairFrame=0;
+ function resetHomeScroll(){
+  try{window.scrollTo({top:0,left:0,behavior:'auto'})}catch{window.scrollTo(0,0)}
+  for(const node of [document.documentElement,document.body,app,workspace,home])if(node&&node.scrollTop)node.scrollTop=0;
+ }
  function showHome(){
   if(app.classList.contains('hidden'))return;
-  // The home route must always be a concrete visible workspace. Several legacy
-  // observers can move/hide views while the welcome dialog is open, so repair
-  // the home/nav relationship every time instead of assuming it survived.
+  homeExpected=true;
+  if(!home.isConnected)workspace.append(home);
   if(nav.parentElement!==home)home.append(nav);
+  if(!top.isConnected||top.parentElement!==app)app.prepend(top);else if(app.firstElementChild!==top)app.prepend(top);
+  if(!footer.isConnected||footer.parentElement!==app)app.append(footer);
   workspace.querySelectorAll(':scope > .view').forEach(v=>v.classList.toggle('hidden',v!==home));
-  home.classList.remove('hidden');
-  nav.classList.remove('hidden');
-  top.classList.remove('hidden');
-  footer.classList.remove('hidden');
-  document.body.classList.remove('welcome-active','content-only');document.body.classList.add('card-home-active');
+  for(const node of [home,nav,top,footer]){
+   node.classList.remove('hidden');node.removeAttribute('hidden');node.style.removeProperty('display');node.style.removeProperty('visibility');node.style.removeProperty('opacity');
+  }
+  document.body.classList.add('card-navigation','card-home-active');
+  document.body.classList.remove('welcome-active','content-only');
   if(typeof state!=='undefined')state.view='home';
-  const title=q('#viewTitle');if(title)title.textContent='میز کار';q('#addTaskBtn')?.classList.add('hidden');syncGroups();
+  const title=q('#viewTitle');if(title)title.textContent='میز کار';q('#addTaskBtn')?.classList.add('hidden');
+  syncGroups();resetHomeScroll();
  }
- function syncMode(){const loggedIn=!app.classList.contains('hidden'),atHome=!home.classList.contains('hidden');document.body.classList.toggle('card-home-active',loggedIn&&atHome);document.body.classList.toggle('content-only',loggedIn&&!atHome)}
+ function homeBroken(){
+  if(!homeExpected||dialog.open||app.classList.contains('hidden'))return false;
+  return !home.isConnected||home.classList.contains('hidden')||nav.parentElement!==home||!top.isConnected||top.classList.contains('hidden')||document.body.classList.contains('content-only')||!document.body.classList.contains('card-home-active');
+ }
+ function scheduleHomeRepair(){
+  if(repairFrame||!homeBroken())return;
+  repairFrame=requestAnimationFrame(()=>{repairFrame=0;if(homeBroken())showHome()});
+ }
+ function settleHome(){
+  showHome();
+  [0,40,120,300,700,1400].forEach(ms=>setTimeout(()=>{if(homeExpected&&!dialog.open&&!app.classList.contains('hidden'))showHome()},ms));
+ }
+ function syncMode(){const loggedIn=!app.classList.contains('hidden'),atHome=!home.classList.contains('hidden');document.body.classList.toggle('card-home-active',loggedIn&&atHome);document.body.classList.toggle('content-only',loggedIn&&!atHome);if(homeExpected&&!dialog.open)scheduleHomeRepair()}
+ const repairObserver=new MutationObserver(scheduleHomeRepair);
+ repairObserver.observe(app,{childList:true,attributes:true,attributeFilter:['class']});
+ repairObserver.observe(workspace,{childList:true});
+ repairObserver.observe(home,{attributes:true,attributeFilter:['class','style','hidden']});
+ repairObserver.observe(top,{attributes:true,attributeFilter:['class','style','hidden']});
+ repairObserver.observe(document.body,{attributes:true,attributeFilter:['class']});
  new MutationObserver(syncMode).observe(home,{attributes:true,attributeFilter:['class']});
- window.bamcoShowHome=showHome;
+ nav.addEventListener('click',e=>{if(e.target.closest('button[data-view]'))homeExpected=false},true);
+ window.bamcoShowHome=settleHome;
  let welcomed=false;
  window.bamcoOpenHomeWelcome=()=>{if(welcomed||app.classList.contains('hidden'))return;if(typeof state!=='undefined'&&state.profile?.must_change_password)return;welcomed=true;showHome();dialog.querySelector('.welcome-person').textContent=(q('#userName')?.textContent||'همکار')+' عزیز';dialog.showModal();void stickers()};
  dialog.querySelector('.welcome-dismiss').addEventListener('click',()=>dialog.close());
- dialog.addEventListener('close',()=>{showHome();requestAnimationFrame(()=>home.focus({preventScroll:true}))});
- dialog.addEventListener('cancel',()=>requestAnimationFrame(showHome));
- top.querySelector('.home-return').addEventListener('click',()=>{showHome();home.focus({preventScroll:true})});
- new MutationObserver(()=>{if(app.classList.contains('hidden')){welcomed=false;if(dialog.open)dialog.close();document.body.classList.remove('card-home-active','content-only')}}).observe(app,{attributes:true,attributeFilter:['class']});
+ dialog.addEventListener('close',()=>{settleHome();requestAnimationFrame(()=>home.focus({preventScroll:true}))});
+ dialog.addEventListener('cancel',()=>{homeExpected=true;requestAnimationFrame(settleHome)});
+ top.querySelector('.home-return').addEventListener('click',()=>{settleHome();home.focus({preventScroll:true})});
+ new MutationObserver(()=>{if(app.classList.contains('hidden')){homeExpected=false;welcomed=false;if(dialog.open)dialog.close();document.body.classList.remove('card-home-active','content-only')}else if(homeExpected&&!dialog.open)scheduleHomeRepair()}).observe(app,{attributes:true,attributeFilter:['class']});
+ addEventListener('pageshow',()=>{if(homeExpected&&!dialog.open&&!app.classList.contains('hidden'))settleHome()});
  if(!app.classList.contains('hidden'))window.bamcoOpenHomeWelcome();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
