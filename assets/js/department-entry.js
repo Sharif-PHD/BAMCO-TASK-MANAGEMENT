@@ -1,10 +1,25 @@
 /* Department entry: one stable startup owner, no repeated layout repair loop. */
 (()=>{'use strict';
+const wait=(promise,ms)=>Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),ms))]);
+async function prepareEntry(view){
+ const body=document.body,logo=view.querySelector(':scope>header>img');
+ let fontOk=false;
+ try{
+  if(document.fonts?.load){
+   await wait(document.fonts.load('22px "BamcoEntry"','سامانه مدیریت، پایش و پیگیری امور مهندسی توسعه و تکوین محصول'),2200);
+   fontOk=document.fonts.check('22px "BamcoEntry"');
+  }
+ }catch{}
+ if(!fontOk)body.classList.add('department-entry-font-fallback');
+ try{if(logo&&!logo.complete)await wait(new Promise((resolve,reject)=>{logo.addEventListener('load',resolve,{once:true});logo.addEventListener('error',reject,{once:true})}),2200);if(logo?.decode)await wait(logo.decode().catch(()=>{}),800)}catch{}
+ requestAnimationFrame(()=>requestAnimationFrame(()=>body.classList.add('department-entry-ready')));
+}
 function boot(){
  const login=document.querySelector('#loginView'),app=document.querySelector('#appView'),view=document.querySelector('#departmentEntry');
  if(!login||!app||!view)return;
+ void prepareEntry(view);
  const dedupeLogo=()=>{const logos=[...view.querySelectorAll(':scope>header>img')];logos.slice(1).forEach(node=>node.remove())};
- dedupeLogo();new MutationObserver(dedupeLogo).observe(view,{childList:true,subtree:false});
+ dedupeLogo();
  let selected=false,lastSignedIn=null;
  const showLogin=()=>{
   selected=true;view.hidden=true;document.body.classList.remove('department-pending');login.classList.remove('hidden');login.style.removeProperty('display');app.classList.add('hidden');lastSignedIn=false;
@@ -26,7 +41,7 @@ function boot(){
  if(!back.dataset.entryBound){back.dataset.entryBound='1';back.addEventListener('click',showDepartments)}
  new MutationObserver(()=>{const signedIn=!app.classList.contains('hidden');if(signedIn!==lastSignedIn)sync()}).observe(app,{attributes:true,attributeFilter:['class']});
  new MutationObserver(()=>{if(view.hidden&&!app.classList.contains('hidden'))return;if(view.hidden&&document.body.classList.contains('department-pending'))showLogin()}).observe(view,{attributes:true,attributeFilter:['hidden']});
- sync();queueMicrotask(sync);
+ sync();
  const password=document.querySelector('#passwordDialog');password?.addEventListener('cancel',e=>{if(typeof state!=='undefined'&&state.profile?.must_change_password)e.preventDefault()});
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
