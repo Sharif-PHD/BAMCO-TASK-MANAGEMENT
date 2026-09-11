@@ -6,7 +6,7 @@ const q=(s,r=document)=>r?.querySelector?.(s)||null;
 const qa=(s,r=document)=>[...(r?.querySelectorAll?.(s)||[])];
 const digits=v=>typeof fa==='function'?fa(v):String(v??'').replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);
 const REPORT_TITLES={performanceReport:'گزارش عملکرد',responseReport:'گزارش پاسخ‌ها'};
-let avatarUrl='',reportRepairing=false,rawShowView=null;
+let avatarUrl='',reportRepairing=false,rawShowView=null,responseSettleTimer=0;
 
 function optimisticResequence(tasks){
   const numbered=tasks.filter(t=>Number.isFinite(Number(t.legacy_id))).sort((a,b)=>Number(a.legacy_id)-Number(b.legacy_id)||Number(a.id)-Number(b.id));
@@ -63,6 +63,24 @@ function canonicalReportRender(id){
     if(out&&typeof out.catch==='function')out.catch(err=>typeof toast==='function'&&toast(err.message||String(err),true));
   }catch(err){if(typeof toast==='function')toast(err.message||String(err),true)}
 }
+function ensureResponseSentinel(){
+  const view=q('#responseReportView');if(!view||q('[data-response-custom]',view))return;
+  const sentinel=document.createElement('i');sentinel.hidden=true;sentinel.dataset.responseCustom='canonical';sentinel.dataset.canonicalResponseSentinel='1';view.appendChild(sentinel);
+}
+function installResponseOwnershipGuard(){
+  const view=q('#responseReportView');if(!view||view.dataset.canonicalOwnershipGuard==='1')return;
+  view.dataset.canonicalOwnershipGuard='1';ensureResponseSentinel();
+  new MutationObserver(()=>{if(!q('[data-response-custom]',view))queueMicrotask(ensureResponseSentinel)}).observe(view,{childList:true});
+}
+function settleCanonicalResponse(){
+  clearTimeout(responseSettleTimer);
+  responseSettleTimer=setTimeout(()=>{
+    if(typeof state==='undefined'||state.view!=='responseReport')return;
+    const view=q('#responseReportView');if(!view)return;
+    canonicalReportRender('responseReport');ensureResponseSentinel();
+    qa('#appView .view,.workspace > .view').forEach(v=>v.classList.toggle('hidden',v!==view));view.classList.remove('hidden','bamco-view-settling');
+  },260);
+}
 function activateReport(id){
   if(!REPORT_TITLES[id]||typeof state==='undefined')return false;
   const view=q('#'+id+'View');if(!view)return false;
@@ -74,11 +92,13 @@ function activateReport(id){
   qa('#nav button[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===id));
   const title=q('#viewTitle');if(title)title.textContent=REPORT_TITLES[id];
   q('#addTaskBtn')?.classList.add('hidden');closeReportMenu();canonicalReportRender(id);
+  if(id==='responseReport'){ensureResponseSentinel();settleCanonicalResponse()}else clearTimeout(responseSettleTimer);
   requestAnimationFrame(()=>{if(state.view===id)view.classList.remove('hidden','bamco-view-settling')});
   return true;
 }
 function installReportNavigation(){
   if(window.__bamcoCanonicalReportNavigationV1)return;window.__bamcoCanonicalReportNavigationV1=true;
+  installResponseOwnershipGuard();
   document.addEventListener('click',e=>{
     const nav=e.target.closest?.('#nav button[data-view="performanceReport"],#nav button[data-view="responseReport"]');
     if(!nav||nav.disabled)return;
