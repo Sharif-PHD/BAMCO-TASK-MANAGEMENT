@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
     paths:
+      - 'assets/js/card-home.js'
       - 'assets/js/production-runtime.js'
       - 'assets/js/report-stability-fixes-20260911.js'
       - 'assets/js/final-production-fixes-20260911.js'
