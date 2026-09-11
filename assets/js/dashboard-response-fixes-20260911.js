@@ -72,6 +72,7 @@ function dashboardFilterRows(){
  });
 }
 function drawWorkload(){
+ if(typeof window.bamcoDrawWorkload==='function')return window.bamcoDrawWorkload();
  const canvas=q('#workloadChart');if(!canvas||q('#dashboardView')?.classList.contains('hidden'))return;
  const rows=dashboardFilterRows(),groups=new Map();
  for(const t of rows){const owner=typeof ownerName==='function'?(ownerName(t)||'—'):'—',p=String(t.priority||'بدون اولویت');if(!groups.has(owner))groups.set(owner,new Map());const m=groups.get(owner);m.set(p,(m.get(p)||0)+1)}
