@@ -1,0 +1,29 @@
+name: System message regression
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'assets/js/message-renderer.js'
+      - 'assets/js/messaging-history-root-20260911.js'
+      - 'supabase/migrations/20260911131500_unified_system_chain_and_chat_alerts.sql'
+      - 'tests/message-system-regression-20260911.test.cjs'
+      - '.github/workflows/message-system-regression.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: JavaScript syntax
+        run: |
+          node --check assets/js/message-renderer.js
+          node --check assets/js/messaging-history-root-20260911.js
+      - name: Focused system message tests
+        run: node --test tests/message-system-regression-20260911.test.cjs
