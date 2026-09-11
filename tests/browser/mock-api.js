@@ -1,7 +1,7 @@
 /* Isolated browser fixture. Never authenticate against or write to production. */
 (()=>{
- const manager={id:'00000000-0000-4000-8000-000000000001',full_name:'مدیر آزمایشی',display_name:'مدیر آزمایشی',email:'manager@example.test',role:'manager',active:true};
- const owner={id:'00000000-0000-4000-8000-000000000002',full_name:'متولی آزمایشی',email:'owner@example.test',role:'owner',active:true};
+ const manager={id:'00000000-0000-4000-8000-000000000001',full_name:'مدیر آزمایشی',display_name:'مدیر آزمایشی',email:'manager@example.test',role:'manager',active:true,avatar_path:'00000000-0000-4000-8000-000000000001/avatar.png'};
+ const owner={id:'00000000-0000-4000-8000-000000000002',full_name:'متولی آزمایشی',email:'owner@example.test',role:'owner',active:true,avatar_path:'00000000-0000-4000-8000-000000000002/avatar.png'};
  const iso=new Date().toISOString(),today=iso.slice(0,10);
  const api=window.__testApi={actor:manager,calls:[],delay:{},fail:[],profiles:[manager,owner],templates:['state1','state2','state3','state4','state5','followup'].map((key,i)=>({id:i+1,template_key:key,subject_template:'موضوع '+key,body_html:'<p>متن ذخیره‌شده '+key+'</p>'})),deliveries:[30,31,32].map(id=>({delivery_id:id,recipient_id:owner.id,recipient_name:owner.full_name,channel:'portal',subject:'پیام آزمایشی '+id,sent_at:iso,response_status:'awaiting',delivery_status:'sent',reminder_count:0})),tasks:[{id:1,legacy_id:1,title:'وظیفه آزمایشی',owner_id:owner.id,archived:false,status:'در حال انجام',priority:'متوسط',start_date:today,due_date:today,reminder_days:1},{id:2,legacy_id:2,title:'وظیفه انجام‌شده',owner_id:owner.id,archived:true,status:'انجام شده',priority:'کم',start_date:today,due_date:today,done_date:today}],requests:[]};
  window.__testTicks=0;setInterval(()=>window.__testTicks++,50);
