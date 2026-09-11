@@ -4,7 +4,14 @@ if(window.__bamcoSessionRuntime)return;window.__bamcoSessionRuntime=true;
 const KEY='bamco.session.id.v1',DEVICE_KEY='bamco.device.id.v1',SIGNAL_KEY='bamco.session.signal.v1';
 let starting=null,confirmedId=null,ending=false,generation=0,lastActivity=Date.now(),lastActivitySent=0;
 const uuidPattern=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-function makeUuid(){if(globalThis.crypto?.randomUUID)return crypto.randomUUID();const bytes=new Uint8Array(16);crypto.getRandomValues(bytes);bytes[6]=(bytes[6]&15)|64;bytes[8]=(bytes[8]&63)|128;return[...bytes].map((b,i)=>([4,6,8,10].includes(i)?'-':'')+b.toString(16).padStart(2,'0')).join('')}
+function makeUuid(){
+ const c=globalThis.crypto;
+ if(c?.randomUUID)return c.randomUUID();
+ const bytes=new Uint8Array(16);
+ if(c?.getRandomValues)c.getRandomValues(bytes);else for(let i=0;i<bytes.length;i++)bytes[i]=Math.floor(Math.random()*256);
+ bytes[6]=(bytes[6]&15)|64;bytes[8]=(bytes[8]&63)|128;
+ return[...bytes].map((b,i)=>([4,6,8,10].includes(i)?'-':'')+b.toString(16).padStart(2,'0')).join('')
+}
 function deviceId(){let id='';try{id=localStorage.getItem(DEVICE_KEY)||''}catch{}if(!uuidPattern.test(id)){id=makeUuid();try{localStorage.setItem(DEVICE_KEY,id)}catch{}}return id}
 const DEVICE_ID=deviceId();
 for(const event of ['pointerdown','keydown','touchstart'])document.addEventListener(event,()=>{lastActivity=Date.now()},{passive:true});
