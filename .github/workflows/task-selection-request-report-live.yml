@@ -92,3 +92,5 @@ jobs:
           asyncio.run(main())
           PY
           python /tmp/check_selection_report.py
+
+# This workflow intentionally validates the deployed GitHub Pages bundle, not only repository source.
