@@ -1,0 +1,40 @@
+name: Final production fixes regression
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'assets/js/final-production-fixes-20260911.js'
+      - 'assets/js/avatar-final-20260911.js'
+      - 'assets/js/report-stability-fixes-20260911.js'
+      - '.github/workflows/final-production-fixes-regression.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  focused-fixes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Syntax
+        run: |
+          node --check assets/js/final-production-fixes-20260911.js
+          node --check assets/js/avatar-final-20260911.js
+          node --check assets/js/report-stability-fixes-20260911.js
+      - name: Required behavior is present
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const final=fs.readFileSync('assets/js/final-production-fixes-20260911.js','utf8');
+          const loader=fs.readFileSync('assets/js/avatar-final-20260911.js','utf8');
+          const stability=fs.readFileSync('assets/js/report-stability-fixes-20260911.js','utf8');
+          for(const token of ['instantDelete','delete_tasks_and_resequence','sent_message_log','renderPerformance','renderResponse','forceAvatar','cache:\'no-store\'']) if(!final.includes(token)) throw new Error('missing '+token);
+          if(!loader.includes('final-production-fixes-20260911.js')) throw new Error('final patch is not loaded');
+          if(stability.includes("const order=['performanceReport','responseReport'")) throw new Error('legacy report prewarming returned');
+          console.log('focused production fixes: PASS');
+          NODE
