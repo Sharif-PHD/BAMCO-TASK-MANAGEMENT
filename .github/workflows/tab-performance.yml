@@ -1,0 +1,39 @@
+name: Tab performance audit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'assets/**'
+      - 'index.html'
+      - 'tests/browser/measure_tabs.py'
+      - 'tests/browser/mock-api.js'
+      - 'tests/browser/mock-messaging-api.js'
+      - '.github/workflows/tab-performance.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  chromium:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Playwright Chromium
+        run: |
+          python -m pip install playwright==1.57.0
+          python -m playwright install --with-deps chromium
+      - name: Measure every visible tab
+        run: python tests/browser/measure_tabs.py
+      - name: Upload tab performance metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tab-performance-metrics
+          path: test-results/tab-performance/
+          retention-days: 7
