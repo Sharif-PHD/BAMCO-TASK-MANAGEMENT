@@ -77,11 +77,18 @@ function install(){
  window.bamcoPrepareWelcomeStickers=()=>stickers();stickers();window.addEventListener('bamco-stickers-ready',()=>stickers(true));
  function showHome(){
   if(app.classList.contains('hidden'))return;
+  // The home route must always be a concrete visible workspace. Several legacy
+  // observers can move/hide views while the welcome dialog is open, so repair
+  // the home/nav relationship every time instead of assuming it survived.
+  if(nav.parentElement!==home)home.append(nav);
   workspace.querySelectorAll(':scope > .view').forEach(v=>v.classList.toggle('hidden',v!==home));
-  document.body.classList.remove('welcome-active');document.body.classList.add('card-home-active');
+  home.classList.remove('hidden');
+  nav.classList.remove('hidden');
+  top.classList.remove('hidden');
+  footer.classList.remove('hidden');
+  document.body.classList.remove('welcome-active','content-only');document.body.classList.add('card-home-active');
   if(typeof state!=='undefined')state.view='home';
-  document.body.classList.remove('content-only');
-  q('#viewTitle').textContent='میز کار';q('#addTaskBtn')?.classList.add('hidden');syncGroups();
+  const title=q('#viewTitle');if(title)title.textContent='میز کار';q('#addTaskBtn')?.classList.add('hidden');syncGroups();
  }
  function syncMode(){const loggedIn=!app.classList.contains('hidden'),atHome=!home.classList.contains('hidden');document.body.classList.toggle('card-home-active',loggedIn&&atHome);document.body.classList.toggle('content-only',loggedIn&&!atHome)}
  new MutationObserver(syncMode).observe(home,{attributes:true,attributeFilter:['class']});
@@ -89,7 +96,8 @@ function install(){
  let welcomed=false;
  window.bamcoOpenHomeWelcome=()=>{if(welcomed||app.classList.contains('hidden'))return;if(typeof state!=='undefined'&&state.profile?.must_change_password)return;welcomed=true;showHome();dialog.querySelector('.welcome-person').textContent=(q('#userName')?.textContent||'همکار')+' عزیز';dialog.showModal();void stickers()};
  dialog.querySelector('.welcome-dismiss').addEventListener('click',()=>dialog.close());
- dialog.addEventListener('close',()=>home.focus({preventScroll:true}));
+ dialog.addEventListener('close',()=>{showHome();requestAnimationFrame(()=>home.focus({preventScroll:true}))});
+ dialog.addEventListener('cancel',()=>requestAnimationFrame(showHome));
  top.querySelector('.home-return').addEventListener('click',()=>{showHome();home.focus({preventScroll:true})});
  new MutationObserver(()=>{if(app.classList.contains('hidden')){welcomed=false;if(dialog.open)dialog.close();document.body.classList.remove('card-home-active','content-only')}}).observe(app,{attributes:true,attributeFilter:['class']});
  if(!app.classList.contains('hidden'))window.bamcoOpenHomeWelcome();
