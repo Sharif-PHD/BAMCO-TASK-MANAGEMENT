@@ -1,4 +1,4 @@
-name: One-time self-healing home cache repair
+name: One-time post-welcome viewport repair
 
 on:
   push:
@@ -16,23 +16,22 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Force fresh self-healing home script safely
+      - name: Load post-welcome viewport fix safely
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p=Path('index.html')
           s=p.read_text(encoding='utf-8')
-          old='assets/js/card-home.js?v=welcome-home-20260911-1'
-          new='assets/js/card-home.js?v=welcome-home-20260911-2'
-          if old in s:
-              s=s.replace(old,new)
-          elif new not in s:
-              raise SystemExit('card-home asset reference not found')
+          marker='<link rel="stylesheet" href="assets/css/home-stable.css?v=details-20260910-1">'
+          addition='<link rel="stylesheet" href="assets/css/home-post-welcome-fix-20260911.css?v=20260911-1">'
+          if addition not in s:
+              if marker not in s: raise SystemExit('home stable stylesheet marker not found')
+              s=s.replace(marker, marker+'\n'+addition, 1)
           p.write_text(s,encoding='utf-8')
           check=p.read_text(encoding='utf-8')
           assert '\ufffd' not in check
-          assert new in check
-          print('UTF-8 and self-healing home cache bust: PASS')
+          assert addition in check
+          print('UTF-8 and post-welcome viewport stylesheet: PASS')
           PY
       - name: Commit cache repair
         run: |
@@ -43,5 +42,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
-          git commit -m 'Force fresh self-healing home workspace script'
+          git commit -m 'Load post-welcome viewport fix'
           git push origin HEAD:main
