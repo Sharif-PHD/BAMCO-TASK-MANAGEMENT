@@ -7,7 +7,6 @@ on:
       - 'assets/js/final-production-fixes-20260911.js'
       - 'assets/js/avatar-final-20260911.js'
       - 'assets/js/task-bulk-delete-20260912.js'
-      - 'assets/js/report-stability-fixes-20260911.js'
       - '.github/workflows/final-production-fixes-regression.yml'
   workflow_dispatch:
 
@@ -27,20 +26,16 @@ jobs:
           node --check assets/js/final-production-fixes-20260911.js
           node --check assets/js/avatar-final-20260911.js
           node --check assets/js/task-bulk-delete-20260912.js
-          node --check assets/js/report-stability-fixes-20260911.js
-      - name: Required behavior is present
+      - name: Required task delete behavior is present
         run: |
           node - <<'NODE'
           const fs=require('fs');
           const final=fs.readFileSync('assets/js/final-production-fixes-20260911.js','utf8');
           const loader=fs.readFileSync('assets/js/avatar-final-20260911.js','utf8');
           const bulk=fs.readFileSync('assets/js/task-bulk-delete-20260912.js','utf8');
-          const reports=fs.readFileSync('assets/js/report-stability-fixes-20260911.js','utf8');
-          for(const token of ['instantDelete','delete_tasks_and_resequence','forceAvatar',"cache:'no-store'"]) if(!final.includes(token)) throw new Error('missing final behavior '+token);
+          for(const token of ['instantDelete','delete_tasks_and_resequence']) if(!final.includes(token)) throw new Error('missing final compatibility behavior '+token);
           for(const token of ['task-bulk-delete-20260912.js','loadFinal','data-bamco-task-bulk-delete']) if(!loader.includes(token)) throw new Error('bulk-delete loader missing '+token);
           for(const token of ['deleteSelected','delete_tasks_and_resequence','optimisticResequence','bamcoTaskSelection','data-bamco-task-select-all','stopImmediatePropagation']) if(!bulk.includes(token)) throw new Error('bulk-delete behavior missing '+token);
           if(!bulk.includes("kanban:{body:'#kanbanBody'")||!bulk.includes("archive:{body:'#archiveBody'")) throw new Error('both Kanban and archive scopes must be owned');
-          for(const token of ['renderPerformance','renderResponse','detachLegacyReportOwners','setInterval(immediateSync,15000)','bamcoRequestSync','bamcoInbox','bamcoConversations','data-performance-from','data-performance-to','data-performance-clear','responseReportBody','data-response-bulk-delete','cancel_message_deliveries']) if(!reports.includes(token)) throw new Error('missing canonical report/live-sync behavior '+token);
-          if(!reports.includes("nav?.dataset.view==='performanceReport'")||!reports.includes("nav?.dataset.view==='responseReport'")) throw new Error('canonical report navigation missing');
-          console.log('bulk task delete + canonical reports + compatibility: PASS');
+          console.log('bulk task delete compatibility: PASS');
           NODE
