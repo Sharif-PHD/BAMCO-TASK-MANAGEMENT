@@ -1,0 +1,31 @@
+name: Live Pages probe
+on:
+  push:
+    paths:
+      - '.github/workflows/live-pages-probe.yml'
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe deployed GitHub Pages
+        shell: bash
+        run: |
+          set -uo pipefail
+          BASE='https://nazanin-ghaemizadeh.github.io/BAMCO-TASK-MANAGEMENT/'
+          for i in 1 2 3 4 5 6; do
+            stamp="${GITHUB_SHA}-${i}-$(date +%s)"
+            html="$(curl -fsSL --retry 2 --connect-timeout 10 "${BASE}?probe=${stamp}" 2>/dev/null || true)"
+            echo "ATTEMPT=${i} BYTES=${#html}"
+            if grep -q 'systemMessageCardLayoutRootFix' <<<"$html"; then echo 'ROOT_FIX_PRESENT=1'; else echo 'ROOT_FIX_PRESENT=0'; fi
+            if grep -q 'message-title-layout-20260911-2' <<<"$html"; then echo 'MESSAGE_RENDERER_BUSTER_PRESENT=1'; else echo 'MESSAGE_RENDERER_BUSTER_PRESENT=0'; fi
+            if grep -q 'messaging-history-root-20260911.js?v=profile-counts-20260911-1' <<<"$html"; then echo 'HISTORY_SCRIPT_PRESENT=1'; else echo 'HISTORY_SCRIPT_PRESENT=0'; fi
+            if grep -q 'systemMessageCardLayoutRootFix' <<<"$html"; then break; fi
+            sleep 15
+          done
+          echo '--- RESPONSE HEADERS ---'
+          curl -sSIL --connect-timeout 10 "${BASE}?probe=${GITHUB_SHA}" | sed -n '1,40p'
+          echo '--- LIVE HISTORY SCRIPT SIGNATURE ---'
+          js="$(curl -fsSL --retry 2 --connect-timeout 10 "${BASE}assets/js/messaging-history-root-20260911.js?probe=${GITHUB_SHA}" 2>/dev/null || true)"
+          echo "JS_BYTES=${#js}"
+          if grep -q '.system-message-open-head{display:flex' <<<"$js"; then echo 'LIVE_PREVIEW_FLEX=1'; else echo 'LIVE_PREVIEW_FLEX=0'; fi
+          if grep -q 'function systemPreview(data,messageId)' <<<"$js"; then echo 'LIVE_SYSTEM_PREVIEW=1'; else echo 'LIVE_SYSTEM_PREVIEW=0'; fi
