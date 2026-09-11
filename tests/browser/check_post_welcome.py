@@ -1,4 +1,4 @@
-"""Assert the workspace appears in the first viewport immediately after closing welcome."""
+"""Assert the workspace and profile avatar appear in the first viewport after welcome."""
 import asyncio, functools, http.server, json, threading
 from pathlib import Path
 from playwright.async_api import async_playwright
@@ -18,7 +18,8 @@ async def one_case(browser,base,width,role):
     diag=await page.evaluate('''()=>{
       const box=s=>{const n=document.querySelector(s);if(!n)return null;const r=n.getBoundingClientRect(),c=getComputedStyle(n);return {top:Math.round(r.top),left:Math.round(r.left),width:Math.round(r.width),height:Math.round(r.height),display:c.display,visibility:c.visibility,opacity:c.opacity}};
       const groups=[...document.querySelectorAll('#homeView #nav>.nav-group')].filter(n=>{const c=getComputedStyle(n),r=n.getBoundingClientRect();return c.display!=='none'&&c.visibility!=='hidden'&&r.width>0&&r.height>0});
-      return {innerHeight:innerHeight,scrollY:Math.round(scrollY),bodyClass:document.body.className,app:box('#appView'),topbar:box('#appView>.card-topbar'),home:box('#homeView'),nav:box('#homeView #nav'),firstGroup:groups[0]?(()=>{const r=groups[0].getBoundingClientRect();return {top:Math.round(r.top),bottom:Math.round(r.bottom),width:Math.round(r.width),height:Math.round(r.height)}})():null,groups:groups.length,login:box('#loginView'),entry:box('#departmentEntry')};
+      const avatar=document.querySelector('#avatar'),avatarImg=avatar?.querySelector('img[data-profile-avatar]');
+      return {innerHeight:innerHeight,scrollY:Math.round(scrollY),bodyClass:document.body.className,app:box('#appView'),topbar:box('#appView>.card-topbar'),home:box('#homeView'),nav:box('#homeView #nav'),firstGroup:groups[0]?(()=>{const r=groups[0].getBoundingClientRect();return {top:Math.round(r.top),bottom:Math.round(r.bottom),width:Math.round(r.width),height:Math.round(r.height)}})():null,groups:groups.length,login:box('#loginView'),entry:box('#departmentEntry'),avatar:{box:box('#avatar'),inTopbar:!!avatar?.closest('.card-topbar .header-tools'),hasImage:!!avatarImg,complete:!!avatarImg?.complete,naturalWidth:avatarImg?.naturalWidth||0}};
     }''')
     await page.screenshot(path=str(OUT/f'{width}-{role}.png'),full_page=False)
     result={'width':width,'role':role,'diag':diag,'javascript_errors':errors}
@@ -28,6 +29,8 @@ async def one_case(browser,base,width,role):
     assert diag['home'] and diag['home']['top']<diag['innerHeight'],result
     assert diag['groups']>0 and diag['firstGroup'] and diag['firstGroup']['top']<diag['innerHeight'],result
     assert diag['bodyClass'].find('card-home-active')>=0,result
+    assert diag['avatar']['inTopbar'],result
+    assert diag['avatar']['hasImage'] and diag['avatar']['complete'] and diag['avatar']['naturalWidth']>0,result
     await ctx.close();return result
 
 async def main():
