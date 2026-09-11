@@ -28,12 +28,12 @@ function installStyles(){
 }
 
 /* ---------- response report: reliable one/multi delete ---------- */
-const selectedResponses=new Set();
+const selectedResponses=new Set();let responseDeleting=false;
 function responseVisibleIds(){return new Set(qa('#responseReportView tbody tr[data-delivery-id]').map(r=>String(r.dataset.deliveryId)))}
 function syncResponseSelection(){
  const visible=responseVisibleIds();for(const id of [...selectedResponses])if(!visible.has(id))selectedResponses.delete(id);
  qa('#responseReportView tbody tr[data-delivery-id]').forEach(r=>r.classList.toggle('response-bulk-selected',selectedResponses.has(String(r.dataset.deliveryId))));
- const b=q('#responseReportView [data-response-bulk-delete]');if(!b)return;const n=selectedResponses.size;b.disabled=!n;b.textContent=n>1?`حذف ${faNum(n)} رکورد`:'حذف رکورد';b.title=n?'حذف ردیف‌های انتخاب‌شده':'برای انتخاب، روی یک یا چند ردیف کلیک کنید';
+ const b=q('#responseReportView [data-response-bulk-delete]');if(!b)return;const n=selectedResponses.size;b.disabled=responseDeleting||!n;const label=n>1?`حذف ${faNum(n)} رکورد`:'حذف رکورد';if(b.textContent!==label)b.textContent=label;b.title=n?'حذف ردیف‌های انتخاب‌شده':'برای انتخاب چند ردیف از Ctrl یا Shift استفاده کنید';
 }
 function ensureResponseBulkButton(){
  const view=q('#responseReportView');if(!view)return;
@@ -44,18 +44,29 @@ function ensureResponseBulkButton(){
 }
 async function deleteSelectedResponses(){
  const ids=[...selectedResponses].map(Number).filter(Number.isFinite);if(!ids.length)return;
- if(!confirm(ids.length===1?'رکورد انتخاب‌شده حذف شود؟':`${faNum(ids.length)} رکورد انتخاب‌شده حذف شوند؟`))return;
+ const question=ids.length===1?'رکورد انتخاب‌شده حذف شود؟':`${faNum(ids.length)} رکورد انتخاب‌شده حذف شوند؟`;
+ if(!await window.bamcoConfirm(question))return;
  const changed=await rpc('cancel_message_deliveries',{p_ids:ids});
- qa('#responseReportView tbody tr[data-delivery-id]').forEach(r=>{if(selectedResponses.has(String(r.dataset.deliveryId)))r.remove()});selectedResponses.clear();
+ if(Number(changed)!==ids.length)throw Error('حذف همه ردیف‌های انتخاب‌شده تأیید نشد؛ گزارش را تازه‌سازی کنید.');
+ window.bamcoSelection?.clear('#responseReportView');
+ const removed=new Set(ids.map(String));
+ qa('#responseReportView tbody tr[data-delivery-id]').forEach(r=>{if(removed.has(String(r.dataset.deliveryId)))r.remove()});selectedResponses.clear();
  const rows=qa('#responseReportView tbody tr[data-delivery-id]'),total=rows.length;rows.forEach((r,i)=>{if(r.cells[0])r.cells[0].textContent=faNum(total-i)});syncResponseSelection();
  toast(`${faNum(Number(changed)||ids.length)} رکورد حذف شد.`);
  const refresh=q('#responseReportView [data-response-refresh],#responseReportView [data-tab-refresh="responseReport"]');if(refresh)setTimeout(()=>refresh.click(),40);
 }
 function installResponseDelete(){
  ensureResponseBulkButton();
+ document.addEventListener('bamco-selection-change',e=>{
+  if(!e.target.closest('#responseReportView'))return;
+  selectedResponses.clear();
+  for(const row of window.bamcoSelection?.rows('#responseReportView')||[]){
+   if(row.dataset.deliveryId)selectedResponses.add(String(row.dataset.deliveryId));
+  }
+  syncResponseSelection();
+ });
  document.addEventListener('click',e=>{
-  const b=e.target.closest('#responseReportView [data-response-bulk-delete]');if(b){e.preventDefault();e.stopImmediatePropagation();if(b.disabled)return;const was=b.disabled;b.disabled=true;deleteSelectedResponses().catch(err=>{toast(err.message,true);syncResponseSelection()});return}
-  const row=e.target.closest('#responseReportView tbody tr[data-delivery-id]');if(row&&!e.target.closest('button,input,select,a')){const id=String(row.dataset.deliveryId);if(selectedResponses.has(id))selectedResponses.delete(id);else selectedResponses.add(id);syncResponseSelection();return}
+  const b=e.target.closest('#responseReportView [data-response-bulk-delete]');if(b){e.preventDefault();e.stopImmediatePropagation();if(b.disabled)return;responseDeleting=true;syncResponseSelection();deleteSelectedResponses().catch(err=>toast(err.message,true)).finally(()=>{responseDeleting=false;syncResponseSelection()});return}
   if(e.target.closest('#nav [data-view="responseReport"]'))setTimeout(ensureResponseBulkButton,100);
  },true);
  const view=q('#responseReportView');if(view){let t=0;new MutationObserver(()=>{clearTimeout(t);t=setTimeout(ensureResponseBulkButton,30)}).observe(view,{childList:true,subtree:true})}
