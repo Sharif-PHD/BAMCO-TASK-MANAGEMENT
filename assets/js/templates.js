@@ -14,7 +14,7 @@
     followup:{subject:'یادآوری مجدد وضعیت امور | [تاریخ کامل شمسی]',body:`[عنوان و نام مخاطب]\n\nبا درود و مهر،\n\nپیرو آخرین گزارش ارسال‌شده درباره وضعیت امور در تاریخ [تاریخ آخرین ارسال]، تاکنون پاسخی از سوی شما دریافت نشده است.\n\nخواهشمند است در صورت انجام فعالیت‌ها، ایجاد پیشرفت یا تغییر در آخرین وضعیت امور، مراتب را از طریق پاسخ به همین ایمیل اعلام فرمایید تا اطلاعات فایل «مدیریت وظایف» به‌روزرسانی شود.\n\nهمچنین در صورت نیاز می‌توانید از طریق شماره داخلی ۷۴۸۸ با مهندس قائمی در ارتباط باشید.\n\nبا تشکر و احترام\nسامانه خودکار پایش و پیگیری امور\nشرکت خودروسازان بم\nواحد مهندسی محصول`}
   };
   let activeKey='state1',loadEpoch=0;
-  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
   const htmlToText=html=>String(html||'').replace(/<br\s*\/?>/gi,'\n').replace(/<\/p>/gi,'\n\n').replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;/g,"'").trim();
   const textToHtml=text=>esc(String(text||'')).replace(/\r\n/g,'\n').replace(/\n/g,'<br>');
   const settingValue=row=>typeof row?.value==='string'?row.value:(row?.value?.value??'');
@@ -55,34 +55,35 @@
     if(rows.length)await update('email_templates',`id=eq.${rows[0].id}`,payload);else await insert('email_templates',{template_key:key,...payload});
   }
 
-  function ensureDialog(){
-    let d=document.querySelector('#desktopTemplateEditor');
-    const valid=d?.querySelector('#templateEditorForm')&&d.querySelector('#dteSubject')&&d.querySelector('#dteBody');
-    if(d&&!valid){d.remove();d=null}
-    if(d)return d;
-    d=document.createElement('dialog');d.id='desktopTemplateEditor';d.className='modal bamco-dialog template-editor-dialog';
-    d.innerHTML='<form id="templateEditorForm"><div class="modal-head"><h3>ویرایش متن پیام</h3><button type="button" class="ghost bamco-icon-button" id="dteClose" aria-label="بستن">×</button></div><label>موضوع<input id="dteSubject" required></label><label class="template-body-label">متن پیام<textarea id="dteBody" required spellcheck="false"></textarea></label><p id="dteError" class="form-error" role="alert"></p><div class="modal-actions"><button id="dteSave" class="primary" type="submit">ثبت تغییرات</button><button id="dteCancel" class="ghost" type="button">انصراف</button></div></form>';
-    document.body.append(d);
+  function bindDialog(d){
     d.querySelector('#dteCancel').onclick=d.querySelector('#dteClose').onclick=()=>d.close();
     d.querySelector('form').onsubmit=async e=>{e.preventDefault();const button=d.querySelector('#dteSave');if(button.disabled)return;button.disabled=true;d.querySelector('#dteError').textContent='';try{await saveTemplate(activeKey,d.querySelector('#dteSubject').value,d.querySelector('#dteBody').value);d.close();toast('موضوع و متن پیام ذخیره شد.')}catch(error){d.querySelector('#dteError').textContent=error.message||'ذخیره متن پیام انجام نشد.'}finally{button.disabled=false}};
     return d;
   }
+  function ensureDialog(){
+    let d=document.querySelector('#desktopTemplateEditor');
+    const valid=d?.querySelector('#templateEditorForm')&&d.querySelector('#dteSubject')&&d.querySelector('#dteBody');
+    if(d&&!valid){d.remove();d=null}
+    if(d)return bindDialog(d);
+    d=document.createElement('dialog');d.id='desktopTemplateEditor';d.className='modal bamco-dialog template-editor-dialog';
+    d.innerHTML='<form id="templateEditorForm"><div class="modal-head"><h3>ویرایش متن پیام</h3><button type="button" class="ghost bamco-icon-button" id="dteClose" aria-label="بستن">×</button></div><label>موضوع<input id="dteSubject" required></label><label class="template-body-label">متن پیام<textarea id="dteBody" required spellcheck="false"></textarea></label><p id="dteError" class="form-error" role="alert"></p><div class="modal-actions"><button id="dteSave" class="primary" type="submit">ثبت تغییرات</button><button id="dteCancel" class="ghost" type="button">انصراف</button></div></form>';
+    document.body.append(d);return bindDialog(d);
+  }
 
   async function openEditor(){
-    const key=document.querySelector('#templateState')?.value||activeKey||'state1',epoch=++loadEpoch,d=ensureDialog(),button=document.querySelector('#openDesktopTemplateEditor');
-    if(button)button.disabled=true;d.querySelector('#dteSave').disabled=true;
+    const key=document.querySelector('#templateState')?.value||activeKey||'state1',epoch=++loadEpoch,d=ensureDialog(),button=document.querySelector('#openDesktopTemplateEditor'),subject=d.querySelector('#dteSubject'),body=d.querySelector('#dteBody'),save=d.querySelector('#dteSave');
+    activeKey=key;if(button)button.disabled=true;save.disabled=true;subject.disabled=true;body.disabled=true;d.querySelector('#dteError').textContent='';subject.value='';body.value='';subject.placeholder='در حال بارگذاری…';body.placeholder='در حال بارگذاری متن الگو…';if(!d.open)d.showModal();
     try{
-      const t=await loadTemplate(key);if(epoch!==loadEpoch)return;activeKey=key;
-      d.querySelector('#dteError').textContent='';d.querySelector('#dteSubject').value=t.subject;d.querySelector('#dteBody').value=t.body;
-      if(!d.open)d.showModal();
-      setTimeout(()=>{if(!d.open)return;const b=d.querySelector('#dteBody');b.selectionStart=0;b.selectionEnd=0;b.scrollTop=0;b.focus()},30);
-    }catch(error){if(epoch===loadEpoch)toast(error.message||'متن الگو بارگذاری نشد.',true)}
-    finally{if(button)button.disabled=false;d.querySelector('#dteSave').disabled=false}
+      const t=await loadTemplate(key);if(epoch!==loadEpoch)return;
+      subject.value=t.subject;body.value=t.body;subject.placeholder='';body.placeholder='';
+      setTimeout(()=>{if(!d.open)return;body.selectionStart=0;body.selectionEnd=0;body.scrollTop=0;body.focus()},30);
+    }catch(error){if(epoch===loadEpoch)d.querySelector('#dteError').textContent=error.message||'متن الگو بارگذاری نشد.'}
+    finally{if(epoch===loadEpoch){if(button)button.disabled=false;save.disabled=false;subject.disabled=false;body.disabled=false}}
   }
   document.addEventListener('click',e=>{if(e.target.closest('.content-back,#nav [data-view],#logoutBtn')&&!e.target.closest('#nav [data-view="templates"]'))loadEpoch++},true);
 
   function renderView(view){
-    view.innerHTML=`<div class="panel"><div class="panel-head"><h3>ویرایش متن پیام‌ها</h3></div><div class="template-toolbar-left"><div class="template-picker"><label for="templateState">الگو</label><select id="templateState">${Object.entries(META).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select><button id="openDesktopTemplateEditor" type="button" class="primary">ویرایش متن</button></div></div><div class="template-help"><p>الگو را انتخاب کنید؛ با زدن «ویرایش متن»، موضوع و متن ذخیره‌شده همان الگو باز می‌شود.</p></div></div>`;
+    view.innerHTML=`<div class="panel"><div class="panel-head"><h3>ویرایش متن پیام‌ها</h3></div><div class="template-toolbar-left"><div class="template-picker"><label for="templateState">الگو</label><select id="templateState">${Object.entries(META).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select><button id="openDesktopTemplateEditor" type="button" class="primary">ویرایش متن</button></div></div></div>`;
     const selectEl=view.querySelector('#templateState');selectEl.value=activeKey;
     view.querySelector('#openDesktopTemplateEditor').onclick=openEditor;
     selectEl.onchange=e=>{activeKey=e.target.value};
@@ -90,9 +91,10 @@
   function install(force=false){
     const view=document.querySelector('#templatesView');if(!view)return;
     ensureStyles();ensureDialog();
-    if(!force&&view.dataset.templateEditor==='2'&&view.querySelector('#openDesktopTemplateEditor'))return;
-    view.dataset.templateEditor='2';renderView(view);
+    if(!force&&view.dataset.templateEditor==='3'&&view.querySelector('#openDesktopTemplateEditor'))return;
+    view.dataset.templateEditor='3';renderView(view);
   }
+  window.bamcoTemplateEditor={open:openEditor,install:()=>install(true)};
   function boot(){install(true);setTimeout(()=>install(false),120);setTimeout(()=>install(false),600)}
   document.addEventListener('click',e=>{if(e.target.closest('#nav [data-view="templates"]'))setTimeout(()=>install(false),40)},true);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
