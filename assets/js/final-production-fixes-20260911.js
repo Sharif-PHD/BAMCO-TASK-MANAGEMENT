@@ -66,8 +66,9 @@ function canonicalReportRender(id){
 function activateReport(id){
   if(!REPORT_TITLES[id]||typeof state==='undefined')return false;
   const view=q('#'+id+'View');if(!view)return false;
+  window.bamcoLeaveHome?.();
   state.view=id;
-  document.body.classList.remove('welcome-active');q('#welcomeView')?.classList.add('hidden');
+  document.body.classList.remove('welcome-active','card-home-active');document.body.classList.add('content-only');q('#welcomeView')?.classList.add('hidden');
   qa('#appView .view,.workspace > .view').forEach(v=>v.classList.toggle('hidden',v!==view));
   view.classList.remove('hidden','bamco-view-settling');
   qa('#nav button[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===id));
@@ -93,6 +94,7 @@ function installReportNavigation(){
     new MutationObserver(()=>{
       if(reportRepairing||typeof state==='undefined'||state.view!==id||!view.classList.contains('hidden'))return;
       reportRepairing=true;
+      window.bamcoLeaveHome?.();
       qa('#appView .view,.workspace > .view').forEach(v=>v.classList.toggle('hidden',v!==view));
       view.classList.remove('hidden','bamco-view-settling');
       queueMicrotask(()=>{reportRepairing=false});
