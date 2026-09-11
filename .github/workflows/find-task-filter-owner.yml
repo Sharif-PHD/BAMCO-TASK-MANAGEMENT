@@ -1,0 +1,24 @@
+name: Find task filter mutation owner
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/find-task-filter-owner.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  grep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Find filter mutation code
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '=== bamco-populated / bamcoVersion ==='
+          grep -RniE 'bamco-populated|bamcoPopulated|bamco-version|bamcoVersion' assets/js || true
+          echo '=== column-filters references ==='
+          grep -Rni 'column-filters' assets/js || true
+          echo '=== hard-coded kanban filter counts ==='
+          grep -RniE 'kanban.{0,80}(14|13)|(14|13).{0,80}kanban' assets/js || true
