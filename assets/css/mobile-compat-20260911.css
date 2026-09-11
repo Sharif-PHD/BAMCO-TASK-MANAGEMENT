@@ -1,109 +1,123 @@
-/* BAMCO app-wide mobile compatibility layer — 2026-09-11 */
-@media (max-width:760px){
-  html,body{width:100%;max-width:100%;overflow-x:hidden!important}
-  body{min-height:100dvh}
-  #appView{width:100%!important;max-width:100%!important;min-width:0!important;overflow:hidden!important}
-  #appView .workspace{width:100%!important;max-width:100%!important;min-width:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
-  #appView .workspace>header{min-width:0!important;padding:8px 10px!important;gap:8px!important;align-items:center!important;flex-wrap:wrap!important}
-  #appView .workspace>header>div:first-child{min-width:0!important;flex:1 1 170px!important}
-  #appView #viewTitle{font-size:19px!important;line-height:1.5!important;white-space:normal!important;overflow-wrap:anywhere!important}
-  #appView #viewSubtitle{font-size:13px!important;white-space:normal!important}
-  #appView .header-actions{display:flex!important;gap:6px!important;flex-wrap:wrap!important;max-width:100%!important}
-  #appView .header-actions button{min-height:40px!important;max-width:100%!important}
+/* BAMCO authoritative mobile layer — loaded last by message-renderer */
+@media(max-width:760px){
+  html,body{width:100%!important;max-width:100%!important;overflow-x:hidden!important}
+  body{min-height:100dvh!important}
+  #appView{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;overflow-x:hidden!important}
+  html body.content-only #appView .workspace,html body #appView .workspace,html body.content-only #appView.app:has(#sidebar.collapsed) .workspace{width:100%!important;max-width:100%!important;min-width:0!important;margin:0!important;padding:0!important;padding-inline:0!important;overflow-x:hidden!important}
 
-  #sidebar{position:fixed!important;z-index:80!important;top:0!important;right:0!important;height:100dvh!important;max-height:100dvh!important;overflow-y:auto!important;overscroll-behavior:contain!important;box-shadow:-6px 0 24px rgba(15,61,45,.15)!important}
-  #sidebar:not(.collapsed){width:min(82vw,310px)!important}
-  #sidebar.collapsed{width:64px!important}
-  #sidebar .side-brand strong,#sidebar .account-copy{min-width:0!important}
-  #sidebar:not(.collapsed) #nav{padding-bottom:96px!important}
-  #nav .nav-group-items{min-width:0!important}
-  #nav button{min-width:0!important;max-width:100%!important}
-  #nav button span{white-space:normal!important;overflow-wrap:anywhere!important}
+  /* Mobile navigation: one stable top strip. This deliberately overrides older sidebar mobile rules. */
+  html body #appView #sidebar.sidebar,html body #appView #sidebar.sidebar.collapsed,html body.content-only #appView #sidebar.sidebar,html body.content-only #appView #sidebar.sidebar.collapsed{position:sticky!important;inset:0 auto auto 0!important;top:0!important;right:auto!important;left:auto!important;z-index:90!important;display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;height:auto!important;max-height:none!important;transform:none!important;margin:0!important;border:0!important;border-radius:0!important;overflow:visible!important;box-shadow:0 4px 14px rgba(17,64,48,.10)!important;background:#fff!important}
+  #sidebar .side-brand,#sidebar .account,#sidebar #collapseBtn{display:none!important}
+  #sidebar #nav{display:flex!important;direction:rtl!important;align-items:center!important;gap:6px!important;width:100%!important;max-width:100%!important;overflow-x:auto!important;overflow-y:hidden!important;padding:7px 8px!important;background:#fff!important;scrollbar-width:none!important;-webkit-overflow-scrolling:touch!important}
+  #sidebar #nav::-webkit-scrollbar{display:none!important}
+  #sidebar #nav>.nav-group{display:contents!important}
+  #sidebar #nav .nav-group-toggle{display:none!important}
+  #sidebar #nav .nav-group-items{display:contents!important}
+  #sidebar #nav button[data-view]{display:inline-flex!important;flex:0 0 auto!important;align-items:center!important;justify-content:center!important;gap:5px!important;min-width:88px!important;max-width:none!important;height:40px!important;padding:6px 10px!important;border:1px solid #d4e1db!important;border-radius:11px!important;background:#f7faf8!important;color:#235747!important;white-space:nowrap!important;font-size:14px!important;line-height:1!important}
+  #sidebar #nav button[data-view].active{background:#176b4d!important;border-color:#176b4d!important;color:#fff!important}
+  #sidebar #nav button[data-view].hidden{display:none!important}
+  #sidebar #nav button[data-view] b{font-size:15px!important}
+  #sidebar #nav button[data-view] span{white-space:nowrap!important}
 
-  #appView .view{width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important;padding:0!important;overflow-x:hidden!important}
-  #appView .view>.panel,#appView .view>.table-panel,#appView .workspace-panel{width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important;margin:0!important;border-radius:0!important}
-  #appView .panel-head{display:flex!important;align-items:flex-start!important;gap:8px!important;flex-wrap:wrap!important;min-width:0!important;padding:9px 10px!important}
-  #appView .panel-head>div{min-width:0!important;flex:1 1 170px!important}
-  #appView .panel-head h3{font-size:18px!important;white-space:normal!important;overflow-wrap:anywhere!important}
-  #appView .panel-head small{white-space:normal!important;overflow-wrap:anywhere!important}
-  #appView .panel-head input.search,#appView .panel-head input[type=search]{width:100%!important;min-width:0!important;flex:1 1 100%!important}
+  /* Global page shell */
+  #appView .workspace>header{display:flex!important;align-items:center!important;gap:7px!important;min-height:48px!important;padding:7px 9px!important;background:#fff!important;border-bottom:1px solid #d8e3dd!important;flex-wrap:nowrap!important}
+  #appView .workspace>header>div:first-child{min-width:0!important;flex:1 1 auto!important}
+  #appView #viewTitle{font-size:18px!important;line-height:1.45!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;margin:0!important}
+  #appView #viewSubtitle{display:none!important}
+  #appView .header-actions{display:flex!important;flex:0 0 auto!important;gap:5px!important;max-width:45vw!important;overflow-x:auto!important}
+  #appView .header-actions button{flex:0 0 auto!important;min-height:36px!important;padding:6px 9px!important;white-space:nowrap!important;font-size:13px!important}
 
-  #appView :is(.task-toolbar,.vehicle-toolbar,.prod-toolbar,.people-actions,.manager-toolbar,.workspace-actions,.workspace-report-tools,.suite-toolbar,.message-center-simple-toolbar,.sent-controls){display:flex!important;align-items:stretch!important;gap:6px!important;flex-wrap:wrap!important;width:100%!important;max-width:100%!important;min-width:0!important;padding:7px 8px!important;box-sizing:border-box!important;overflow:visible!important}
-  #appView :is(.task-toolbar,.vehicle-toolbar,.prod-toolbar,.people-actions,.manager-toolbar,.workspace-actions,.workspace-report-tools,.suite-toolbar,.message-center-simple-toolbar,.sent-controls)>*{min-width:0!important;max-width:100%!important}
-  #appView :is(.task-toolbar,.vehicle-toolbar,.prod-toolbar,.people-actions,.manager-toolbar,.workspace-actions,.workspace-report-tools,.suite-toolbar,.message-center-simple-toolbar,.sent-controls) button{flex:1 1 auto!important;min-height:38px!important;white-space:normal!important;line-height:1.35!important;padding:7px 9px!important}
-  #appView :is(.task-toolbar,.vehicle-toolbar,.prod-toolbar,.people-actions,.manager-toolbar,.workspace-actions,.workspace-report-tools,.suite-toolbar,.message-center-simple-toolbar,.sent-controls) :is(input[type=search],input.search,select){flex:1 1 150px!important;width:auto!important;min-width:0!important;min-height:38px!important;margin:0!important}
+  #appView .view{width:100%!important;max-width:100%!important;min-width:0!important;padding:0!important;box-sizing:border-box!important;overflow-x:hidden!important}
+  #appView .view>.panel,#appView .view>.table-panel,#appView .workspace-panel{width:100%!important;max-width:100%!important;min-width:0!important;margin:0!important;border-radius:0!important;box-sizing:border-box!important}
+  #appView .panel-head{display:flex!important;align-items:center!important;gap:7px!important;min-height:46px!important;padding:7px 9px!important;flex-wrap:nowrap!important;overflow:hidden!important}
+  #appView .panel-head>div,#appView .panel-head>h3{min-width:0!important;flex:1 1 auto!important}
+  #appView .panel-head h3{font-size:17px!important;line-height:1.45!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;margin:0!important}
+  #appView .panel-head small{display:none!important}
+  #appView .panel-head input.search,#appView .panel-head input[type=search]{flex:0 1 42%!important;width:42%!important;min-width:110px!important;max-width:180px!important;height:35px!important}
 
-  #appView :is(.table-wrap,.prod-table-wrap,.focus-scroll){width:100%!important;max-width:100%!important;min-width:0!important;overflow-x:auto!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;overscroll-behavior-inline:contain!important;touch-action:pan-x pan-y!important}
-  #appView table{width:max-content!important;min-width:100%!important;max-width:none!important;border-collapse:collapse!important}
-  #appView table :is(th,td){white-space:nowrap!important;max-width:260px!important}
+  /* Page action bars: single horizontal scroll row instead of multi-line clutter. */
+  #appView :is(.task-toolbar,.vehicle-toolbar,.prod-toolbar,.people-actions,.manager-toolbar,.workspace-actions,.workspace-report-tools,.suite-toolbar,.message-center-simple-toolbar,.sent-controls,.dashboard-filter-actions,.performance-range-actions){display:flex!important;direction:rtl!important;align-items:center!important;flex-wrap:nowrap!important;gap:6px!important;width:100%!important;max-width:100%!important;min-width:0!important;overflow-x:auto!important;overflow-y:hidden!important;padding:6px 8px!important;box-sizing:border-box!important;scrollbar-width:none!important;-webkit-overflow-scrolling:touch!important;background:#f7faf8!important}
+  #appView :is(.task-toolbar,.vehicle-toolbar,.prod-toolbar,.people-actions,.manager-toolbar,.workspace-actions,.workspace-report-tools,.suite-toolbar,.message-center-simple-toolbar,.sent-controls)::-webkit-scrollbar{display:none!important}
+  #appView :is(.task-toolbar,.vehicle-toolbar,.prod-toolbar,.people-actions,.manager-toolbar,.workspace-actions,.workspace-report-tools,.suite-toolbar,.message-center-simple-toolbar,.sent-controls)>*{flex:0 0 auto!important;min-width:0!important;max-width:none!important;margin:0!important}
+  #appView :is(.task-toolbar,.vehicle-toolbar,.prod-toolbar,.people-actions,.manager-toolbar,.workspace-actions,.workspace-report-tools,.suite-toolbar,.message-center-simple-toolbar,.sent-controls) button{min-height:36px!important;padding:6px 10px!important;white-space:nowrap!important;font-size:13px!important;line-height:1.2!important}
+  #appView :is(.task-toolbar,.vehicle-toolbar,.prod-toolbar,.people-actions,.manager-toolbar,.workspace-actions,.workspace-report-tools,.suite-toolbar,.message-center-simple-toolbar,.sent-controls) :is(input[type=search],input.search,select){height:36px!important;min-width:130px!important;width:auto!important;max-width:190px!important}
+
+  /* Tables are scroll surfaces, never page-width breakers. */
+  #appView :is(.table-wrap,.prod-table-wrap,.focus-scroll){display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;overflow:auto!important;-webkit-overflow-scrolling:touch!important;overscroll-behavior:contain!important;touch-action:pan-x pan-y!important}
+  #appView table{width:max-content!important;min-width:100%!important;max-width:none!important;table-layout:auto!important}
+  #appView table :is(th,td){white-space:nowrap!important;font-size:13px!important;padding:5px 7px!important;max-width:260px!important}
   #appView table td{overflow:hidden!important;text-overflow:ellipsis!important}
-  #appView table td:has(button){overflow:visible!important;text-overflow:clip!important}
-  #appView table button{min-height:34px!important}
-  #appView .suite-table-options{max-width:100%!important;margin:6px 8px!important}
-  #appView .suite-options-panel{max-width:calc(100vw - 28px)!important;overflow:auto!important}
-  #archivePager,.table-pagination{display:flex!important;gap:5px!important;max-width:100%!important;overflow-x:auto!important;padding:7px 8px!important}
+  #appView table td:has(button){overflow:visible!important}
 
-  dialog,.modal,.bamco-dialog{width:calc(100vw - 16px)!important;max-width:calc(100vw - 16px)!important;max-height:calc(100dvh - 16px)!important;margin:auto!important;padding:0!important;box-sizing:border-box!important}
-  dialog .modal-head{position:sticky!important;top:0!important;z-index:3!important;background:#fff!important;padding:10px 12px!important}
-  dialog :is(.modal-body,.workspace-detail,.sent-detail-body,.bsm-body,.bth-list){max-height:calc(100dvh - 84px)!important;overflow:auto!important;padding:12px!important;box-sizing:border-box!important}
+  /* Dashboard: true one-column mobile dashboard. */
+  #dashboardView{width:100%!important;max-width:100%!important;overflow-y:auto!important;overflow-x:hidden!important;background:#f3f7f5!important}
+  #dashboardView .desktop-dashboard-exact{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px!important;width:100%!important;max-width:100%!important;padding:7px!important;margin:0!important;box-sizing:border-box!important}
+  #dashboardView .dashboard-filters,#dashboardView .dashboard-cards,#dashboardView .dashboard-performance-range,#dashboardView .dashboard-chart-card{grid-column:1!important;width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important}
+  #dashboardView .dashboard-filter-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important}
+  #dashboardView .dashboard-filter-grid label{min-width:0!important}
+  #dashboardView .dashboard-filter-grid select{width:100%!important;min-width:0!important;height:36px!important}
+  #dashboardView .dashboard-cards{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}
+  #dashboardView .dashboard-cards article{min-width:0!important;padding:8px!important;border-radius:11px!important}
+  #dashboardView .dashboard-cards small{font-size:13px!important;line-height:1.35!important}
+  #dashboardView .dashboard-cards strong{font-size:20px!important;margin-top:2px!important}
+  #dashboardView .dashboard-chart-card{min-height:0!important;padding:7px!important;overflow:hidden!important}
+  #dashboardView canvas,#dashboardView #workloadChart{display:block!important;width:100%!important;max-width:100%!important;min-height:0!important;max-height:260px!important;height:240px!important}
+  #dashboardView .dashboard-performance-range .performance-range-controls{display:grid!important;grid-template-columns:1fr!important;gap:6px!important;align-items:stretch!important}
+  #dashboardView .dashboard-date-field{display:grid!important;grid-template-columns:minmax(0,1fr) 38px!important;width:100%!important}
+  #dashboardView .performance-range-actions{padding:0!important;background:transparent!important}
+
+  /* Automated workflow messages: readable and tappable on phone. */
+  .workflow-message{width:100%!important;max-width:100%!important;margin:4px 0!important;border-radius:10px!important;font-size:15px!important;line-height:1.75!important;box-sizing:border-box!important;overflow:hidden!important}
+  .workflow-message-head{padding:9px 11px!important}
+  .workflow-message-head>div{display:grid!important;grid-template-columns:1fr!important;gap:3px!important}
+  .workflow-message-date{justify-self:start!important;text-align:right!important;white-space:normal!important;font-size:12px!important}
+  .workflow-message-body{padding:9px!important}
+  .workflow-copy{font-size:15px!important;line-height:1.75!important}
+  .workflow-sticker img{width:120px!important;max-height:120px!important}
+  .workflow-task-table{width:100%!important;max-width:100%!important;margin:8px 0!important;overflow:hidden!important}
+  .workflow-task-table>div:first-child{font-size:16px!important;padding-inline:2px!important}
+  .workflow-task-scroll{display:block!important;width:100%!important;max-width:100%!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch!important}
+  .workflow-task-scroll table{width:620px!important;min-width:620px!important;table-layout:fixed!important;font-size:14px!important}
+  .workflow-task-scroll th,.workflow-task-scroll td{padding:6px!important;font-size:13px!important;white-space:normal!important;line-height:1.4!important}
+  .workflow-task-scroll a{min-height:34px!important;display:flex!important;align-items:center!important;justify-content:center!important}
+  .workflow-task-hint{font-size:12px!important;line-height:1.5!important}
+
+  /* Conversations */
+  .conversation-layout,.prod-chat{display:grid!important;grid-template-columns:1fr!important;width:100%!important;max-width:100%!important;min-height:0!important;height:auto!important}
+  .conversation-sidebar,.prod-chat>div:first-child{max-height:190px!important;overflow:auto!important}
+  .conversation-stage{min-height:330px!important;max-width:100%!important;overflow:hidden!important}
+  .messenger-host{width:100%!important;max-width:100%!important;height:min(62dvh,500px)!important;min-height:380px!important}
+  .messenger-head{padding:7px 9px!important}
+  .messenger-messages{padding:8px!important}
+  .chat-bubble{max-width:92%!important}
+  .messenger-compose{grid-template-columns:36px 36px minmax(0,1fr) 38px!important;gap:4px!important;padding:6px!important}
+  .messenger-compose>button{width:36px!important;height:36px!important}
+
+  /* Dialogs */
+  dialog,.modal,.bamco-dialog{width:calc(100vw - 12px)!important;max-width:calc(100vw - 12px)!important;max-height:calc(100dvh - 12px)!important;margin:auto!important;padding:0!important;box-sizing:border-box!important}
+  dialog .modal-head{position:sticky!important;top:0!important;z-index:3!important;background:#fff!important;padding:8px 10px!important}
+  dialog :is(.modal-body,.workspace-detail,.sent-detail-body,.bsm-body,.bth-list){max-height:calc(100dvh - 80px)!important;overflow:auto!important;padding:10px!important;box-sizing:border-box!important}
   dialog .manager-form,dialog .form-grid,dialog .sticker-upload-grid,dialog .sent-detail-meta{grid-template-columns:1fr!important}
   dialog input,dialog select,dialog textarea{width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important}
-  dialog .modal-actions{display:flex!important;gap:7px!important;flex-wrap:wrap!important;padding:9px 10px!important}
-  dialog .modal-actions button{flex:1 1 120px!important;min-height:40px!important}
+  dialog .modal-actions{display:flex!important;gap:6px!important;flex-wrap:nowrap!important;overflow-x:auto!important;padding:8px!important}
+  dialog .modal-actions button{flex:0 0 auto!important;min-height:38px!important;white-space:nowrap!important}
 
-  #dashboardView .desktop-dashboard-exact{grid-template-columns:1fr!important;padding:7px!important;gap:8px!important}
-  #dashboardView .dashboard-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-  #dashboardView .dashboard-filter-grid{grid-template-columns:1fr!important}
-  #dashboardView .dashboard-performance-range .performance-range-controls{display:grid!important;grid-template-columns:1fr!important;align-items:stretch!important}
-  #dashboardView .dashboard-date-field{display:grid!important;grid-template-columns:minmax(0,1fr) 40px!important}
-  #dashboardView canvas{max-height:300px!important}
+  /* Reports / sent messages */
+  .workspace-metrics,#sentMessagesView .sent-overview{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;padding:7px!important}
+  #sentMessagesView .sent-overview article,.workspace-metrics article{min-width:0!important;padding:8px!important}
+  #sentMessagesView .sent-controls :is(input,select){min-width:145px!important;max-width:180px!important}
+  #messageCenterView #messageSelectionCount{white-space:nowrap!important}
+  #messageCenterView #sendSelectedMessages{min-width:88px!important}
 
-  #performanceReportView .performance-date-controls{display:grid!important;grid-template-columns:1fr!important;width:100%!important}
-  #performanceReportView .performance-date-field{grid-template-columns:minmax(0,1fr) 38px!important;width:100%!important}
-
-  #messageCenterView .message-center-simple-toolbar label{flex:1 1 140px!important}
-  #messageCenterView #messageSelectionCount{flex:1 1 100%!important;margin:0!important;text-align:right!important}
-  #messageCenterView #sendSelectedMessages{flex:1 1 100%!important}
-
-  #sentMessagesView .sent-overview{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;padding:0 8px!important}
-  #sentMessagesView .sent-overview article{min-width:0!important;padding:9px!important}
-  #sentMessagesView .sent-overview strong{font-size:19px!important}
-  #sentMessagesView .sent-controls>span{flex:1 1 100%!important}
-  #sentMessagesView .sent-controls :is(input,select){flex:1 1 100%!important;width:100%!important}
-
-  .conversation-layout,.prod-chat{display:grid!important;grid-template-columns:1fr!important;min-height:0!important;height:auto!important}
-  .conversation-sidebar{max-height:230px!important;overflow:auto!important}
-  .conversation-stage{min-height:340px!important;max-width:100%!important;overflow:hidden!important}
-  .messenger-host{height:min(64dvh,520px)!important;min-height:390px!important}
-  .messenger-messages{padding:9px!important}
-  .chat-bubble{max-width:90%!important}
-  .messenger-compose{grid-template-columns:38px 38px minmax(0,1fr) 40px!important;gap:4px!important;padding:6px!important}
-  .messenger-compose>button{width:38px!important;height:38px!important}
-  .chat-stickers{grid-template-columns:repeat(6,56px)!important}
-  .chat-stickers button{width:54px!important;height:54px!important}
-
-  #peopleView .people-actions{padding:7px 8px!important}
-  #peopleView .people-actions button{flex:1 1 30%!important}
-  #settingsView .manager-form{grid-template-columns:1fr!important}
-  #settingsView .profile-photo-field,#settingsView .account-security-box{display:grid!important;grid-template-columns:1fr!important;gap:10px!important}
-
-  #taskTimelineView .tt-toolbar{grid-template-columns:1fr!important}
-  #taskTimelineView .tt-month{grid-column:1!important;justify-self:stretch!important;width:100%!important}
-  #taskTimelineView .tt-month>*{min-width:0!important}
-
-  #stickersView .sticker-toolbar{display:grid!important;grid-template-columns:1fr!important}
-  #stickersView .sticker-toolbar select{width:100%!important;min-width:0!important}
+  #taskTimelineView .tt-toolbar{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;gap:6px!important}
+  #taskTimelineView .tt-month{grid-column:auto!important;flex:0 0 auto!important;width:auto!important}
   #stickersView .sticker-pair{grid-template-columns:1fr!important}
-
-  .vehicle-form,.vehicle-grid,.manager-form{grid-template-columns:1fr!important}
-  .workspace-metrics{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;padding:7px!important}
-  .workspace-metrics article{min-width:0!important}
+  #settingsView .manager-form,.vehicle-form,.vehicle-grid,.manager-form{grid-template-columns:1fr!important}
 }
 
-@media (max-width:430px){
-  #dashboardView .dashboard-cards{grid-template-columns:1fr!important}
-  #sentMessagesView .sent-overview{grid-template-columns:1fr 1fr!important}
-  .workspace-metrics{grid-template-columns:1fr 1fr!important}
-  #appView button{font-size:14px!important}
-  #appView table :is(th,td){font-size:13px!important;padding:4px 6px!important}
+@media(max-width:430px){
+  #dashboardView .dashboard-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  #dashboardView .dashboard-filter-grid{grid-template-columns:1fr!important}
+  .workspace-metrics,#sentMessagesView .sent-overview{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  #appView button{font-size:13px!important}
 }
