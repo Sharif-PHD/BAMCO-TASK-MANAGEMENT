@@ -1,6 +1,7 @@
 (()=>{
 'use strict';
 const q=s=>document.querySelector(s),months=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+const faDigits=value=>String(value??'').replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);
 function install(){
  const dialog=q('#calendarDialog');
  if(dialog){
@@ -14,10 +15,28 @@ function install(){
  for(const [selector,clear]of [['#setDateBtn',false],['#clearDateBtn',true]])q(selector)?.addEventListener('click',e=>{if(!externalDate)return;e.preventDefault();e.stopImmediatePropagation();const field=externalDate;field.value=clear?'':fa(q('#calYear').value+'/'+q('#calMonth').value.padStart(2,'0')+'/'+q('#calDay').value.padStart(2,'0'));externalDate=null;dialog.close();field.dispatchEvent(new Event('input',{bubbles:true}))},true);
  dialog?.addEventListener('close',()=>externalDate=null);
  const tip=document.createElement('div');tip.className='task-preview-tip';tip.hidden=true;tip.setAttribute('role','tooltip');document.body.append(tip);
- function preview(el){const title=el.getAttribute('title')||el.dataset.preview;if(!title)return;el.dataset.preview=title;el.removeAttribute('title');tip.replaceChildren();title.split('\n').forEach((line,i)=>{const part=document.createElement(i?'div':'strong');if(!/[\u0600-\u06ff]/.test(line)&&/[A-Za-z]/.test(line)){part.lang='en';part.dir='ltr'}let end=0;for(const match of line.matchAll(/[\p{Script=Latin}0-9][\p{Script=Latin}0-9 \t@._%+\-/:;#&()'"]*/gu)){const text=match[0].trimEnd();part.append(document.createTextNode(line.slice(end,match.index)));const latin=document.createElement('bdi');latin.className='latin-run';latin.lang='en';latin.dir='ltr';latin.textContent=text;part.append(latin);end=match.index+text.length}part.append(document.createTextNode(line.slice(end)));tip.append(part)});tip.hidden=false;const r=el.getBoundingClientRect();tip.style.left=Math.max(8,Math.min(innerWidth-tip.offsetWidth-8,r.left))+'px';tip.style.top=Math.max(8,r.top-tip.offsetHeight-9)+'px'}
- document.addEventListener('pointerover',e=>{const b=e.target.closest('.tt-dot,.tt-bar,.conversation-task-tile');if(b)preview(b)});document.addEventListener('focusin',e=>{if(e.target.matches('.tt-dot,.tt-bar,.conversation-task-tile'))preview(e.target)});document.addEventListener('pointerout',e=>{if(e.target.closest('.tt-dot,.tt-bar,.conversation-task-tile'))tip.hidden=true});document.addEventListener('focusout',()=>tip.hidden=true);document.addEventListener('click',()=>tip.hidden=true);document.addEventListener('scroll',()=>tip.hidden=true,true);
+ function preview(el){const title=el.getAttribute('title')||el.dataset.preview;if(!title)return;el.dataset.preview=title;el.removeAttribute('title');tip.replaceChildren();title.split('\n').forEach((raw,i)=>{const line=faDigits(raw),part=document.createElement(i?'div':'strong');if(!/[\u0600-\u06ff]/.test(line)&&/[A-Za-z]/.test(line)){part.lang='en';part.dir='ltr'}let end=0;for(const match of line.matchAll(/[\p{Script=Latin}][\p{Script=Latin} \t@._%+\-/:;#&()'"]*/gu)){const text=match[0].trimEnd();part.append(document.createTextNode(line.slice(end,match.index)));const latin=document.createElement('bdi');latin.className='latin-run';latin.lang='en';latin.dir='ltr';latin.textContent=text;part.append(latin);end=match.index+text.length}part.append(document.createTextNode(line.slice(end)));tip.append(part)});tip.hidden=false;const r=el.getBoundingClientRect();tip.style.left=Math.max(8,Math.min(innerWidth-tip.offsetWidth-8,r.left))+'px';tip.style.top=Math.max(8,r.top-tip.offsetHeight-9)+'px'}
+ document.addEventListener('pointerover',e=>{const b=e.target.closest('.tt-dot,.tt-bar,.conversation-task-tile,[data-task-preview]');if(b)preview(b)});document.addEventListener('focusin',e=>{if(e.target.matches('.tt-dot,.tt-bar,.conversation-task-tile,[data-task-preview]'))preview(e.target)});document.addEventListener('pointerout',e=>{if(e.target.closest('.tt-dot,.tt-bar,.conversation-task-tile,[data-task-preview]'))tip.hidden=true});document.addEventListener('focusout',()=>tip.hidden=true);document.addEventListener('click',()=>tip.hidden=true);document.addEventListener('scroll',()=>tip.hidden=true,true);
  // Use the same close glyph without altering any close handler.
  const root=q('#appView');const patch=()=>document.querySelectorAll('dialog button,.modal-head button,.panel-head button').forEach(b=>{if(b.dataset.cleanClose||!/^[×✕✖xX]$/.test(b.textContent.trim()))return;b.dataset.cleanClose='1';b.classList.add('clean-close');b.setAttribute('aria-label','بستن پنجره');b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>'});patch();let queued=false;new MutationObserver(()=>{if(!queued){queued=true;queueMicrotask(()=>{queued=false;patch()})}}).observe(document.body,{subtree:true,childList:true});
+
+ function ensureTaskHistoryDialog(){
+  if(q('#taskHistoryDialog'))return q('#taskHistoryDialog');
+  const d=document.createElement('dialog');d.id='taskHistoryDialog';d.className='modal task-history-dialog';d.innerHTML='<div class="modal-head"><div><h3>تاریخچه وظیفه <span id="taskHistoryNo"></span></h3><p>رویدادهای وظیفه و درخواست‌های مرتبط در یک مسیر نمایش داده می‌شوند.</p></div><button type="button" data-close-history>×</button></div><div id="taskHistoryEvents" class="request-timeline"></div>';
+  document.body.append(d);d.querySelector('[data-close-history]').onclick=()=>d.close();return d;
+ }
+ const historyLabel=a=>({created:'ایجاد وظیفه',create:'ایجاد وظیفه',updated:'ویرایش وظیفه',update:'ویرایش وظیفه',status:'تغییر وضعیت',priority:'تغییر اولویت',description:'تغییر توضیحات',completed:'انجام وظیفه',complete:'انجام وظیفه',archived:'آرشیو وظیفه',restored:'بازگردانی وظیفه'}[String(a||'').toLowerCase()]||String(a||'رویداد'));
+ async function openTaskHistory(taskId){
+  const d=ensureTaskHistoryDialog(),box=q('#taskHistoryEvents');q('#taskHistoryNo').textContent=faDigits(state.tasks.find(t=>String(t.id)===String(taskId))?.legacy_id||taskId);box.innerHTML='<div class="empty">در حال دریافت تاریخچه…</div>';d.showModal();
+  try{
+   const rows=await select('task_history',`task_id=eq.${taskId}&select=*&order=created_at.desc`);
+   box.innerHTML=rows.map(x=>{const field=x.field_name?` — ${safe(x.field_name)}`:'',change=x.old_value!==null||x.new_value!==null?`<p>${safe(x.old_value??'—')} ← ${safe(x.new_value??'—')}</p>`:`<p>${safe(x.reason||'بدون توضیح')}</p>`,linked=x.request_id?`<button type="button" class="ghost request-timeline-btn" data-request="${x.request_id}">درخواست مرتبط ${faDigits(x.request_id)}</button>`:'';return `<article><i></i><div><b>${safe(historyLabel(x.action))}${field}</b><time>${jalaliDateTime(x.created_at)}</time>${change}${linked}</div></article>`}).join('')||'<div class="empty">برای این وظیفه هنوز سابقه‌ای ثبت نشده است.</div>';
+  }catch(err){box.innerHTML=`<div class="empty">${safe(err.message||'دریافت تاریخچه انجام نشد.')}</div>`}
+ }
+ function decorateTaskRows(){
+  document.querySelectorAll('#kanbanBody tr[data-task-id]').forEach(row=>{if(row.dataset.historyLinked==='1')return;row.dataset.historyLinked='1';const first=row.cells?.[0];if(!first)return;const b=document.createElement('button');b.type='button';b.className='ghost task-history-link';b.textContent='سوابق';b.title='نمایش تاریخچه این وظیفه';b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();void openTaskHistory(row.dataset.taskId)});first.append(b)})
+ }
+ decorateTaskRows();const kanban=q('#kanbanBody');if(kanban)new MutationObserver(decorateTaskRows).observe(kanban,{childList:true});
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
