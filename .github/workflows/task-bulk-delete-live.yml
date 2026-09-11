@@ -75,27 +75,30 @@ jobs:
                       await route.fulfill(status=200, content_type='application/json', body='[]')
                   else:
                       await route.continue_()
+
               await page.route('**/*', route_api)
               await page.goto(BASE+f'?bulk-delete-live={scope}', wait_until='networkidle')
               await page.wait_for_function('window.__bamcoTaskBulkDelete20260912V1 === true')
-              await page.evaluate("""rows => {
+              body='#archiveBody' if archived else '#kanbanBody'
+              delete='#archiveDeleteBtn' if archived else '#kanbanDeleteBtn'
+              await page.evaluate("""payload => {
+                  const {rows,scope,body} = payload;
                   state.profile={id:1,role:'manager',active:true,full_name:'مدیر'};
                   state.profiles=[{id:1,full_name:'مدیر'}];
                   state.tasks=rows;
                   state.selected={kanban:null,archive:null};
                   window.bamcoNotice=()=>{};
                   window.bamcoConfirm=async()=>true;
-                  renderTasks(false);renderTasks(true);
-              }""", initial)
-              body='#archiveBody' if archived else '#kanbanBody'
-              delete='#archiveDeleteBtn' if archived else '#kanbanDeleteBtn'
+                  const tbody=document.querySelector(body);
+                  tbody.innerHTML=rows.map(t=>`<tr data-task-id="${t.id}" data-scope="${scope}"><td>${t.legacy_id}</td><td>${t.title}</td><td><input class="task-pick" type="radio" value="${t.id}"></td></tr>`).join('');
+              }""", {'rows':initial,'scope':scope,'body':body})
               await page.wait_for_function("sel => [...document.querySelectorAll(sel+' input.task-pick')].length===4 && [...document.querySelectorAll(sel+' input.task-pick')].every(x=>x.type==='checkbox')", arg=body)
-              rows=page.locator(f'{body} tr[data-task-id]')
-              await rows.nth(0).click()
-              await rows.nth(2).click()
+              await page.evaluate("sel => document.querySelectorAll(sel+' tr[data-task-id]')[0].dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}))", body)
+              await page.evaluate("sel => document.querySelectorAll(sel+' tr[data-task-id]')[2].dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}))", body)
               await page.wait_for_function("sel => window.bamcoTaskSelection.ids(sel).length===2", arg=scope)
-              assert await page.locator(delete).is_enabled(), f'{scope} delete button remained disabled'
-              await page.locator(delete).click()
+              disabled=await page.evaluate("sel => document.querySelector(sel).disabled", delete)
+              assert not disabled, f'{scope} delete button remained disabled'
+              await page.evaluate("sel => document.querySelector(sel).click()", delete)
               await page.wait_for_function('() => state.tasks.length===2 && state.tasks.map(x=>Number(x.legacy_id)).sort((a,b)=>a-b).join(",")==="1,2"')
               assert len(calls)==1, f'{scope}: expected one RPC, got {len(calls)}'
               sent=sorted(int(x) for x in calls[0].get('p_task_ids',[]))
@@ -110,6 +113,7 @@ jobs:
                   await run_scope(browser,'kanban')
                   await run_scope(browser,'archive')
                   await browser.close()
+
           asyncio.run(main())
           PY
           python /tmp/check_bulk_delete.py
