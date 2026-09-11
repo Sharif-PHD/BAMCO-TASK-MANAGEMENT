@@ -1,6 +1,16 @@
 /* Keep each open portal's approval queue in step with the server's stage. */
 (()=>{'use strict';
  let pending=null,lastSnapshot='';
+ const style=document.createElement('style');style.id='bamco-requested-kanban-polish';style.textContent=`
+ #kanbanView .column-filters select,#archiveView .column-filters select,#kanbanView .column-filters option,#archiveView .column-filters option{direction:rtl!important;text-align:right!important;text-align-last:right!important;font-family:"B Nazanin",Tahoma,serif!important}
+ #kanbanView tbody td:nth-child(2),#kanbanView tbody td:nth-child(3),#archiveView tbody td:nth-child(2),#archiveView tbody td:nth-child(3){text-align:justify!important;text-justify:inter-word!important;white-space:normal!important;line-height:1.75!important}
+ #kanbanView tbody td.en-text:nth-child(2),#kanbanView tbody td.en-text:nth-child(3),#archiveView tbody td.en-text:nth-child(2),#archiveView tbody td.en-text:nth-child(3){font-family:"Times New Roman",Times,serif!important;direction:ltr!important}
+ #kanbanView tbody td.fa-text:nth-child(2),#kanbanView tbody td.fa-text:nth-child(3),#archiveView tbody td.fa-text:nth-child(2),#archiveView tbody td.fa-text:nth-child(3){font-family:"B Nazanin",Tahoma,serif!important;direction:rtl!important}
+ .task-preview-tip,.task-preview-tip>div,.task-preview-tip>strong{ text-align:justify!important;text-justify:inter-word!important}
+ .task-preview-tip .latin-run,.task-preview-tip [lang="en"]{font-family:"Times New Roman",Times,serif!important}
+ .task-history-link{display:block!important;margin:5px auto 0!important;padding:2px 7px!important;font-size:12px!important;line-height:1.4!important}
+ #importDialog .import-error-wrap{max-width:96vw!important;overflow:auto!important}#importDialog .import-error-table{min-width:1180px!important}#importDialog .import-error-table input,#importDialog .import-error-table select{width:100%!important;box-sizing:border-box!important;direction:rtl!important;text-align:right!important;font-family:"B Nazanin",Tahoma,serif!important}#importDialog .import-error-reason{min-width:210px!important;white-space:normal!important;color:#9b3429!important;text-align:right!important}
+ `;document.head.append(style);
  const ownRows=rows=>isManager()?rows:(rows||[]).filter(r=>String(r.requested_by)===String(state.user?.id));
  function renderScoped(){
   const allRequests=state.requests,allHistory=state.requestHistory;
