@@ -39,7 +39,12 @@ jobs:
               await page.goto(URL, wait_until='networkidle')
               await page.evaluate("""() => {
                 document.body.className='';
-                document.body.innerHTML=`<div style="padding:34px 84px;background:#edf4ef;min-height:100vh;box-sizing:border-box"><div class="chat-bubble bamco-system-message"><div class="chat-body"><button type="button" class="system-message-open"><span class="system-message-open-head"><span class="system-message-open-title">گزارش روزانه وضعیت امور | جمعه، ۲۰ شهریور ۱۴۰۵ | نیازمند توجه</span><span class="system-message-open-date">۱۴۰۵/۰۶/۲۰، ۲۱:۰۰</span></span><span class="system-message-open-meta">فرستنده: نازنین قائمی</span><span class="system-message-open-chips"><span class="system-message-chip warning">هشدار: ۲</span><span class="system-message-chip overdue">دیرکرد: ۱</span></span><span class="system-message-open-cta">مشاهده محتوای کامل <span>←</span></span></button></div></div></div>`;
+                [...document.body.children].forEach(e=>{ if(e.id!=='systemMessageCardLayoutRootFix') e.style.display='none'; });
+                const host=document.createElement('div');
+                host.id='liveProbeHost';
+                host.style.cssText='display:block!important;padding:34px 84px;background:#edf4ef;min-height:100vh;box-sizing:border-box';
+                host.innerHTML=`<div class="chat-bubble bamco-system-message"><div class="chat-body"><button type="button" class="system-message-open"><span class="system-message-open-head"><span class="system-message-open-title">گزارش روزانه وضعیت امور | جمعه، ۲۰ شهریور ۱۴۰۵ | نیازمند توجه</span><span class="system-message-open-date">۱۴۰۵/۰۶/۲۰، ۲۱:۰۰</span></span><span class="system-message-open-meta">فرستنده: نازنین قائمی</span><span class="system-message-open-chips"><span class="system-message-chip warning">هشدار: ۲</span><span class="system-message-chip overdue">دیرکرد: ۱</span></span><span class="system-message-open-cta">مشاهده محتوای کامل <span>←</span></span></button></div></div>`;
+                document.body.append(host);
               }""")
               data=await page.evaluate("""() => {
                 const box=s=>{const e=document.querySelector(s),r=e.getBoundingClientRect(),c=getComputedStyle(e);return {x:r.x,y:r.y,w:r.width,h:r.height,display:c.display,gridArea:c.gridArea,direction:c.direction,textAlign:c.textAlign,whiteSpace:c.whiteSpace}};
