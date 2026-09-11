@@ -211,5 +211,14 @@
 <script defer src="assets/js/report-stability-fixes-20260911.js?v=20260911-4"></script>
 <script defer src="assets/js/messaging-history-root-20260911.js?v=profile-counts-20260911-1"></script>
 <script defer src="assets/js/avatar-final-20260911.js?v=20260911-1"></script>
+<style id="systemMessageCardLayoutRootFix">
+html body .chat-bubble.bamco-system-message .system-message-open{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;grid-template-areas:"title title" "date sender" "chips chips" "cta cta"!important;column-gap:12px!important;align-items:end!important;direction:ltr!important}
+html body .chat-bubble.bamco-system-message .system-message-open-head{display:contents!important}
+html body .chat-bubble.bamco-system-message .system-message-open-title{grid-area:title!important;display:block!important;width:100%!important;max-width:none!important;min-width:0!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere!important;word-break:normal!important;direction:rtl!important;text-align:right!important;justify-self:stretch!important}
+html body .chat-bubble.bamco-system-message .system-message-open-date{grid-area:date!important;display:block!important;margin-top:4px!important;white-space:nowrap!important;direction:rtl!important;text-align:left!important;justify-self:start!important}
+html body .chat-bubble.bamco-system-message .system-message-open-meta{grid-area:sender!important;display:block!important;margin-top:4px!important;direction:rtl!important;text-align:right!important;justify-self:end!important}
+html body .chat-bubble.bamco-system-message .system-message-open-chips{grid-area:chips!important;direction:rtl!important}
+html body .chat-bubble.bamco-system-message .system-message-open-cta{grid-area:cta!important;direction:rtl!important}
+</style>
 </body>
 </html>
