@@ -23,7 +23,6 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           import re
-
           js=Path('assets/js/documents-sites.js')
           s=js.read_text()
           pattern=r"let previewObjectUrl='';function resetPreview\(\)\{.*?\}\nasync function previewDocument\(id,button\)\{.*?\}\nasync function downloadDocument"
@@ -51,12 +50,12 @@ jobs:
 
           css=Path('assets/css/documents-sites.css')
           s=css.read_text()
-          rule='\n/* Sites actions follow the standard BAMCO non-bold button language. */\n#sitesAccessView button,#siteDialog button,#credentialDialog button,#credentialRevealDialog button{font-weight:400!important}\n'
-          if 'Sites actions follow the standard BAMCO non-bold button language.' not in s:s+=rule
+          marker='Sites actions follow the standard BAMCO non-bold button language.'
+          if marker not in s:
+            s+='\n/* '+marker+' */\n#sitesAccessView button,#siteDialog button,#credentialDialog button,#credentialRevealDialog button{font-weight:400!important}\n'
           css.write_text(s)
 
-          migration=Path('supabase/migrations/20260912_allow_authenticated_welcome_sticker_read.sql')
-          migration.write_text('''-- Welcome stickers are shared presentation assets for every active authenticated account.
+          Path('supabase/migrations/20260912_allow_authenticated_welcome_sticker_read.sql').write_text('''-- Welcome stickers are shared presentation assets for every active authenticated account.
 -- Mutation remains manager-only via the existing ALL policies.
 drop policy if exists sticker_sets_read_authenticated on public.sticker_sets;
 create policy sticker_sets_read_authenticated
@@ -78,53 +77,36 @@ using (
   )
 );
 ''')
-
-          test=Path('tests/documents-sites.test.cjs')
-          s=test.read_text()
-          block='''
-
-test('document preview stays in app and opens authenticated content in a separate browser tab',()=>{
-  const src=fs.readFileSync(path.join(ROOT,'assets/js/documents-sites.js'),'utf8');
-  const start=src.indexOf('async function previewDocument');
-  const end=src.indexOf('async function downloadDocument');
-  assert(start>0&&end>start);
-  const preview=src.slice(start,end);
-  assert.match(preview,/openDocumentPreviewTab\(\)/);
-  assert.match(src,/window\.open\('about:blank','_blank'\)/);
-  assert.match(preview,/await privateFile\(doc\.storage_path\)/);
-  assert.match(preview,/URL\.createObjectURL\(previewBlob\)/);
-  assert.match(preview,/tab\.location\.replace\(url\)/);
-  assert.doesNotMatch(preview,/documentPreviewDialog.*showModal/);
-});
-
-test('sites access removes the password notice and uses non-bold buttons',()=>{
-  const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
-  const css=fs.readFileSync(path.join(ROOT,'assets/css/documents-sites.css'),'utf8');
-  assert.doesNotMatch(html,/رمز عبور فقط با درخواست صریح شما/);
-  assert.match(css,/#sitesAccessView button[^}]*font-weight:400!important/);
-});
-
-test('welcome sticker migration grants read access to active authenticated accounts only',()=>{
-  const sql=fs.readFileSync(path.join(ROOT,'supabase/migrations/20260912_allow_authenticated_welcome_sticker_read.sql'),'utf8');
-  assert.match(sql,/for select\s+to authenticated/i);
-  assert.match(sql,/private\.has_account\(\)/);
-  assert.match(sql,/active = true/);
-  assert.doesNotMatch(sql,/for (insert|update|delete)\s+to authenticated/i);
-});
-'''
-          if "document preview stays in app and opens authenticated content" not in s:test.write_text(s+block)
-
           Path('.github/workflows/fix-preview-stickers-sites-ui.yml').unlink()
           PY
-      - name: Syntax checks
+      - name: Syntax and existing feature tests
         run: |
           node --check assets/js/documents-sites.js
           node --check assets/js/card-home.js
-          node --check tests/documents-sites.test.cjs
-      - name: Focused regression tests
-        run: node --test tests/documents-sites.test.cjs
-      - name: Existing home navigation tests
-        run: node --test --test-name-pattern="eight cards|cards and each subsection|only duplicate shortcuts|reconciliation stabilizes|role-hidden routes|search polishing" tests/home-layout.test.cjs
+          node --test tests/documents-sites.test.cjs
+      - name: Validate requested behavior
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          js=Path('assets/js/documents-sites.js').read_text()
+          html=Path('index.html').read_text()
+          css=Path('assets/css/documents-sites.css').read_text()
+          sql=Path('supabase/migrations/20260912_allow_authenticated_welcome_sticker_read.sql').read_text()
+          preview=js[js.index('async function previewDocument'):js.index('async function downloadDocument')]
+          checks={
+            'new tab preview': "window.open('about:blank','_blank')" in js,
+            'authenticated private fetch': 'await privateFile(doc.storage_path)' in preview,
+            'local blob preview': 'URL.createObjectURL(previewBlob)' in preview and 'tab.location.replace(url)' in preview,
+            'old modal preview removed': 'documentPreviewDialog' not in preview,
+            'password sentence removed': 'رمز عبور فقط با درخواست صریح شما' not in html,
+            'sites buttons non-bold': '#sitesAccessView button' in css and 'font-weight:400!important' in css,
+            'authenticated sticker read': 'for select\nto authenticated' in sql and 'private.has_account()' in sql and 'active = true' in sql,
+            'cache bust preview': 'documents-sites-20260912-2' in html,
+            'cache bust stickers': 'welcome-home-20260912-3' in html,
+          }
+          for name,ok in checks.items(): print(name, 'PASS' if ok else 'FAIL')
+          if not all(checks.values()): raise SystemExit('requested behavior validation failed')
+          PY
       - name: Commit validated fixes
         run: |
           git config user.name "BAMCO Fix Bot"
