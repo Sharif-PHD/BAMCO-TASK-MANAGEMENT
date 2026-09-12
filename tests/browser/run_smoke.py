@@ -49,6 +49,7 @@ async def open_tab(page,tab):
 async def home(page):
     await page.evaluate('window.bamcoShowHome?.()')
     await expect(page.locator('#homeView')).to_be_visible()
+    await heartbeat(page)
 
 async def command_texts(page,selector):
     return [re.sub(r'\s+',' ',x).strip() for x in await page.locator(selector+' > *').all_text_contents()]
