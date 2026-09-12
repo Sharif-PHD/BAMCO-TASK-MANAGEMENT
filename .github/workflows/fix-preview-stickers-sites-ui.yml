@@ -56,11 +56,62 @@ jobs:
           css.write_text(s)
 
           migration=Path('supabase/migrations/20260912_allow_authenticated_welcome_sticker_read.sql')
-          migration.write_text('''-- Welcome stickers are shared presentation assets for every active authenticated account.\n-- Mutation remains manager-only via the existing ALL policies.\ndrop policy if exists sticker_sets_read_authenticated on public.sticker_sets;\ncreate policy sticker_sets_read_authenticated\non public.sticker_sets\nfor select\nto authenticated\nusing ((select private.has_account()) and active = true);\n\ndrop policy if exists stickers_read_authenticated on public.stickers;\ncreate policy stickers_read_authenticated\non public.stickers\nfor select\nto authenticated\nusing (\n  (select private.has_account())\n  and exists (\n    select 1 from public.sticker_sets s\n    where s.id = stickers.set_id and s.active = true\n  )\n);\n''')
+          migration.write_text('''-- Welcome stickers are shared presentation assets for every active authenticated account.
+-- Mutation remains manager-only via the existing ALL policies.
+drop policy if exists sticker_sets_read_authenticated on public.sticker_sets;
+create policy sticker_sets_read_authenticated
+on public.sticker_sets
+for select
+to authenticated
+using ((select private.has_account()) and active = true);
+
+drop policy if exists stickers_read_authenticated on public.stickers;
+create policy stickers_read_authenticated
+on public.stickers
+for select
+to authenticated
+using (
+  (select private.has_account())
+  and exists (
+    select 1 from public.sticker_sets s
+    where s.id = stickers.set_id and s.active = true
+  )
+);
+''')
 
           test=Path('tests/documents-sites.test.cjs')
           s=test.read_text()
-          block=r'''\n\ntest('document preview stays in app and opens authenticated content in a separate browser tab',()=>{\n  const src=fs.readFileSync(path.join(ROOT,'assets/js/documents-sites.js'),'utf8');\n  const start=src.indexOf('async function previewDocument');\n  const end=src.indexOf('async function downloadDocument');\n  assert(start>0&&end>start);\n  const preview=src.slice(start,end);\n  assert.match(preview,/openDocumentPreviewTab\(\)/);\n  assert.match(src,/window\.open\('about:blank','_blank'\)/);\n  assert.match(preview,/await privateFile\(doc\.storage_path\)/);\n  assert.match(preview,/URL\.createObjectURL\(previewBlob\)/);\n  assert.match(preview,/tab\.location\.replace\(url\)/);\n  assert.doesNotMatch(preview,/documentPreviewDialog.*showModal/);\n});\n\ntest('sites access removes the password notice and uses non-bold buttons',()=>{\n  const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');\n  const css=fs.readFileSync(path.join(ROOT,'assets/css/documents-sites.css'),'utf8');\n  assert.doesNotMatch(html,/رمز عبور فقط با درخواست صریح شما/);\n  assert.match(css,/#sitesAccessView button[^}]*font-weight:400!important/);\n});\n\ntest('welcome sticker migration grants read access to active authenticated accounts only',()=>{\n  const sql=fs.readFileSync(path.join(ROOT,'supabase/migrations/20260912_allow_authenticated_welcome_sticker_read.sql'),'utf8');\n  assert.match(sql,/for select\s+to authenticated/i);\n  assert.match(sql,/private\.has_account\(\)/);\n  assert.match(sql,/active = true/);\n  assert.doesNotMatch(sql,/for (insert|update|delete)\s+to authenticated/i);\n});\n'''
+          block='''
+
+test('document preview stays in app and opens authenticated content in a separate browser tab',()=>{
+  const src=fs.readFileSync(path.join(ROOT,'assets/js/documents-sites.js'),'utf8');
+  const start=src.indexOf('async function previewDocument');
+  const end=src.indexOf('async function downloadDocument');
+  assert(start>0&&end>start);
+  const preview=src.slice(start,end);
+  assert.match(preview,/openDocumentPreviewTab\(\)/);
+  assert.match(src,/window\.open\('about:blank','_blank'\)/);
+  assert.match(preview,/await privateFile\(doc\.storage_path\)/);
+  assert.match(preview,/URL\.createObjectURL\(previewBlob\)/);
+  assert.match(preview,/tab\.location\.replace\(url\)/);
+  assert.doesNotMatch(preview,/documentPreviewDialog.*showModal/);
+});
+
+test('sites access removes the password notice and uses non-bold buttons',()=>{
+  const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
+  const css=fs.readFileSync(path.join(ROOT,'assets/css/documents-sites.css'),'utf8');
+  assert.doesNotMatch(html,/رمز عبور فقط با درخواست صریح شما/);
+  assert.match(css,/#sitesAccessView button[^}]*font-weight:400!important/);
+});
+
+test('welcome sticker migration grants read access to active authenticated accounts only',()=>{
+  const sql=fs.readFileSync(path.join(ROOT,'supabase/migrations/20260912_allow_authenticated_welcome_sticker_read.sql'),'utf8');
+  assert.match(sql,/for select\s+to authenticated/i);
+  assert.match(sql,/private\.has_account\(\)/);
+  assert.match(sql,/active = true/);
+  assert.doesNotMatch(sql,/for (insert|update|delete)\s+to authenticated/i);
+});
+'''
           if "document preview stays in app and opens authenticated content" not in s:test.write_text(s+block)
 
           Path('.github/workflows/fix-preview-stickers-sites-ui.yml').unlink()
@@ -69,10 +120,11 @@ jobs:
         run: |
           node --check assets/js/documents-sites.js
           node --check assets/js/card-home.js
+          node --check tests/documents-sites.test.cjs
       - name: Focused regression tests
         run: node --test tests/documents-sites.test.cjs
       - name: Existing home navigation tests
-        run: node --test tests/home-layout.test.cjs --test-name-pattern="eight cards|only duplicate shortcuts|reconciliation stabilizes|role-hidden routes|search polishing" || node --test tests/home-layout.test.cjs --test-name-pattern="cards and each subsection|only duplicate shortcuts|reconciliation stabilizes|role-hidden routes|search polishing"
+        run: node --test --test-name-pattern="eight cards|cards and each subsection|only duplicate shortcuts|reconciliation stabilizes|role-hidden routes|search polishing" tests/home-layout.test.cjs
       - name: Commit validated fixes
         run: |
           git config user.name "BAMCO Fix Bot"
