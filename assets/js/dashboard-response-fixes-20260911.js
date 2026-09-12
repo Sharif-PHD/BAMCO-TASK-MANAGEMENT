@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
-if(window.__bamcoDashboardResponseFixes20260911V2)return;
-window.__bamcoDashboardResponseFixes20260911V2=true;
+if(window.__bamcoDashboardResponseFixes20260911V3)return;
+window.__bamcoDashboardResponseFixes20260911V3=true;
 const q=(s,r=document)=>r.querySelector(s),qa=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const faNum=v=>typeof fa==='function'?fa(v):String(v??'').replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);
@@ -36,6 +36,7 @@ function installCss(){
  html body #performanceReportView .report-definition{display:none!important}
 
  #responseReportView .workspace-report-tools{display:flex!important;align-items:center!important;gap:10px!important;flex-wrap:wrap!important}
+ #responseReportView .workspace-report-tools button,#responseReportView .response-command-row button{font-weight:400!important}
  #responseReportView .report-date-controls{display:flex!important;align-items:center!important;gap:10px!important;flex-wrap:wrap!important}
  #responseReportView .report-date-controls>label{display:flex!important;flex-direction:row!important;align-items:center!important;gap:6px!important;margin:0!important;white-space:nowrap!important}
  #responseReportView .report-date-controls>label>.response-date-caption{display:inline-block!important;white-space:nowrap!important;font-weight:400!important}
@@ -45,14 +46,12 @@ function installCss(){
  #responseReportView [data-response-clear-dates],#responseReportView [data-response-delete-selected]{color:#b54040!important;border-color:#e4b0b0!important;background:#fff5f5!important;font-weight:400!important;white-space:nowrap!important}
  #responseReportView [data-response-delete-selected]:disabled{opacity:.45!important;cursor:not-allowed!important}
  #responseReportView [data-report-export],#responseReportView [data-response-refresh]{font-weight:400!important;white-space:nowrap!important}
- #responseReportView [data-response-search]{min-width:230px!important;flex:1 1 260px!important}
  #responseReportView tbody tr[data-delivery-id]{cursor:pointer!important}
  #responseReportView tbody tr.response-row-selected>td{background:#e9f4ef!important;box-shadow:inset 0 1px #9fc9b7,inset 0 -1px #9fc9b7}
  #responseReportView th.response-hidden-operation,#responseReportView td.response-hidden-operation{display:none!important}
  @media(max-width:900px){
    #responseReportView .workspace-report-tools{align-items:stretch!important}
    #responseReportView .report-date-controls{width:100%!important}
-   #responseReportView [data-response-search]{width:100%!important;flex-basis:100%!important}
  }
  `;
 }
@@ -91,7 +90,8 @@ function drawWorkload(){
 }
 function paintDashboardCards(){qa('#dashboardCards article').forEach(card=>{card.style.removeProperty('background');card.style.removeProperty('background-image')})}
 function hookDashboard(){
- const apply=()=>{const original=window.renderDashboard;if(typeof original!=='function'||original.__bamcoWorkloadFixV2)return false;const wrapped=function(...args){const canvas=q('#workloadChart');if(canvas)canvas.dataset.logicalHeight='445';const out=original.apply(this,args);paintDashboardCards();drawWorkload();requestAnimationFrame(drawWorkload);return out};wrapped.__bamcoWorkloadFixV2=true;window.renderDashboard=wrapped;return true};
+ q('#applyPerf')?.remove();
+ const apply=()=>{const original=window.renderDashboard;if(typeof original!=='function'||original.__bamcoWorkloadFixV3)return false;const wrapped=function(...args){const canvas=q('#workloadChart');if(canvas)canvas.dataset.logicalHeight='445';const out=original.apply(this,args);paintDashboardCards();drawWorkload();requestAnimationFrame(drawWorkload);return out};wrapped.__bamcoWorkloadFixV3=true;window.renderDashboard=wrapped;return true};
  if(!apply()){let n=0,t=setInterval(()=>{if(apply()||++n>50)clearInterval(t)},100)}
  document.addEventListener('change',e=>{if(e.target.matches('#dashOwner,#dashPriority,#dashStatus,#dashBucket'))requestAnimationFrame(drawWorkload)});
  document.addEventListener('click',e=>{if(e.target.closest('#resetDashFilters,#nav [data-view="dashboard"]'))requestAnimationFrame(()=>{paintDashboardCards();drawWorkload()})},true);
@@ -101,7 +101,7 @@ function removePerformanceDefinition(){q('#performanceReportView .report-definit
 
 let responseRowsCache=[],selectedDeliveryId=null,responseEnhanceBusy=false;
 function responseDateIso(value,end=false){const raw=typeof en==='function'?en(value||''):String(value||''),bits=raw.match(/\d+/g)?.map(Number);if(!bits||bits.length!==3||typeof jalaliToISO!=='function')return'';const iso=jalaliToISO(bits[0],bits[1],bits[2]);return iso?iso+(end?'T23:59:59':'T00:00:00'):''}
-function responseFiltered(rows){const view=q('#responseReportView'),from=responseDateIso(q('[data-response-from]',view)?.value),to=responseDateIso(q('[data-response-to]',view)?.value,true),term=(q('[data-response-search]',view)?.value||'').trim().toLocaleLowerCase();return rows.filter(x=>x.delivery_status!=='cancelled'&&(!from||String(x.sent_at||'')>=from)&&(!to||String(x.sent_at||'')<=to)&&(!term||[x.recipient_name,x.recipient_email,x.subject,x.reply_text,x.delivery_id].some(v=>String(v||'').toLocaleLowerCase().includes(term)))).sort((a,b)=>Number(b.delivery_id)-Number(a.delivery_id))}
+function responseFiltered(rows){const view=q('#responseReportView'),from=responseDateIso(q('[data-response-from]',view)?.value),to=responseDateIso(q('[data-response-to]',view)?.value,true);return rows.filter(x=>x.delivery_status!=='cancelled'&&(!from||String(x.sent_at||'')>=from)&&(!to||String(x.sent_at||'')<=to)).sort((a,b)=>Number(b.delivery_id)-Number(a.delivery_id))}
 function responseLabel(v){return({replied:'پاسخ داده',awaiting:'بدون پاسخ',failed:'خطای ارسال',reminder_needed:'نیازمند یادآوری'})[v]||v||'—'}
 function channel(v){return v==='email'?'ایمیل':v==='portal'?'داخل سامانه':v==='both'?'هر دو':v||'—'}
 function syncDeleteButton(){const b=q('#responseReportView [data-response-delete-selected]');if(!b)return;const visible=!!selectedDeliveryId&&responseFiltered(responseRowsCache).some(x=>String(x.delivery_id)===String(selectedDeliveryId));b.disabled=!visible;b.title=visible?'حذف ردیف انتخاب‌شده':'ابتدا یک ردیف را انتخاب کنید'}
@@ -115,10 +115,11 @@ function setDateLabel(label,text){if(!label)return;let caption=q('.response-date
 function enhanceResponseShell(){
  const view=q('#responseReportView'),table=q('table',view),tools=q('.workspace-report-tools',view);if(!view||!table||!tools||responseEnhanceBusy)return;responseEnhanceBusy=true;
  try{
+  q('[data-report-search]',tools)?.remove();q('[data-response-search]',tools)?.remove();
   const head=table.tHead?.rows?.[0];if(head){let op=[...head.cells].find(c=>c.textContent.trim()==='عملیات');if(!op){op=document.createElement('th');op.textContent='عملیات';head.append(op)}op.classList.add('response-hidden-operation')}
   const date=q('.report-date-controls',tools);if(date){const labels=qa(':scope>label',date);setDateLabel(labels[0],'از تاریخ');setDateLabel(labels[1],'تا تاریخ');let danger=q('.response-danger-actions',date);if(!danger){danger=document.createElement('div');danger.className='response-danger-actions';const clear=q('[data-response-clear-dates]',date);if(clear)danger.append(clear);const del=document.createElement('button');del.type='button';del.className='ghost';del.dataset.responseDeleteSelected='1';del.textContent='حذف رکورد';del.disabled=true;danger.append(del);date.append(danger)}}
   let primary=q('.response-primary-actions',tools);if(!primary){primary=document.createElement('div');primary.className='response-primary-actions';const refresh=q('[data-response-refresh]',view),exp=q('[data-report-export]',tools);if(refresh)primary.append(refresh);if(exp){exp.textContent='خروجی اکسل';primary.append(exp)}tools.insertBefore(primary,tools.firstChild)}
-  tools.dataset.responseLayoutV2='1';
+  tools.dataset.responseLayoutV3='1';
   reloadResponseRows().catch(()=>{});
  }finally{responseEnhanceBusy=false}
 }
@@ -134,7 +135,6 @@ function hookResponse(){
   if(e.target.closest('#responseReportView [data-response-clear-dates]'))setTimeout(()=>{selectedDeliveryId=null;renderResponseTable()},0);
   if(e.target.closest('#nav [data-view="responseReport"]'))setTimeout(enhanceResponseShell,120);
  },true);
- document.addEventListener('input',e=>{if(e.target.matches('#responseReportView [data-response-search]'))setTimeout(()=>{selectedDeliveryId=null;renderResponseTable()},0)});
  document.addEventListener('click',e=>{if(e.target.closest('#responseReportView #setDateBtn,#responseReportView #clearDateBtn'))setTimeout(()=>{selectedDeliveryId=null;renderResponseTable()},30)},true);
  const view=q('#responseReportView');if(view){let timer=0;new MutationObserver(()=>{clearTimeout(timer);timer=setTimeout(()=>{if(q('table',view))enhanceResponseShell()},35)}).observe(view,{childList:true,subtree:false})}
  if(state?.view==='responseReport')setTimeout(enhanceResponseShell,160);
