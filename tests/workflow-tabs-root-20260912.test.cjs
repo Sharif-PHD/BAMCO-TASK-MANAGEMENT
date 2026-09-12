@@ -11,7 +11,7 @@ test('response tracking owns requested command order, current-month dates, selec
  const texts=directTexts(bar);assert.match(texts[0],/بازگشت به خانه/);assert.match(texts[1],/از تاریخ/);assert.match(texts[2],/تازه‌سازی/);assert.match(texts[3],/خروجی اکسل/);assert.match(bar.querySelector('#sendResponseReminder').textContent,/ارسال یادآوری/);assert.equal(bar.querySelectorAll('select option').length,3);
  assert.ok(f.d.querySelector('#responseFrom').value);assert.ok(f.d.querySelector('#responseTo').value);
  assert.doesNotMatch(f.d.querySelector('#responseTrackingView table').textContent,/شناسه پیگیری/);
- const row=f.d.querySelector('#responseTrackingBody tr[data-delivery="11"]');assert.ok(row);assert.equal(f.d.querySelector('#sendResponseReminder').disabled,true);row.click();await pause(20);assert.equal(row.classList.contains('suite-selected'),true);assert.equal(f.d.querySelector('#sendResponseReminder').disabled,false);
+ const row=f.d.querySelector('#responseTrackingBody tr[data-delivery="11"]');assert.ok(row);assert.equal(f.d.querySelector('#sendResponseReminder').disabled,true);row.click();await pause(20);assert.equal(f.d.querySelector('#responseTrackingBody tr[data-delivery="11"]').getAttribute('aria-selected'),'true');assert.equal(f.d.querySelector('#sendResponseReminder').disabled,false);
  assert.equal(f.errors.length,0,f.errors.join('\n'));
 });
 
