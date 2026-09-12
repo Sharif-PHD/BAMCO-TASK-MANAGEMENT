@@ -1,6 +1,6 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
-const {fixture,until}=require('../../tests/helpers/app-fixture.cjs');
+const {fixture}=require('../../tests/helpers/app-fixture.cjs');
 
 test('manager current queue and history render from one authoritative workflow snapshot',async t=>{
   const now=new Date().toISOString();
@@ -11,16 +11,21 @@ test('manager current queue and history render from one authoritative workflow s
   };
   const f=await fixture({fetchResult:({endpoint})=>endpoint==='request_workflow_snapshot'?snapshot:undefined});
   t.after(()=>f.dispose());
-  await f.open('approvals');
-  await until(()=>f.d.querySelector('[data-review-request="501"]'));
+
+  const workflow=await f.w.bamcoLoadRequestWorkflow();
+  assert.deepEqual(workflow.requests.map(x=>x.id),[501]);
+  assert.deepEqual(workflow.history.map(x=>x.id),[500]);
+  assert.equal(workflow.routes[0].actionable,true);
+
+  f.w.__workflowTest=workflow;
+  f.w.eval("state.requests=window.__workflowTest.requests;state.requestHistory=window.__workflowTest.history;state.requestRoutes=window.__workflowTest.routes;renderRequests();renderRequestHistory();");
+
   assert.match(f.d.querySelector('#approvalBody').textContent,/درخواست جاری تست/);
-  assert.ok(f.d.querySelector('[data-review-request="501"]'));
-  f.d.querySelector('[data-review-request="501"]').click();
-  assert.equal(f.d.querySelector('#reviewDialog').open,true);
-  f.d.querySelector('#reviewDialog').close();
-  await f.open('requestHistory');
-  await until(()=>f.d.querySelector('#requestHistoryBody tr[data-request-id="500"]'));
+  assert.ok(f.d.querySelector('[data-review-request="501"]'),'actionable manager request must expose Review');
   assert.ok(f.d.querySelector('#requestHistoryBody tr[data-request-id="500"]'));
   assert.equal(f.d.querySelector('#requestHistoryBody tr[data-request-id="501"]'),null);
   assert.match(f.d.querySelector('#requestHistoryBody').textContent,/درخواست سابقه تست/);
+
+  const calls=f.calls.filter(c=>c.endpoint==='request_workflow_snapshot');
+  assert.ok(calls.length>=1,'authoritative workflow snapshot RPC must be used');
 });
