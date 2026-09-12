@@ -23,10 +23,10 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           p=Path('index.html'); s=p.read_text(encoding='utf-8')
-          marker='<script defer src="assets/vendor/docx-preview.min.js?v=documents-preview-20260912-1"></script>'
+          marker='<script defer src="assets/vendor/docx-preview.min.js?v=0.3.6"></script>'
           if 'assets/vendor/jszip.min.js' not in s:
               if marker not in s: raise SystemExit('docx vendor marker missing')
-              s=s.replace(marker,'<script defer src="assets/vendor/jszip.min.js?v=documents-preview-20260912-1"></script>\n  '+marker,1)
+              s=s.replace(marker,'<script defer src="assets/vendor/jszip.min.js?v=3.10.1"></script>\n  '+marker,1)
           p.write_text(s,encoding='utf-8')
           p=Path('.github/workflows/e2e-browser-preview.yml'); s=p.read_text(encoding='utf-8')
           old='<script src="/assets/vendor/xlsx.min.js"></script><script src="/assets/vendor/docx-preview.min.js"></script>'
