@@ -13,8 +13,11 @@ test('manager current queue and history render from one authoritative workflow s
   t.after(()=>f.dispose());
 
   const workflow=await f.w.bamcoLoadRequestWorkflow();
-  assert.deepEqual(workflow.requests.map(x=>x.id),[501]);
-  assert.deepEqual(workflow.history.map(x=>x.id),[500]);
+  assert.equal(workflow.requests.length,1);
+  assert.equal(Number(workflow.requests[0].id),501);
+  assert.equal(workflow.history.length,1);
+  assert.equal(Number(workflow.history[0].id),500);
+  assert.equal(workflow.routes.length,1);
   assert.equal(workflow.routes[0].actionable,true);
 
   f.w.__workflowTest=workflow;
