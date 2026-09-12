@@ -43,7 +43,7 @@ edit(p,
      'response report regular buttons')
 edit(p,
      "function responseVisible(){const term=(q('#canonicalResponseSearch')?.value||'').trim().toLocaleLowerCase(),from=inputIso(q('#canonicalResponseFrom')),to=inputIso(q('#canonicalResponseTo'));return responseRows.filter(x=>x.delivery_status!=='cancelled'&&(!from||String(x.sent_at||'').slice(0,10)>=from)&&(!to||String(x.sent_at||'').slice(0,10)<=to)&&(!term||[x.recipient_name,x.recipient_email,x.subject,x.reply_text].some(v=>String(v||'').toLocaleLowerCase().includes(term))))}",
-     "function responseVisible(){const from=inputIso(q('#canonicalResponseFrom')),to=inputIso(q('#canonicalResponseTo'));return responseRows.filter(x=>x.delivery_status!=='cancelled'&&(!from||String(x.sent_at||'').slice(0,10)>=from)&&(!to||String(x.sent_at||'').slice(0,10)<=to)}",
+     "function responseVisible(){const from=inputIso(q('#canonicalResponseFrom')),to=inputIso(q('#canonicalResponseTo'));return responseRows.filter(x=>x.delivery_status!=='cancelled'&&(!from||String(x.sent_at||'').slice(0,10)>=from)&&(!to||String(x.sent_at||'').slice(0,10)<=to))}",
      'response report search logic')
 edit(p,
      '</div><div class="response-search-row"><input id="canonicalResponseSearch" type="search" placeholder="جست‌وجو در گزارش…" aria-label="جست‌وجو در گزارش پاسخ‌ها"></div>`}',
