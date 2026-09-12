@@ -1,5 +1,5 @@
 create or replace function public.reorder_document_categories(p_ids bigint[])
-returns void language plpgsql security definer set search_path='' as $$
+returns void language plpgsql security invoker set search_path='' as $$
 begin
  if not (select private.is_manager()) then raise exception 'فقط مدیر مجاز است';end if;
  if coalesce(cardinality(p_ids),0)=0 then return;end if;
@@ -10,7 +10,7 @@ revoke all on function public.reorder_document_categories(bigint[]) from public,
 grant execute on function public.reorder_document_categories(bigint[]) to authenticated;
 
 create or replace function public.set_site_assignments(p_site_id bigint,p_user_ids uuid[])
-returns void language plpgsql security definer set search_path='' as $$
+returns void language plpgsql security invoker set search_path='' as $$
 declare s public.site_definitions%rowtype;
 begin
  if not (select private.is_manager()) then raise exception 'فقط مدیر مجاز است';end if;
