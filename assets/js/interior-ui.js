@@ -5,8 +5,10 @@
   const excluded=new Set(['homeView','welcomeView']);
   const headings={dashboardView:'داشبورد',templatesView:'متن پیام‌ها',settingsView:'تنظیمات کاربری'};
   const toolbarSelector='.task-toolbar,.vehicle-toolbar,.people-actions,.manager-toolbar,.workspace-actions,.workspace-report-tools,.suite-toolbar,.sticker-toolbar,.message-center-actions,.response-quick,.tt-switch,.desktop-template-fieldset,.bamco-management-toolbar';
+  const ownedCommandSelector='.message-command-row button,.sent-command-row button,.response-command-row button';
   let pending=false,observer;
   const eligible=view=>view?.matches('.workspace > .view')&&!excluded.has(view.id);
+  const ownedBack=view=>[...view.querySelectorAll(ownedCommandSelector)].find(button=>button.textContent.replace(/\s+/g,' ').trim()==='بازگشت به خانه')||null;
   function decorateView(view){
     if(!eligible(view))return;
     view.classList.add('bamco-interior');
@@ -20,29 +22,38 @@
     }
     if(view.firstElementChild!==head)view.prepend(head);
     const h=head.querySelector('h3');if(h.textContent!==title)h.textContent=title;
+    const commandBack=ownedBack(view);
     let managementBar=null;
     if(eligible(view)){
-      managementBar=[...view.querySelectorAll(toolbarSelector)].find(bar=>!bar.closest('form,dialog,details')&&!bar.matches('.workspace-actions'));
-      if(!managementBar){
-        managementBar=document.createElement('div');managementBar.className='bamco-management-toolbar';
-        const panel=view.querySelector(':scope>.panel');
-        if(panel)panel.prepend(managementBar);else head.after(managementBar);
+      if(commandBack){
+        view.querySelectorAll('.bamco-management-toolbar').forEach(bar=>bar.remove());
+      }else{
+        managementBar=[...view.querySelectorAll(toolbarSelector)].find(bar=>!bar.closest('form,dialog,details')&&!bar.matches('.workspace-actions'));
+        if(!managementBar){
+          managementBar=document.createElement('div');managementBar.className='bamco-management-toolbar';
+          const panel=view.querySelector(':scope>.panel');
+          if(panel)panel.prepend(managementBar);else head.after(managementBar);
+        }
+        managementBar.classList.add('bamco-command-bar');
+        const nativeHead=view.querySelector('.panel-head,.vehicle-panel-head,.tt-head');
+        nativeHead?.querySelectorAll(':scope>.workspace-actions>button,:scope>button').forEach(button=>managementBar.append(button));
+        [...(nativeHead?.children||[])].filter(child=>child!==managementBar&&!child.contains(managementBar)&&child.matches('div')&&!child.querySelector('h1,h2,h3,p,small')&&child.querySelector('button,a,input,select')).forEach(group=>{
+          [...group.children].forEach(control=>managementBar.append(control));group.remove();
+        });
       }
-      managementBar.classList.add('bamco-command-bar');
-      const nativeHead=view.querySelector('.panel-head,.vehicle-panel-head,.tt-head');
-      nativeHead?.querySelectorAll(':scope>.workspace-actions>button,:scope>button').forEach(button=>managementBar.append(button));
-      [...(nativeHead?.children||[])].filter(child=>child!==managementBar&&!child.contains(managementBar)&&child.matches('div')&&!child.querySelector('h1,h2,h3,p,small')&&child.querySelector('button,a,input,select')).forEach(group=>{
-        [...group.children].forEach(control=>managementBar.append(control));group.remove();
-      });
       view.querySelectorAll('[data-empty-home]').forEach(button=>button.remove());
     }
-    let back=view.querySelector('.content-back');
-    if(!back){back=document.createElement('button');back.type='button';back.className='content-back ghost';back.textContent='بازگشت به خانه';back.addEventListener('click',()=>window.bamcoShowHome?.())}
-    const backHost=managementBar||head;
-    if(backHost.firstElementChild!==back)backHost.prepend(back);
-    back.style.order='-100';
-    if(managementBar&&head.nextElementSibling!==managementBar)head.after(managementBar);
-    view.querySelectorAll('.content-back').forEach(b=>{if(b!==back)b.remove()});
+    if(commandBack){
+      view.querySelectorAll('.content-back').forEach(button=>{if(button!==commandBack)button.remove()});
+    }else{
+      let back=view.querySelector('.content-back');
+      if(!back){back=document.createElement('button');back.type='button';back.className='content-back ghost';back.textContent='بازگشت به خانه';back.addEventListener('click',()=>window.bamcoShowHome?.())}
+      const backHost=managementBar||head;
+      if(backHost.firstElementChild!==back)backHost.prepend(back);
+      back.style.order='-100';
+      if(managementBar&&head.nextElementSibling!==managementBar)head.after(managementBar);
+      view.querySelectorAll('.content-back').forEach(button=>{if(button!==back)button.remove()});
+    }
     view.querySelectorAll(':scope > .content-actions').forEach(b=>{if(!b.querySelector('button,a,input,select'))b.remove()});
     if(source){
       source.classList.add('bamco-source-title');
