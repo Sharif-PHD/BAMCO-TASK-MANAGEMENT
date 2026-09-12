@@ -167,3 +167,20 @@ test('DOCX preview loads local JSZip before docx-preview',()=>{
   assert.ok(zip>=0&&docx>zip);
   assert.ok(fs.statSync(path.join(ROOT,'assets/vendor/jszip.min.js')).size>10000);
 });
+
+test('PDF preview retrieves authenticated bytes, normalizes MIME and rejects non-PDF responses',async()=>{
+ const dom=new JSDOM('<nav id="nav"></nav><div class="workspace"></div>',{url:'https://example.test/',runScripts:'outside-only'}),w=dom.window,calls=[],blobs=[];
+ let payload='%PDF-1.7\nfixture';
+ Object.assign(w,{Blob,TextDecoder,state:{token:'test-token',profile:{role:'manager',active:true}},SB_URL:'https://example.supabase.co',SB_KEY:'test',titles:{},toast:()=>{},selectAll:async t=>t==='document_categories'?[{id:1,title:'Forms'}]:[{id:1,category_id:1,title:'PDF',original_file_name:'form.pdf',storage_path:'private/form.pdf',mime_type:'application/pdf',file_size:100,version:1}],fetch:async(url,options)=>{calls.push({url,options});return{ok:true,blob:async()=>new Blob([payload],{type:'application/octet-stream'})}}});
+ w.URL.createObjectURL=b=>{blobs.push(b);return 'blob:https://example.test/pdf'};w.URL.revokeObjectURL=()=>{};
+ w.HTMLDialogElement.prototype.showModal=function(){this.open=true};
+ w.eval(fs.readFileSync(featurePath,'utf8'));
+ try{
+  await w.bamcoDocumentsSites.refreshDocuments();w.document.querySelector('[data-doc-preview]').click();await new Promise(r=>setTimeout(r,20));
+  assert.match(calls[0].url,/object\/authenticated\/documents-private/);assert.equal(calls[0].options.headers.Authorization,'Bearer test-token');
+  assert.equal(blobs[0].type,'application/pdf');assert.equal(w.document.querySelector('.feature-pdf-preview').src,'blob:https://example.test/pdf');
+  assert.equal(w.document.querySelector('#documentPreviewOpenTab').disabled,false);
+  payload='{"error":"not a PDF"}';w.document.querySelector('[data-doc-preview]').click();await new Promise(r=>setTimeout(r,20));
+  assert.equal(w.document.querySelector('.feature-pdf-preview'),null);assert.match(w.document.querySelector('#documentPreviewBody').textContent,/PDF معتبر نیست/);
+ }finally{w.close()}
+});
