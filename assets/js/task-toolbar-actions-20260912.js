@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
-if(window.__bamcoTaskToolbarActions20260912V1)return;
-window.__bamcoTaskToolbarActions20260912V1=true;
+if(window.__bamcoTaskToolbarActions20260912V2)return;
+window.__bamcoTaskToolbarActions20260912V2=true;
 
 const q=(s,r=document)=>r?.querySelector?.(s)||null;
 const qa=(s,r=document)=>[...(r?.querySelectorAll?.(s)||[])];
@@ -24,12 +24,20 @@ function selectedTask(scope){
   const ids=selectedIds(scope);if(ids.length!==1)return null;
   return (state?.tasks||[]).find(task=>String(task.id)===ids[0])||null;
 }
+function syncSelectionMarker(scope,ids){
+  const body=q(config[scope]?.body);if(!body)return;
+  const chosen=new Set(ids.map(String));
+  qa('tr[data-task-id]',body).forEach(row=>{
+    const yes=chosen.has(String(row.dataset.taskId));
+    if(row.classList.contains('task-selected')!==yes)row.classList.toggle('task-selected',yes);
+  });
+}
 function sync(scope){
-  const count=selectedIds(scope).length;
+  const ids=selectedIds(scope);syncSelectionMarker(scope,ids);const count=ids.length;
   const edit=q(config[scope].edit),secondary=q(config[scope].secondary);
   if(edit)edit.disabled=count!==1;
   if(secondary)secondary.disabled=count!==1;
-  if(typeof state!=='undefined'&&state?.selected)state.selected[scope]=count===1?Number(selectedIds(scope)[0]):null;
+  if(typeof state!=='undefined'&&state?.selected)state.selected[scope]=count===1?Number(ids[0]):null;
 }
 function syncAll(){sync('kanban');sync('archive')}
 function openEditor(task){
