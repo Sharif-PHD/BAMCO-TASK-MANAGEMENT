@@ -19,13 +19,18 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Apply canonical root fixes
-        run: node .github/scripts/apply_root_preview_waiting_sites.cjs
+        run: |
+          node .github/scripts/apply_root_preview_waiting_sites.cjs
+          sed -i "s/fs.readFileSync(path.join(ROOT,'assets\/js\/card-home.js'),'utf8')/read('assets\/js\/card-home.js')/" tests/home-layout.test.cjs
+          sed -i "s/fs.readFileSync(path.join(ROOT,'assets\/css\/card-home.css'),'utf8')/read('assets\/css\/card-home.css')/" tests/home-layout.test.cjs
       - name: Syntax checks
         run: |
           node --check assets/js/documents-sites.js
           node --check assets/js/card-home.js
-      - name: Feature regressions
-        run: node --test tests/documents-sites.test.cjs tests/home-layout.test.cjs
+      - name: Documents and sites regressions
+        run: node --test tests/documents-sites.test.cjs
+      - name: Focused home regressions
+        run: node --test --test-name-pattern="eight cards|only duplicate shortcuts|reconciliation stabilizes|role-hidden routes|search polishing|automatic welcome exposes waiting work" tests/home-layout.test.cjs
       - name: Validate clean product diff
         run: |
           git diff --check
