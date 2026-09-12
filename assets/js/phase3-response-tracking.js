@@ -6,7 +6,8 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const digits=v=>typeof fa==='function'?fa(v):String(v??'').replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);
 const labels={replied:'پاسخ داده',awaiting:'بدون پاسخ',failed:'خطای ارسال',reminder_needed:'نیازمند یادآوری'};
 const channels={portal:'داخل سامانه',email:'ایمیل',both:'هر دو'};
-let rows=[],selected=new Set(),sending=false,loading=false,dateTarget=null;
+let rows=[],selected=new Set(),sending=false,loading=false,dateTarget=null,preparedReminder=null;
+const eligible=r=>r&&r.response_status!=='replied'&&!r.replied_at&&r.delivery_status!=='cancelled';
 
 function currentMonthRange(){
   try{
@@ -56,21 +57,21 @@ function install(){
   ensureStyles();
   const btn=document.createElement('button');btn.dataset.view='responseTracking';btn.className='manager-only';btn.innerHTML='<b>↩</b><span>پیگیری پاسخ</span>';(anchor?.parentElement||q('#nav'))?.insertBefore(btn,anchor||null);
   const range=currentMonthRange();
-  workspace.insertAdjacentHTML('beforeend',`<section id="responseTrackingView" class="view hidden manager-only"><div class="panel table-panel response-tracking"><div class="panel-head"><div><h3>پیگیری پاسخ‌ها</h3><small>پاسخ هر فرد در کنار همان پیام ارسالی نمایش داده می‌شود.</small></div></div><div class="response-command-row"><button type="button" class="ghost" data-response-home>بازگشت به خانه</button><div class="response-date-controls"><label><span>از تاریخ</span><span class="response-date-field"><input id="responseFrom" class="jalali-input" readonly value="${esc(range.fromText)}"><button type="button" class="ghost" data-response-tracking-date="from" aria-label="انتخاب تاریخ شروع">▦</button></span></label><label><span>تا تاریخ</span><span class="response-date-field"><input id="responseTo" class="jalali-input" readonly value="${esc(range.toText)}"><button type="button" class="ghost" data-response-tracking-date="to" aria-label="انتخاب تاریخ پایان">▦</button></span></label></div><button type="button" class="ghost" data-response-refresh>تازه‌سازی</button><button type="button" class="ghost" data-response-export>خروجی اکسل</button><select id="reminderSendChannel" aria-label="کانال یادآوری"><option value="portal">داخل سامانه</option><option value="email">ایمیل</option><option value="both">هر دو</option></select><button id="sendResponseReminder" type="button" class="primary">ارسال یادآوری</button></div><div class="table-wrap"><table class="workspace-table"><thead><tr><th>شناسه</th><th>فرد</th><th>تاریخ ارسال</th><th>کانال</th><th>موضوع</th><th>پاسخ</th><th>تاریخ پاسخ</th><th>تعداد یادآوری</th></tr></thead><tbody id="responseTrackingBody"></tbody></table></div></div></section>`);
+  workspace.insertAdjacentHTML('beforeend',`<section id="responseTrackingView" class="view hidden manager-only"><div class="panel table-panel response-tracking"><div class="panel-head"><div><h3>پیگیری پاسخ‌ها</h3><small>پاسخ هر فرد در کنار همان پیام ارسالی نمایش داده می‌شود.</small></div></div><div class="response-command-row"><button type="button" class="ghost" data-response-home>بازگشت به خانه</button><div class="response-date-controls"><label><span>از تاریخ</span><span class="response-date-field"><input id="responseFrom" class="jalali-input" readonly value="${esc(range.fromText)}"><button type="button" class="ghost" data-response-tracking-date="from" aria-label="انتخاب تاریخ شروع">▦</button></span></label><label><span>تا تاریخ</span><span class="response-date-field"><input id="responseTo" class="jalali-input" readonly value="${esc(range.toText)}"><button type="button" class="ghost" data-response-tracking-date="to" aria-label="انتخاب تاریخ پایان">▦</button></span></label></div><button type="button" class="ghost" data-response-refresh>تازه‌سازی</button><button type="button" class="ghost" data-response-export>خروجی اکسل</button><select id="reminderSendChannel" aria-label="کانال یادآوری"><option value="portal">داخل سامانه</option><option value="email">ایمیل</option><option value="both">هر دو</option></select><button id="sendResponseReminder" type="button" class="primary">ارسال یادآوری</button></div><div class="table-wrap"><table class="workspace-table"><thead><tr><th>شناسه</th><th>فرد</th><th>تاریخ ارسال</th><th>کانال</th><th>موضوع</th><th>پاسخ</th><th>تاریخ پاسخ</th><th>تعداد یادآوری</th><th>آخرین یادآوری</th></tr></thead><tbody id="responseTrackingBody"></tbody></table></div></div></section>`);
   btn.onclick=()=>{if(typeof showView==='function')showView('responseTracking');setTimeout(()=>void load(),0)};
   qa('#responseFrom,#responseTo').forEach(x=>x.addEventListener('input',()=>{selected.clear();render()}));
   q('#sendResponseReminder').onclick=sendReminder;
   q('[data-response-home]').onclick=()=>window.bamcoShowHome?.();
   q('[data-response-refresh]').onclick=()=>void load(true);
   q('[data-response-export]').onclick=exportVisible;
-  q('#responseTrackingBody').onclick=e=>{if(e.target.closest('button,input,select'))return;const tr=e.target.closest('[data-delivery]');if(!tr)return;selected.has(tr.dataset.delivery)?selected.delete(tr.dataset.delivery):selected.add(tr.dataset.delivery);render()};
+  q('#responseTrackingBody').onclick=e=>{if(e.target.closest('button,input,select'))return;const tr=e.target.closest('[data-delivery]');if(!tr||sending||!eligible(rows.find(x=>String(x.delivery_id)===tr.dataset.delivery)))return;selected.has(tr.dataset.delivery)?selected.delete(tr.dataset.delivery):selected.add(tr.dataset.delivery);render()};
   qa('[data-response-tracking-date]').forEach(b=>b.onclick=e=>{e.preventDefault();openDate(b.dataset.responseTrackingDate)});
 }
 function render(){
   const list=filtered(),body=q('#responseTrackingBody');if(!body)return;
-  const valid=new Set(list.map(x=>String(x.delivery_id)));selected=new Set([...selected].filter(id=>valid.has(id)));
-  body.innerHTML=list.map(x=>`<tr data-delivery="${esc(x.delivery_id)}" class="${selected.has(String(x.delivery_id))?'suite-selected':''}" aria-selected="${selected.has(String(x.delivery_id))}"><td>${digits(x.delivery_id)}</td><td>${esc(x.recipient_name||x.recipient_email||'—')}</td><td>${esc(x.sent_at?jalaliDateTime(x.sent_at):'—')}</td><td>${esc(channels[x.channel]||x.channel||'—')}</td><td>${esc(x.subject||'—')}</td><td class="response-${esc(x.response_status||'')}">${esc(labels[x.response_status]||x.response_status||'—')}</td><td>${esc(x.replied_at?jalaliDateTime(x.replied_at):'—')}</td><td>${digits(x.reminder_count||0)}</td></tr>`).join('')||'<tr><td colspan="8" class="empty">ارسالی مطابق فیلترها وجود ندارد.</td></tr>';
-  const send=q('#sendResponseReminder');if(send)send.disabled=sending||![...selected].some(id=>{const r=rows.find(x=>String(x.delivery_id)===id);return r&&r.response_status!=='replied'});
+  const valid=new Set(list.filter(eligible).map(x=>String(x.delivery_id)));selected=new Set([...selected].filter(id=>valid.has(id)));
+  body.innerHTML=list.map(x=>`<tr data-delivery="${esc(x.delivery_id)}" class="${selected.has(String(x.delivery_id))?'suite-selected':''}" aria-selected="${selected.has(String(x.delivery_id))}"><td>${digits(x.delivery_id)}</td><td>${esc(x.recipient_name||x.recipient_email||'—')}</td><td>${esc(x.sent_at?jalaliDateTime(x.sent_at):'—')}</td><td>${esc(channels[x.channel]||x.channel||'—')}</td><td>${esc(x.subject||'—')}</td><td class="response-${esc(x.response_status||'')}">${esc(labels[x.response_status]||x.response_status||'—')}</td><td>${esc(x.replied_at?jalaliDateTime(x.replied_at):'—')}</td><td>${digits(x.reminder_count||0)}</td><td>${esc(x.last_reminded_at?jalaliDateTime(x.last_reminded_at):'—')}</td></tr>`).join('')||'<tr><td colspan="9" class="empty">ارسالی مطابق فیلترها وجود ندارد.</td></tr>';
+  const send=q('#sendResponseReminder');if(send)send.disabled=sending||![...selected].some(id=>{const r=rows.find(x=>String(x.delivery_id)===id);return eligible(r)});
 }
 async function load(force=false){
   if(!isManager()||loading&&!force)return;loading=true;const refresh=q('[data-response-refresh]');if(refresh)refresh.disabled=true;
@@ -88,20 +89,57 @@ async function exportVisible(){
   }catch(err){toast(err.message,true)}finally{if(button)button.disabled=false}
 }
 async function sendReminder(){
-  if(sending)return;const ids=[...selected].map(Number),items=rows.filter(x=>ids.includes(Number(x.delivery_id))&&x.response_status!=='replied'&&x.delivery_status!=='cancelled');
+  if(sending)return;
+  const items=rows.filter(x=>selected.has(String(x.delivery_id))&&eligible(x));
   if(!items.length)return toast('حداقل یک ارسال بدون پاسخ را انتخاب کنید.',true);
-  const recipients=[...new Set(items.map(x=>x.recipient_id).filter(Boolean))],channel=q('#reminderSendChannel').value,channelMap=Object.fromEntries(recipients.map(id=>[id,channel]));
+  const channel=q('#reminderSendChannel').value;
+  if(channel!=='portal'){
+    const missing=items.filter(x=>!String(x.recipient_email||'').trim());
+    if(missing.length)return toast(`برای ${[...new Set(missing.map(x=>x.recipient_name))].join('، ')} ایمیل ثبت نشده است.`,true);
+  }
   sending=true;render();
   try{
-    const bid=await rpc('prepare_workflow_messages',{p_recipient_ids:recipients,p_channels:channelMap,p_subject:'یادآوری پاسخ به پیام',p_template_text:null,p_kind:'reminder',p_report_date:new Intl.DateTimeFormat('fa-IR',{dateStyle:'full',timeZone:'Asia/Tehran'}).format(new Date())});
-    await rpc('queue_message_batch',{p_batch_id:bid});
-    if(['email','both'].includes(channel)){
-      const response=await fetch(`${SB_URL}/functions/v1/send-message-queue`,{method:'POST',headers:{apikey:SB_KEY,Authorization:`Bearer ${state.token}`,'Content-Type':'application/json'},body:JSON.stringify({batch_id:bid})}),result=await response.json().catch(()=>({}));
-      if(!response.ok||result.failed||result.pending||result.errors?.length)throw new Error(result.error||result.errors?.map(x=>x.message).join('؛ ')||'ارسال ایمیل یادآوری ناموفق بود.');
+    const ids=items.map(x=>x.delivery_id),key=JSON.stringify([ids.map(String).sort(),channel]);
+    if(!preparedReminder||preparedReminder.key!==key)preparedReminder={key,ids,channel,requestId:crypto.randomUUID()};
+    const bid=await rpc('prepare_message_reminders',{p_delivery_ids:ids,p_channel:channel,p_request_id:preparedReminder.requestId});
+    preparedReminder.id=bid;
+    const snapshots=await selectAll('message_snapshots',`select=*&batch_id=eq.${bid}&order=id`);
+    if(!snapshots.length)throw Error('پیش‌نمایش یادآوری ساخته نشد.');
+    if(!q('#reminderPreviewDialog')){
+      document.body.insertAdjacentHTML('beforeend','<dialog id="reminderPreviewDialog" class="modal bamco-dialog" dir="rtl"><div class="modal-head"><h3>پیش‌نمایش یادآوری</h3></div><div id="reminderPreviewContent"></div><p id="reminderResult" role="status" style="white-space:pre-wrap"></p><div class="modal-actions"><button id="cancelReminderPreview" type="button" class="ghost">بستن</button><button id="confirmReminderSend" type="button" class="primary">تأیید و ارسال</button></div></dialog>');
+      q('#cancelReminderPreview').onclick=()=>{if(!sending)q('#reminderPreviewDialog').close()};
+      q('#reminderPreviewDialog').addEventListener('cancel',e=>{if(sending)e.preventDefault()});
+      q('#confirmReminderSend').onclick=confirmReminder;
     }
-    await rpc('mark_message_reminders',{p_delivery_ids:items.map(x=>Number(x.delivery_id))});selected.clear();toast(`یادآوری برای ${digits(recipients.length)} نفر ثبت شد.`);await load(true);
+    q('#reminderResult').textContent='';
+    q('#reminderPreviewContent').innerHTML=snapshots.map(s=>`<section><h4>${esc(s.recipient_name)}</h4><p>کانال: ${esc(channels[channel])}</p><div style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(s.final_text)}</div></section>`).join('<hr>');
+    q('#confirmReminderSend').disabled=false;q('#reminderPreviewDialog').showModal();
   }catch(err){toast(err.message,true)}finally{sending=false;render()}
 }
+async function confirmReminder(){
+  if(sending||!preparedReminder?.id)return;
+  sending=true;render();q('#confirmReminderSend').disabled=true;
+  const pending=preparedReminder;let error='';
+  try{
+    await rpc('queue_message_batch',{p_batch_id:pending.id});
+    if(pending.channel!=='portal'){
+      const response=await fetch(`${SB_URL}/functions/v1/send-message-queue`,{method:'POST',headers:{apikey:SB_KEY,Authorization:`Bearer ${state.token}`,'Content-Type':'application/json'},body:JSON.stringify({batch_id:pending.id})});
+      const result=await response.json().catch(()=>({}));
+      if(!response.ok||result.failed||result.pending||result.errors?.length)error=result.error||result.errors?.map(x=>x.message).join('؛ ')||'برخی ارسال‌ها هنوز تکمیل نشده‌اند.';
+    }
+  }catch(err){error=err.message}
+  try{
+    const deliveries=await selectAll('message_deliveries',`select=id,recipient_id,channel,status,error_message&batch_id=eq.${pending.id}&order=id`);
+    const ok=deliveries.filter(d=>['sent','delivered'].includes(d.status)),failed=deliveries.filter(d=>d.status==='failed'),waiting=deliveries.filter(d=>!['sent','delivered','failed','cancelled'].includes(d.status));
+    q('#reminderResult').textContent=`${digits(ok.length)} ارسال موفق؛ ${digits(failed.length)} ناموفق؛ ${digits(waiting.length)} در انتظار تکمیل\n`+deliveries.map(d=>`${rows.find(r=>r.recipient_id===d.recipient_id)?.recipient_name||d.recipient_id} — ${channels[d.channel]}: ${['sent','delivered'].includes(d.status)?'موفق':d.error_message||d.status}`).join('\n')+(error?'\n'+error:'');
+    if(deliveries.length&&ok.length===deliveries.length){selected.clear();preparedReminder=null;toast('یادآوری ارسال شد.');}
+    // Retry reuses the same batch: successful channels are never resent.
+    q('#confirmReminderSend').textContent='بررسی / تلاش مجدد همین ارسال';
+    q('#confirmReminderSend').disabled=!preparedReminder;
+  }catch(err){q('#reminderResult').textContent=(error?error+'\n':'')+'دریافت نتیجه ناموفق: '+err.message;q('#confirmReminderSend').disabled=false;}
+  finally{await load(true);sending=false;render()}
+}
+
 function openDate(kind){
   const input=q(kind==='from'?'#responseFrom':'#responseTo'),dialog=q('#calendarDialog');if(!input||!dialog)return;
   dateTarget={kind,input};const now=currentJalali(),raw=String(input.value||'').replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)),m=raw.match(/\d+/g)?.map(Number),p=m?.length===3?{y:m[0],m:m[1],d:m[2]}:now;
