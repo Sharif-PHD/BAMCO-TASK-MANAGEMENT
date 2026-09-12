@@ -35,6 +35,7 @@ jobs:
           p.write_text(s,encoding='utf-8')
           p=Path('tests/documents-sites.test.cjs'); s=p.read_text(encoding='utf-8')
           s=s.replace("assert.match(src,/role!==\"manager\"/);","assert.match(src,/role\\s*!==\\s*\"manager\"/);")
+          s=s.replace("assert.match(src,/await deleteObjects\\(url,service,\\[path\\]\\)\\.catch/);","assert.match(src,/await\\s+deleteObjects\\(url,\\s*service,\\s*\\[path\\]\\)\\.catch/);")
           if "DOCX preview loads local JSZip before docx-preview" not in s:
               s += "\n\ntest('DOCX preview loads local JSZip before docx-preview',()=>{\n  const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');\n  const zip=html.indexOf('assets/vendor/jszip.min.js'),docx=html.indexOf('assets/vendor/docx-preview.min.js');\n  assert.ok(zip>=0&&docx>zip);\n  assert.ok(fs.statSync(path.join(ROOT,'assets/vendor/jszip.min.js')).size>10000);\n});\n"
           else:
