@@ -1,8 +1,8 @@
-name: Fix task row deselection root v3
+name: Approval workflow root fix validation
 
 on:
   push:
-    branches: [main]
+    branches: [approval-workflow-root-fix-20260912]
     paths:
       - '.github/workflows/fix-task-row-deselect-root-v3.yml'
 
@@ -10,83 +10,142 @@ permissions:
   contents: write
 
 jobs:
-  patch:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - name: Patch canonical selection state
+        with:
+          fetch-depth: 0
+
+      - name: Patch frontend to authoritative workflow snapshot
         shell: bash
         run: |
+          set -euo pipefail
           python - <<'PY'
           from pathlib import Path
-          app=Path('assets/js/app.js')
-          s=app.read_text()
-          old="function chooseTask(scope,id){state.selected[scope]=Number(id);renderTasks(scope==='archive')}"
-          new="function chooseTask(scope,id){const next=String(state.selected[scope])===String(id)?null:Number(id);state.selected[scope]=next;renderTasks(scope==='archive')}"
-          assert old in s
-          s=s.replace(old,new,1)
-          old2="""  chooseTask=function(scope,id){
-    state.selected[scope]=Number(id);
-    const body=scope==='archive'?qs('#archiveBody'):qs('#kanbanBody');
-    if(body){
-      qsa('tr.task-selected',body).forEach(row=>{row.classList.remove('task-selected');row.setAttribute('aria-selected','false')});
-      const row=qsa('tr[data-task-id]',body).find(r=>String(r.dataset.taskId)===String(id));
-      if(row){row.classList.add('task-selected');row.setAttribute('aria-selected','true')}
-    }
-    updateTaskToolbar(scope);
-  };"""
-          new2="""  chooseTask=function(scope,id){
-    const next=String(state.selected[scope])===String(id)?null:Number(id);
-    state.selected[scope]=next;
-    const body=scope==='archive'?qs('#archiveBody'):qs('#kanbanBody');
-    if(body){
-      qsa('tr.task-selected',body).forEach(row=>{row.classList.remove('task-selected');row.setAttribute('aria-selected','false')});
-      if(next!==null){const row=qsa('tr[data-task-id]',body).find(r=>String(r.dataset.taskId)===String(id));if(row){row.classList.add('task-selected');row.setAttribute('aria-selected','true')}}
-    }
-    updateTaskToolbar(scope);
-  };"""
-          assert old2 in s
-          s=s.replace(old2,new2,1)
-          app.write_text(s)
+          import re
 
-          bulk=Path('assets/js/task-bulk-delete-20260912.js')
-          b=bulk.read_text()
-          assert 'if(window.__bamcoTaskBulkDelete20260912V4)return;' in b
-          b=b.replace('if(window.__bamcoTaskBulkDelete20260912V4)return;\nwindow.__bamcoTaskBulkDelete20260912V4=true;', 'if(window.__bamcoTaskBulkDelete20260912V6)return;\nwindow.__bamcoTaskBulkDelete20260912V6=true;\nwindow.__bamcoTaskBulkDelete20260912V5=true;\nwindow.__bamcoTaskBulkDelete20260912V4=true;',1)
-          marker='const lastPicked={kanban:null,archive:null};\nlet deleting=false;'
-          assert marker in b
-          b=b.replace(marker,'const lastPicked={kanban:null,archive:null};\nconst seeded={kanban:false,archive:false};\nlet deleting=false;',1)
-          old3="if(picked[scope].size===0&&typeof state!=='undefined'&&state?.selected?.[scope]!=null&&visible.has(String(state.selected[scope])))picked[scope].add(String(state.selected[scope]));"
-          assert old3 in b
-          b=b.replace(old3,"if(!seeded[scope]){if(picked[scope].size===0&&typeof state!=='undefined'&&state?.selected?.[scope]!=null&&visible.has(String(state.selected[scope])))picked[scope].add(String(state.selected[scope]));seeded[scope]=true;}",1)
-          bulk.write_text(b)
+          def exact(path, old, new, label):
+              p=Path(path); s=p.read_text(); n=s.count(old)
+              if n != 1: raise RuntimeError(f'{label}: expected 1 match, got {n}')
+              p.write_text(s.replace(old,new,1))
 
-          loader=Path('assets/js/avatar-final-20260911.js')
-          l=loader.read_text().replace('task-bulk-delete-20260912.js?v=20260912-5','task-bulk-delete-20260912.js?v=20260912-6')
-          l=l.replace('final-production-fixes-20260911.js?v=task-filter-repair-20260912-1','final-production-fixes-20260911.js?v=task-row-deselect-root-20260912-2')
-          loader.write_text(l)
+          def rex(path, pattern, new, label):
+              p=Path(path); s=p.read_text(); out,n=re.subn(pattern,new,s,count=1,flags=re.S)
+              if n != 1: raise RuntimeError(f'{label}: expected 1 match, got {n}')
+              p.write_text(out)
 
-          index=Path('index.html')
-          h=index.read_text().replace('assets/js/app.js?v=task-filter-repair-20260912-1','assets/js/app.js?v=task-row-deselect-root-20260912-2')
-          h=h.replace('assets/js/avatar-final-20260911.js?v=task-row-deselect-20260912-1','assets/js/avatar-final-20260911.js?v=task-row-deselect-root-20260912-2')
-          index.write_text(h)
+          app='assets/js/app.js'
+          exact(app,
+              "const isManager=()=>state.profile?.role==='manager';\nfunction toast(message,error=false){return window.bamcoNotice(message,{error})}",
+              """const isManager=()=>state.profile?.role==='manager';
+window.bamcoLoadRequestWorkflow=async function(){
+  try{
+    const snapshot=await rpc('request_workflow_snapshot',{});
+    if(!snapshot||typeof snapshot!=='object'||Array.isArray(snapshot)||!Array.isArray(snapshot.current_requests)||!Array.isArray(snapshot.history_requests)||!Array.isArray(snapshot.routes))throw new Error('workflow snapshot unavailable');
+    return{requests:snapshot.current_requests,history:snapshot.history_requests,routes:snapshot.routes};
+  }catch(error){
+    const actor=state.user?.id,manager=isManager();
+    const requestFilter=manager?'select=*&request_status=in.(pending,in_review,needs_revision)&order=created_at.asc':`select=*&requested_by=eq.${actor}&request_status=in.(pending,in_review,needs_revision)&order=created_at.asc`;
+    const historyFilter=manager?'select=*&request_status=in.(approved,rejected,cancelled)&order=created_at.desc':`select=*&requested_by=eq.${actor}&request_status=in.(approved,rejected,cancelled)&order=created_at.desc`;
+    const [all,routes,history]=await Promise.all([selectAll('change_requests',requestFilter),rpc('request_routing_status',{}).catch(()=>[]),selectAll('change_requests',historyFilter)]);
+    const routeById=new Map((routes||[]).map(x=>[String(x.request_id),x]));
+    return{requests:manager?all.filter(r=>routeById.get(String(r.id))?.actionable):all,history,routes:routes||[]};
+  }
+};
+function toast(message,error=false){return window.bamcoNotice(message,{error})}""",
+              'workflow loader')
+
+          rex(app,
+              r"    state\.requests=await select\('change_requests'.*?    state\.requestRoutes=await rpc\('request_routing_status',\{\}\)\.catch\(\(\)=>\[\]\);\n    renderAll\(\);",
+              """    const workflow=await window.bamcoLoadRequestWorkflow();
+    state.requests=workflow.requests;state.requestHistory=workflow.history;state.requestRoutes=workflow.routes;
+    renderAll();""",
+              'refresh workflow snapshot')
+
+          sync='assets/js/request-sync.js'
+          rex(sync,
+              r"   const requestFilter=isManager\(\)\?.*?   const \[requests,routes,history\]=await Promise\.all\(\[\n    selectAll\('change_requests',requestFilter\),\n    rpc\('request_routing_status',\{\}\)\.catch\(\(\)=>state\.requestRoutes\|\|\[\]\),\n    selectAll\('change_requests',historyFilter\)\n   \]\);",
+              """   const workflow=await window.bamcoLoadRequestWorkflow();
+   const requests=workflow.requests,routes=workflow.routes,history=workflow.history;""",
+              'request sync single snapshot')
+
+          index='index.html'
+          exact(index,'assets/js/app.js?v=ui-toolbar-cleanup-20260912-1','assets/js/app.js?v=approval-workflow-root-20260912-1','app cache')
+          exact(index,'assets/js/request-sync.js?v=approval-sync-20260910-1','assets/js/request-sync.js?v=approval-workflow-root-20260912-1','sync cache')
           PY
-      - name: Verify source invariants
+
+      - name: Syntax checks
+        run: |
+          node --check assets/js/app.js
+          node --check assets/js/request-sync.js
+
+      - name: Install test dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Run request workflow UI regression
         shell: bash
         run: |
-          grep -q '__bamcoTaskBulkDelete20260912V6' assets/js/task-bulk-delete-20260912.js
-          grep -q 'const seeded={kanban:false,archive:false}' assets/js/task-bulk-delete-20260912.js
-          grep -q 'task-bulk-delete-20260912.js?v=20260912-6' assets/js/avatar-final-20260911.js
-          grep -q 'app.js?v=task-row-deselect-root-20260912-2' index.html
+          set -euo pipefail
           python - <<'PY'
           from pathlib import Path
-          s=Path('assets/js/app.js').read_text()
-          assert s.count("const next=String(state.selected[scope])===String(id)?null:Number(id)") >= 2
+          p=Path('tests/helpers/app-fixture.cjs');s=p.read_text();marker="  w.HTMLElement.prototype.scrollTo=function(){};w.confirm=()=>true;"
+          if marker in s:s=s.replace(marker,"  w.scrollTo=function(){};w.HTMLElement.prototype.scrollTo=function(){};w.confirm=()=>true;",1)
+          p.write_text(s)
           PY
-      - name: Commit and push
+          cat > tests/request-workflow-snapshot-temp.test.cjs <<'JS'
+          const test=require('node:test');
+          const assert=require('node:assert/strict');
+          const {fixture,until}=require('./helpers/app-fixture.cjs');
+
+          test('manager current queue and history render from one authoritative workflow snapshot',async t=>{
+            const now=new Date().toISOString();
+            const snapshot={
+              current_requests:[{id:501,request_type:'create',request_status:'in_review',current_stage:2,requested_by:'test-owner',task_id:null,created_at:now,proposed_data:{title:'درخواست جاری تست',priority:'متوسط'}}],
+              history_requests:[{id:500,request_type:'create',request_status:'approved',current_stage:2,requested_by:'test-owner',task_id:null,created_at:now,reviewed_at:now,manager_note:'تأیید شد',proposed_data:{title:'درخواست سابقه تست'}}],
+              routes:[{request_id:501,stage_no:2,stage_title:'تأیید مدیریت',approver_names:'مدیر آزمایشی',actionable:true}]
+            };
+            const f=await fixture({fetchResult:({endpoint})=>endpoint==='request_workflow_snapshot'?snapshot:undefined});t.after(()=>f.dispose());
+            await f.open('approvals');await until(()=>f.d.querySelector('[data-review-request="501"]'));
+            assert.match(f.d.querySelector('#approvalBody').textContent,/درخواست جاری تست/);
+            assert.ok(f.d.querySelector('[data-review-request="501"]'));
+            f.d.querySelector('[data-review-request="501"]').click();
+            assert.equal(f.d.querySelector('#reviewDialog').open,true);
+            f.d.querySelector('#reviewDialog').close();
+            await f.open('requestHistory');await until(()=>f.d.querySelector('#requestHistoryBody tr[data-request-id="500"]'));
+            assert.ok(f.d.querySelector('#requestHistoryBody tr[data-request-id="500"]'));
+            assert.equal(f.d.querySelector('#requestHistoryBody tr[data-request-id="501"]'),null);
+            assert.match(f.d.querySelector('#requestHistoryBody').textContent,/درخواست سابقه تست/);
+          });
+          JS
+          node --test tests/request-workflow-snapshot-temp.test.cjs tests/workflow-tabs-root-20260912.test.cjs
+          rm tests/request-workflow-snapshot-temp.test.cjs
+          git checkout -- tests/helpers/app-fixture.cjs
+
+      - name: Verify source invariants and intended diff
+        shell: bash
         run: |
+          set -euo pipefail
+          grep -q "request_workflow_snapshot" assets/js/app.js
+          grep -q "window.bamcoLoadRequestWorkflow" assets/js/request-sync.js
+          grep -q "approval-workflow-root-20260912-1" index.html
+          git checkout origin/main -- .github/workflows/fix-task-row-deselect-root-v3.yml
+          python - <<'PY'
+          import subprocess
+          changed=set(subprocess.check_output(['git','diff','--name-only','origin/main...HEAD']).decode().split())
+          working=set(subprocess.check_output(['git','diff','--name-only']).decode().split())
+          intended={'supabase/migrations/20260912115000_request_workflow_authority_and_snapshot.sql'}
+          assert changed==intended,(changed,intended)
+          allowed={'assets/js/app.js','assets/js/request-sync.js','index.html'}
+          assert working==allowed,(working,allowed)
+          PY
+
+      - name: Commit validated frontend changes
+        shell: bash
+        run: |
+          set -euo pipefail
           git config user.name 'BAMCO Fix Bot'
           git config user.email 'actions@users.noreply.github.com'
-          git add assets/js/app.js assets/js/task-bulk-delete-20260912.js assets/js/avatar-final-20260911.js index.html
-          git commit -m 'Make task row deselection authoritative'
-          git push
+          git add assets/js/app.js assets/js/request-sync.js index.html
+          git commit -m 'Sync approval queue and request history atomically'
+          git push origin HEAD:approval-workflow-root-fix-20260912
