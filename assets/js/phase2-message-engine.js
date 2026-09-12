@@ -3,7 +3,7 @@
 const q=(s,r=document)=>r?.querySelector?.(s)||null,qa=(s,r=document)=>[...(r?.querySelectorAll?.(s)||[])],esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const channelLabel={portal:'داخل سامانه',email:'ایمیل',both:'هر دو'};
 let rows=[],selected=new Set(),busy=false,prepared=null,loading=null;
-const reportDate=()=>new Intl.DateTimeFormat('fa-IR',{weekday:'long',year:'numeric',month:'long',day:'numeric',timeZone:'Asia/Tehran'}).format(new Date());
+const reportDate=()=>BamcoMessageRender.fullDate(new Date().toISOString());
 function visible(){return rows}
 function syncSelection(){const ids=new Set(rows.map(x=>String(x.recipient_id)));selected=new Set([...selected].filter(id=>ids.has(String(id))));qa('#messageCenterBody tr[data-id]').forEach(r=>{const yes=selected.has(String(r.dataset.id));r.classList.toggle('suite-selected',yes);r.setAttribute('aria-selected',String(yes));r.tabIndex=0});const n=q('#messageSelectionCount');if(n)n.textContent=fa(selected.size)+' نفر انتخاب شده';const send=q('#sendSelectedMessages');if(send)send.disabled=!selected.size||busy}
 function toggleRecipient(row){const id=String(row?.dataset?.id||'');if(!id)return;selected.has(id)?selected.delete(id):selected.add(id);syncSelection()}

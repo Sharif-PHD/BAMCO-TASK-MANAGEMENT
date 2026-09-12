@@ -34,10 +34,11 @@ Deno.serve(async(req:Request)=>{
     if(!/^[0-9a-f-]{36}$/i.test(authSessionId))return respond({error:'شناسه ورود معتبر نیست.'},401);
 
     const admin=createClient(url,service,{auth:{persistSession:false}});
-    const [{data:timeoutSetting},{data:retentionSetting},{data:presenceSetting}]=await Promise.all([
+    const [{data:timeoutSetting},{data:retentionSetting},{data:presenceSetting},{data:authActive,error:authError}]=await Promise.all([
       admin.from('app_settings').select('value').eq('key','session.timeout_minutes').maybeSingle(),
       admin.from('app_settings').select('value').eq('key','session.retention_days').maybeSingle(),
-      admin.from('app_settings').select('value').eq('key','session.presence_grace_seconds').maybeSingle()
+      admin.from('app_settings').select('value').eq('key','session.presence_grace_seconds').maybeSingle(),
+      admin.rpc('bamco_session_auth_exists',{p_session_id:authSessionId,p_user_id:user.id})
     ]);
     const timeoutMinutes=Math.max(5,Number(timeoutSetting?.value??30)||30);
     const retentionDays=Math.max(1,Number(retentionSetting?.value??30)||30);
@@ -50,27 +51,26 @@ Deno.serve(async(req:Request)=>{
     const userAgent=clamp(req.headers.get('user-agent'),1000),ip=getIp(req);
     if(!['start','end','heartbeat','status'].includes(action))return respond({error:'عملیات نشست معتبر نیست.'},400);
 
-    const {data:authActive,error:authError}=await admin.rpc('bamco_session_auth_exists',{p_session_id:authSessionId,p_user_id:user.id});
     if(authError)throw authError;
 
     if(action==='start'){
       if(!authActive)return respond({error:'این ورود پایان یافته است. دوباره وارد شوید.',ended:true},401);
       const cutoff=new Date(now.getTime()-retentionDays*86400000).toISOString();
-      await admin.from('user_sessions').delete().lt('login_at',cutoff);
+      const housekeeping=[admin.from('user_sessions').delete().lt('login_at',cutoff)];
 
       if(deviceId){
-        const replaced=await admin.from('user_sessions').update({logout_at:nowIso,ended_reason:'replaced',last_seen_at:nowIso})
+        const replaced=admin.from('user_sessions').update({logout_at:nowIso,ended_reason:'replaced',last_seen_at:nowIso})
           .eq('user_id',user.id).eq('device_id',deviceId).neq('auth_session_id',authSessionId)
           .is('logout_at',null).is('revoked_at',null);
-        if(replaced.error)throw replaced.error;
         let legacy=admin.from('user_sessions').update({logout_at:nowIso,ended_reason:'replaced',last_seen_at:nowIso,device_id:deviceId})
           .eq('user_id',user.id).is('device_id',null).neq('auth_session_id',authSessionId)
           .eq('user_agent',userAgent).is('logout_at',null).is('revoked_at',null);
         if(ip)legacy=legacy.eq('ip_address',ip);
-        const legacyResult=await legacy;
-        if(legacyResult.error)throw legacyResult.error;
+        housekeeping.push(replaced,legacy);
       }
 
+      const maintenance=await Promise.all(housekeeping);
+      for(const result of maintenance)if(result.error)throw result.error;
       let {data,error}=await admin.from('user_sessions').insert({
         user_id:user.id,auth_session_id:authSessionId,device_id:deviceId,last_activity_at:nowIso,last_seen_at:nowIso,ip_address:ip,
         user_agent:userAgent,app_version:clamp(body.app_version||'web',120)

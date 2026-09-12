@@ -146,13 +146,17 @@ $('#loginForm').addEventListener('submit',async e=>{e.preventDefault();$('#login
   finally{submit.disabled=false}
 });
 async function enterApp(){
-  void window.bamcoPrepareWelcomeStickers?.();
-  const profiles=await select('profiles',`id=eq.${state.user.id}&select=*`);if(!profiles.length)throw new Error('پروفایل کاربر پیدا نشد.');state.profile=profiles[0];if(state.profile.active===false)throw Error('حساب کاربری غیرفعال است.');
+  const enteringUser=state.user.id;
+  const checks=await Promise.allSettled([select('profiles',`id=eq.${enteringUser}&select=*`),window.bamcoSession?.start()]);
+  const failed=checks.find(result=>result.status==='rejected');
+  if(failed){if(checks[1].status==='fulfilled')await window.bamcoSession?.end('logout');throw failed.reason}
+  const profiles=checks[0].value;
+  if(state.user?.id!==enteringUser)throw Error('نشست ورود تغییر کرده است.');if(!profiles.length||profiles[0].active===false){await window.bamcoSession?.end('logout');throw Error(profiles.length?'حساب کاربری غیرفعال است.':'پروفایل کاربر پیدا نشد.')}state.profile=profiles[0];
   $('#userName').textContent=state.profile.display_name||state.profile.full_name||state.profile.email;$('#userRole').textContent=isManager()?'مدیر سامانه':'متولی';$('#avatar').textContent=(state.profile.display_name||state.profile.full_name||'ب').trim()[0];if(!state.profile.must_change_password)window.refreshProfileAvatar?.();
   $('#approvalsNav').classList.remove('hidden');$$('.manager-only').forEach(x=>x.classList.toggle('hidden',!isManager()));
   $('#viewSubtitle').textContent=isManager()?'نمای کلی وظایف و عملکرد همه متولیان':'فقط وظایف و عملکرد مربوط به شما';
   $('#kanbanScope').textContent=isManager()?'نمای همه متولیان':'فقط وظایف شما';$('#archiveScope').textContent=isManager()?'نمای همه متولیان':'فقط آرشیو شما';
-  await window.bamcoSession?.start();void window.bamcoInbox?.load();
+  void window.bamcoInbox?.load();
   if(window.matchMedia('(max-width:760px)').matches)$('#sidebar').classList.add('collapsed');
   $('#loginView').classList.add('hidden');$('#appView').classList.remove('hidden');
   window.bamcoShowHome?.();
@@ -855,15 +859,16 @@ showLogin();
   };
 
   refresh=async function(){
+    if(!state.profile||state.profile.must_change_password)return;
     const loadingUser=state.user?.id;
     try{
-      await window.bamcoOptions.load();
+      const optionsPromise=window.bamcoOptions.load();
       const profilesPromise=isManager()?select('profiles','select=id,email,login_name,must_change_password,password_changed_at,full_name,display_name,gender,excel_name,role,active,default_message_channel,messaging_enabled&order=full_name'):Promise.resolve([state.profile]);
       const tasksPromise=selectAll('task_status_view','select=*&order=id.desc');
       const requestsPromise=selectAll('change_requests','select=*&request_status=in.(pending,in_review,needs_revision)&order=created_at.asc');
       const historyPromise=selectAll('change_requests','select=*&request_status=in.(approved,rejected,cancelled)&order=created_at.desc');
       const routesPromise=rpc('request_routing_status',{}).catch(()=>[]);
-      const [profiles,tasks,requests,history,routes]=await Promise.all([profilesPromise,tasksPromise,requestsPromise,historyPromise,routesPromise]);
+      const [profiles,tasks,requests,history,routes]=await Promise.all([profilesPromise,tasksPromise,requestsPromise,historyPromise,routesPromise,optionsPromise]);
       if(state.user?.id!==loadingUser)return;
       state.profiles=profiles;state.tasks=tasks;state.requests=requests;state.requestHistory=history;state.requestRoutes=routes;
       dataVersion++;resetRenderCaches();

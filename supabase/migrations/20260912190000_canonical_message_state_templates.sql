@@ -49,7 +49,7 @@ begin
   if coalesce(cardinality(p_recipient_ids),0)=0 then raise exception 'گیرنده انتخاب نشده است'; end if;
   if p_kind not in ('daily','reminder','manual') then raise exception 'نوع پیام نامعتبر است'; end if;
   if length(coalesce(p_template_text,''))>30000 then raise exception 'متن پیام بیش از حد طولانی است'; end if;
-  v_date:=coalesce(nullif(btrim(p_report_date),''),v_today::text);
+  v_date:=private.normalize_persian_report_date(coalesce(nullif(btrim(p_report_date),''),private.message_persian_date(v_today)));
 
   insert into public.message_batches(kind,subject,created_by,status)
   values(p_kind,coalesce(nullif(btrim(p_subject),''),'گزارش وضعیت امور'),auth.uid(),'draft')

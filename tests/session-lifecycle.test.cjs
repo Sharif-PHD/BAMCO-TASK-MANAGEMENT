@@ -35,7 +35,7 @@ function edge(){
  const rows=[],native=new Set(['11111111-1111-4111-8111-111111111111','22222222-2222-4222-8222-222222222222']);let handler,failEnd=false;
  const admin={rpc:async(name,args)=>({data:native.has(args.p_session_id),error:null}),from:table=>{
   let op='read',body,filters=[];
-  const query={select(){return this},eq(k,v){filters.push(r=>r[k]===v);return this},is(k,v){filters.push(r=>r[k]==v);return this},lt(){return this},insert(v){op='insert';body=v;return this},update(v){op='update';body=v;return this},delete(){op='delete';return this},single(){return execute()},maybeSingle(){return execute()},then(a,b){return execute().then(a,b)}};
+  const query={select(){return this},eq(k,v){filters.push(r=>r[k]===v);return this},neq(k,v){filters.push(r=>r[k]!==v);return this},is(k,v){filters.push(r=>r[k]==v);return this},lt(){return this},insert(v){op='insert';body=v;return this},update(v){op='update';body=v;return this},delete(){op='delete';return this},single(){return execute()},maybeSingle(){return execute()},then(a,b){return execute().then(a,b)}};
   async function execute(){
    if(table==='app_settings')return{data:null,error:null};
    if(op==='delete')return{data:null,error:null};
@@ -101,3 +101,5 @@ test('recent activity alone cannot assert that an unlinked legacy record is acti
  assert.equal(sessionState({...legacy,auth_session_id:'verified'}),'فعال');
  assert.equal(sessionState({...legacy,logout_at:time,ended_reason:'logout_confirmed'}),'خارج‌شده');
 });
+
+test('parallel start maintenance replaces only an older session of the same device',async()=>{const f=edge(),device='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',other='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';f.rows.push({id:'old',user_id:'owner',auth_session_id:[...f.native][1],device_id:device},{id:'other',user_id:'owner',auth_session_id:'another',device_id:other});const result=await f.call({action:'start',device_id:device});assert.equal(result.status,200);assert.equal(f.rows[0].ended_reason,'replaced');assert(!f.rows[1].logout_at);assert.equal(result.body.session.device_id,device)});
