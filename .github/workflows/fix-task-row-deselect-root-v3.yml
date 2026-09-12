@@ -1,4 +1,5 @@
 name: Approval workflow root fix validation
+# focused rerun after cross-realm assertion correction
 
 on:
   push:
