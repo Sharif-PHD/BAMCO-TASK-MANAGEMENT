@@ -1,0 +1,57 @@
+name: Canonical waiting and document preview refactor
+on:
+  push:
+    branches: [refactor/message-waiting-document-preview-20260912]
+permissions:
+  contents: write
+jobs:
+  refactor-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refactor/message-waiting-document-preview-20260912
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Vendor docx-preview locally
+        run: |
+          pkg=$(npm pack docx-preview@0.3.6 --silent)
+          rm -rf /tmp/docx-preview && mkdir -p /tmp/docx-preview
+          tar -xzf "$pkg" -C /tmp/docx-preview
+          test -s /tmp/docx-preview/package/dist/docx-preview.min.js
+          cp /tmp/docx-preview/package/dist/docx-preview.min.js assets/vendor/docx-preview.min.js
+          rm -f "$pkg"
+      - name: Apply canonical refactor
+        run: node .github/scripts/refactor_waiting_document_preview.cjs
+      - name: Syntax and static gates
+        run: |
+          node --check assets/js/card-home.js
+          node --check assets/js/message-renderer.js
+          node --check assets/js/documents-sites.js
+          test -s assets/vendor/docx-preview.min.js
+          grep -q 'renderAsync' assets/vendor/docx-preview.min.js
+          git diff --check
+      - name: Feature regressions
+        run: |
+          node --test tests/documents-sites.test.cjs tests/message-system-regression-20260911.test.cjs
+          node --test --test-name-pattern="eight cards|only duplicate shortcuts|reconciliation stabilizes|role-hidden routes|search polishing|welcome card contains no waiting" tests/home-layout.test.cjs
+      - name: Verify no temporary product patches
+        run: |
+          test -z "$(git status --porcelain | grep -E 'assets/(js|css)/.*(fix|hotfix|patch)' || true)"
+          grep -q 'documentPreviewDialog' assets/js/documents-sites.js
+          ! grep -q 'data-welcome-waiting' assets/js/card-home.js
+          grep -q 'workflow-waiting-section' assets/js/message-renderer.js
+      - name: Commit validated canonical changes
+        run: |
+          rm -f .github/scripts/refactor_waiting_document_preview.cjs .github/workflows/refactor-waiting-document-preview.yml
+          git config user.name "BAMCO Refactor Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "Refactor automatic waiting section and in-app document preview"
+          git push origin HEAD:refactor/message-waiting-document-preview-20260912
