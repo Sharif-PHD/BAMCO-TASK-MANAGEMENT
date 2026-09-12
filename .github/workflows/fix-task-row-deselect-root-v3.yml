@@ -1,8 +1,8 @@
-name: Fix task row deselection root v3
+name: Publish UI toolbar cleanup
 
 on:
   push:
-    branches: [main]
+    branches: [ui-toolbar-cleanup-release-20260912]
     paths:
       - '.github/workflows/fix-task-row-deselect-root-v3.yml'
 
@@ -10,83 +10,99 @@ permissions:
   contents: write
 
 jobs:
-  patch:
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - name: Patch canonical selection state
+        with:
+          fetch-depth: 0
+      - name: Apply exact validated source patch
         shell: bash
         run: |
-          python - <<'PY'
-          from pathlib import Path
-          app=Path('assets/js/app.js')
-          s=app.read_text()
-          old="function chooseTask(scope,id){state.selected[scope]=Number(id);renderTasks(scope==='archive')}"
-          new="function chooseTask(scope,id){const next=String(state.selected[scope])===String(id)?null:Number(id);state.selected[scope]=next;renderTasks(scope==='archive')}"
-          assert old in s
-          s=s.replace(old,new,1)
-          old2="""  chooseTask=function(scope,id){
-    state.selected[scope]=Number(id);
-    const body=scope==='archive'?qs('#archiveBody'):qs('#kanbanBody');
-    if(body){
-      qsa('tr.task-selected',body).forEach(row=>{row.classList.remove('task-selected');row.setAttribute('aria-selected','false')});
-      const row=qsa('tr[data-task-id]',body).find(r=>String(r.dataset.taskId)===String(id));
-      if(row){row.classList.add('task-selected');row.setAttribute('aria-selected','true')}
-    }
-    updateTaskToolbar(scope);
-  };"""
-          new2="""  chooseTask=function(scope,id){
-    const next=String(state.selected[scope])===String(id)?null:Number(id);
-    state.selected[scope]=next;
-    const body=scope==='archive'?qs('#archiveBody'):qs('#kanbanBody');
-    if(body){
-      qsa('tr.task-selected',body).forEach(row=>{row.classList.remove('task-selected');row.setAttribute('aria-selected','false')});
-      if(next!==null){const row=qsa('tr[data-task-id]',body).find(r=>String(r.dataset.taskId)===String(id));if(row){row.classList.add('task-selected');row.setAttribute('aria-selected','true')}}
-    }
-    updateTaskToolbar(scope);
-  };"""
-          assert old2 in s
-          s=s.replace(old2,new2,1)
-          app.write_text(s)
-
-          bulk=Path('assets/js/task-bulk-delete-20260912.js')
-          b=bulk.read_text()
-          assert 'if(window.__bamcoTaskBulkDelete20260912V4)return;' in b
-          b=b.replace('if(window.__bamcoTaskBulkDelete20260912V4)return;\nwindow.__bamcoTaskBulkDelete20260912V4=true;', 'if(window.__bamcoTaskBulkDelete20260912V6)return;\nwindow.__bamcoTaskBulkDelete20260912V6=true;\nwindow.__bamcoTaskBulkDelete20260912V5=true;\nwindow.__bamcoTaskBulkDelete20260912V4=true;',1)
-          marker='const lastPicked={kanban:null,archive:null};\nlet deleting=false;'
-          assert marker in b
-          b=b.replace(marker,'const lastPicked={kanban:null,archive:null};\nconst seeded={kanban:false,archive:false};\nlet deleting=false;',1)
-          old3="if(picked[scope].size===0&&typeof state!=='undefined'&&state?.selected?.[scope]!=null&&visible.has(String(state.selected[scope])))picked[scope].add(String(state.selected[scope]));"
-          assert old3 in b
-          b=b.replace(old3,"if(!seeded[scope]){if(picked[scope].size===0&&typeof state!=='undefined'&&state?.selected?.[scope]!=null&&visible.has(String(state.selected[scope])))picked[scope].add(String(state.selected[scope]));seeded[scope]=true;}",1)
-          bulk.write_text(b)
-
-          loader=Path('assets/js/avatar-final-20260911.js')
-          l=loader.read_text().replace('task-bulk-delete-20260912.js?v=20260912-5','task-bulk-delete-20260912.js?v=20260912-6')
-          l=l.replace('final-production-fixes-20260911.js?v=task-filter-repair-20260912-1','final-production-fixes-20260911.js?v=task-row-deselect-root-20260912-2')
-          loader.write_text(l)
-
-          index=Path('index.html')
-          h=index.read_text().replace('assets/js/app.js?v=task-filter-repair-20260912-1','assets/js/app.js?v=task-row-deselect-root-20260912-2')
-          h=h.replace('assets/js/avatar-final-20260911.js?v=task-row-deselect-20260912-1','assets/js/avatar-final-20260911.js?v=task-row-deselect-root-20260912-2')
-          index.write_text(h)
-          PY
-      - name: Verify source invariants
+          set -euo pipefail
+          git fetch origin ui-toolbar-cleanup-20260912
+          git show origin/ui-toolbar-cleanup-20260912:tools/ui-toolbar-cleanup-20260912.py > /tmp/ui-toolbar-cleanup.py
+          python /tmp/ui-toolbar-cleanup.py
+      - name: Syntax checks
         shell: bash
         run: |
-          grep -q '__bamcoTaskBulkDelete20260912V6' assets/js/task-bulk-delete-20260912.js
-          grep -q 'const seeded={kanban:false,archive:false}' assets/js/task-bulk-delete-20260912.js
-          grep -q 'task-bulk-delete-20260912.js?v=20260912-6' assets/js/avatar-final-20260911.js
-          grep -q 'app.js?v=task-row-deselect-root-20260912-2' index.html
+          set -euo pipefail
+          for f in assets/js/app.js assets/js/phase2-message-engine.js assets/js/phase3-response-tracking.js assets/js/tab-workspace.js assets/js/admin-root-fixes-20260911.js assets/js/report-stability-fixes-20260911.js; do node --check "$f"; done
+      - name: Install test dependencies
+        run: npm install --no-audit --no-fund
+      - name: Run focused UI acceptance tests
+        shell: bash
+        run: |
+          set -euo pipefail
           python - <<'PY'
           from pathlib import Path
-          s=Path('assets/js/app.js').read_text()
-          assert s.count("const next=String(state.selected[scope])===String(id)?null:Number(id)") >= 2
+          p=Path('tests/helpers/app-fixture.cjs')
+          s=p.read_text()
+          marker="  w.HTMLElement.prototype.scrollTo=function(){};w.confirm=()=>true;"
+          assert marker in s
+          s=s.replace(marker,"  w.scrollTo=function(){};w.HTMLElement.prototype.scrollTo=function(){};w.confirm=()=>true;",1)
+          p.write_text(s)
           PY
-      - name: Commit and push
+          cat > tests/ui-release-temp.test.cjs <<'JS'
+          const test=require('node:test');
+          const assert=require('node:assert/strict');
+          const {fixture,until,pause}=require('./helpers/app-fixture.cjs');
+          const texts=n=>[...n.children].map(x=>x.textContent.replace(/\s+/g,' ').trim()).filter(Boolean);
+
+          test('dashboard auto-applies performance dates without Apply button',async t=>{
+            const f=await fixture();t.after(()=>f.dispose());await f.open('dashboard');
+            assert.equal(f.d.querySelector('#applyPerf'),null);assert.ok(f.d.querySelector('#clearPerf'));
+            const src=require('node:fs').readFileSync('assets/js/app.js','utf8');
+            assert.match(src,/state\.dashboardDateTarget=null;render\(\)/);
+          });
+
+          test('response report has no search and regular-weight command buttons',async t=>{
+            const f=await fixture({tables:{message_response_tracking:[]}});t.after(()=>f.dispose());await f.open('responseReport');await until(()=>f.d.querySelector('#responseReportView .response-command-row'));
+            assert.equal(f.d.querySelector('#canonicalResponseSearch'),null);assert.equal(f.d.querySelector('#responseReportView input[type=search]'),null);
+            const css=f.d.querySelector('#bamcoCanonicalReportCss').textContent;assert.match(css,/response-command-row button\{font-weight:400!important\}/);
+          });
+
+          test('message center is one bounded command row, no search, channel follows Refresh',async t=>{
+            const f=await fixture({tables:{message_recipient_live_state:[{recipient_id:'test-owner',recipient_name:'متولی آزمایشی',email:'owner@example.test',active_count:1,warning_count:0,overdue_count:0,sticker_state:1,last_sent_at:null}]}});t.after(()=>f.dispose());await f.open('messageCenter');await until(()=>f.d.querySelector('#messageCenterView .message-command-row'));
+            const bar=f.d.querySelector('#messageCenterView .message-command-row'),tks=texts(bar);
+            assert.equal(f.d.querySelector('#messageCenterSearch'),null);assert.equal(f.d.querySelector('#messageCenterView .message-center-simple-toolbar'),null);
+            assert.ok(tks.findIndex(x=>/تازه‌سازی/.test(x)) < tks.findIndex(x=>/کانال ارسال/.test(x)));
+            const css=f.d.querySelector('#bamcoMessageCenterCommandCss').textContent;assert.match(css,/message-command-row button\{font-weight:400!important\}/);
+          });
+
+          test('sent messages has no second controls row and regular first-row buttons',async t=>{
+            const f=await fixture({tables:{sent_message_log:[]}});t.after(()=>f.dispose());await f.open('sentMessages');await until(()=>f.d.querySelector('#sentMessagesView .sent-command-row'));
+            assert.equal(f.d.querySelector('#sentMessagesView .sent-controls'),null);assert.equal(f.d.querySelector('#sentMessagesView input[type=search]'),null);
+            const css=f.d.querySelector('#bamcoSentMessagesCss').textContent;assert.match(css,/sent-command-row button\{font-weight:400!important\}/);
+          });
+
+          test('response tracking removes second and third button rows while keeping select filters',async t=>{
+            const f=await fixture({tables:{message_response_tracking:[]}});t.after(()=>f.dispose());await f.open('responseTracking');await until(()=>f.d.querySelector('#responseTrackingView .response-command-row'));
+            assert.equal(f.d.querySelector('#responseSelectAll'),null);assert.equal(f.d.querySelector('#responseTrackingView .response-quick'),null);
+            assert.ok(f.d.querySelector('#responsePerson'));assert.ok(f.d.querySelector('#responseChannel'));assert.ok(f.d.querySelector('#responseState'));assert.ok(f.d.querySelector('#reminderSendChannel'));
+            const css=f.d.querySelector('#bamcoResponseTrackingRootCss').textContent;assert.match(css,/response-command-row button\{font-weight:400!important\}/);
+          });
+          JS
+          node --test tests/ui-release-temp.test.cjs
+          rm tests/ui-release-temp.test.cjs
+          git checkout -- tests/helpers/app-fixture.cjs
+      - name: Verify only intended app files changed
+        shell: bash
         run: |
+          set -euo pipefail
+          git checkout origin/main -- .github/workflows/fix-task-row-deselect-root-v3.yml
+          python - <<'PY'
+          import subprocess
+          allowed={'index.html','assets/js/app.js','assets/js/phase2-message-engine.js','assets/js/phase3-response-tracking.js','assets/js/tab-workspace.js','assets/js/admin-root-fixes-20260911.js','assets/js/report-stability-fixes-20260911.js'}
+          changed=set(subprocess.check_output(['git','diff','--name-only']).decode().split())
+          assert changed==allowed,(changed,allowed)
+          PY
+      - name: Commit tested release only
+        shell: bash
+        run: |
+          set -euo pipefail
           git config user.name 'BAMCO Fix Bot'
           git config user.email 'actions@users.noreply.github.com'
-          git add assets/js/app.js assets/js/task-bulk-delete-20260912.js assets/js/avatar-final-20260911.js index.html
-          git commit -m 'Make task row deselection authoritative'
-          git push
+          git add index.html assets/js/app.js assets/js/phase2-message-engine.js assets/js/phase3-response-tracking.js assets/js/tab-workspace.js assets/js/admin-root-fixes-20260911.js assets/js/report-stability-fixes-20260911.js
+          git commit -m 'Polish dashboard and messaging toolbars'
+          git push origin HEAD:ui-toolbar-cleanup-release-20260912
