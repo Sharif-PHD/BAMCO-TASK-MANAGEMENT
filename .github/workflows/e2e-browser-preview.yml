@@ -3,7 +3,7 @@ on:
   push:
     branches: [refactor/message-waiting-document-preview-20260912]
 permissions:
-  contents: write
+  contents: read
 jobs:
   browser-e2e:
     runs-on: ubuntu-latest
@@ -58,7 +58,7 @@ jobs:
           window.state={token:'browser-e2e',user:{id:'manager-e2e'},profile:{id:'manager-e2e',role:'manager',active:true},profiles:[]};window.SB_URL='https://e2e.supabase.test';window.SB_KEY='publishable';window.titles={};window.toast=(m,e)=>{window.__toasts=(window.__toasts||[]).concat({m,e})};window.bamcoConfirm=async()=>true;
           window.selectAll=async(table)=>table==='document_categories'?[{id:1,title:'E2E',description:'Fixtures',sort_order:0}]:table==='documents'?${JSON.stringify(docs)}:[];window.select=async()=>[];window.insert=async()=>[];window.update=async()=>[];window.rpc=async()=>{};window.api=async()=>{};
           window.ensureBamcoXLSX=async()=>window.XLSX;
-          </script><script src="/assets/vendor/xlsx.min.js"></script><script src="/assets/vendor/docx-preview.min.js"></script><script src="/assets/js/documents-sites.js"></script></body></html>`;
+          </script><script src="/assets/vendor/xlsx.min.js"></script><script src="/assets/vendor/jszip.min.js"></script><script src="/assets/vendor/docx-preview.min.js"></script><script src="/assets/js/documents-sites.js"></script></body></html>`;
           const server=http.createServer((req,res)=>{const url=new URL(req.url,'http://127.0.0.1'); if(url.pathname==='/e2e.html'){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8'});return res.end(harness)} const file=path.join(root,url.pathname.replace(/^\//,'')); if(file.startsWith(root)&&fs.existsSync(file)&&fs.statSync(file).isFile()){const ext=path.extname(file);const type=ext==='.js'?'text/javascript':ext==='.css'?'text/css':'application/octet-stream';res.writeHead(200,{'Content-Type':type});return fs.createReadStream(file).pipe(res)} res.writeHead(404);res.end('not found')});
           await new Promise(r=>server.listen(4173,'127.0.0.1',r));
           const browser=await chromium.launch({headless:true}); const context=await browser.newContext({acceptDownloads:true,viewport:{width:1440,height:900}}); const pageObj=await context.newPage();
@@ -81,12 +81,3 @@ jobs:
           JS
           node ./bamco-e2e.mjs
           rm -f ./bamco-e2e.mjs
-      - name: Run full regression suite
-        run: npm test
-      - name: Remove temporary workflow after success
-        run: |
-          git rm .github/workflows/e2e-browser-preview.yml
-          git config user.name 'BAMCO E2E Bot'
-          git config user.email 'actions@users.noreply.github.com'
-          git commit -m 'Remove temporary browser E2E workflow'
-          git push origin HEAD:refactor/message-waiting-document-preview-20260912
