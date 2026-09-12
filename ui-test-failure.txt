@@ -1,9 +1,11 @@
+=== /tmp/ui-patch.log ===
+UI toolbar cleanup source patch completed.
+=== /tmp/ui-syntax.log ===
+/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/assets/js/report-stability-fixes-20260911.js:65
+function responseVisible(){const from=inputIso(q('#canonicalResponseFrom')),to=inputIso(q('#canonicalResponseTo'));return responseRows.filter(x=>x.delivery_status!=='cancelled'&&(!from||String(x.sent_at||'').slice(0,10)>=from)&&(!to||String(x.sent_at||'').slice(0,10)<=to)}
+                                                                                                                                                                                                                                                                               ^
 
-/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/assets/js/phase3-response-tracking.js:62
-  qa('#responseFrom,#responseTo,#responsePerson,#responseChannel,#responseState').forEach(x=>x.addEventListener(x.tagName==='SELECT'?'change':'input',()=>{selected.clear();render()}));q('#responseState').value=b.dataset.responseQuick==='all'?'':b.dataset.responseQuick;selected.clear();if(['awaiting','reminder_needed'].includes(b.dataset.responseQuick))filtered().forEach(x=>selected.add(String(x.delivery_id)));render()});
-                                                                                                                                                                                                                                                                                                                                                                                                                                      ^
-
-SyntaxError: Unexpected token ')'
+SyntaxError: missing ) after argument list
     at wrapSafe (node:internal/modules/cjs/loader:1713:18)
     at checkSyntax (node:internal/main/check_syntax:78:3)
 
