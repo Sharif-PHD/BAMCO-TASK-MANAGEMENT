@@ -62,14 +62,19 @@ function install(){
  }
  syncGroups();
  const dialog=document.createElement('dialog');dialog.className='home-welcome-dialog';dialog.setAttribute('aria-labelledby','homeWelcomeTitle');dialog.innerHTML='<button class="welcome-dismiss" type="button" aria-label="بستن خوشامدگویی" autofocus><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button><div class="home-welcome-copy"><p class="welcome-person"></p><h2 id="homeWelcomeTitle">به سامانه مدیریت، پایش و پیگیری امور خوش آمدید</h2></div><img class="home-sticker female" alt="استیکر زن در وضعیت مطلوب"><img class="home-sticker male" alt="استیکر مرد در وضعیت مطلوب">';document.body.append(dialog);
- let welcomeStickerUrls=[],welcomeStickerPromise=null,welcomeStickerReady=false;
- async function loadWelcomeStickers(){
-  const fallback=window.BAMCO_DESKTOP_ASSETS?.yellow_happy;for(const gender of ['female','male']){const image=dialog.querySelector('.'+gender);if(fallback&&!image.src)image.src=fallback}
-  if(typeof state==='undefined'||!state.token||typeof select!=='function')return;
-  try{const [sets,candidates]=await Promise.all([select('sticker_sets','active=eq.true&select=id&order=created_at.desc&limit=1'),select('stickers','state_key=eq.state1&gender=in.(female,male)&select=set_id,gender,storage_path')]),set=sets[0];if(!set)return;const rows=candidates.filter(row=>String(row.set_id)===String(set.id));if(rows.length<2)return;const loaded=await Promise.all(rows.map(async row=>{const path=String(row.storage_path).split('/').map(encodeURIComponent).join('/'),res=await fetch(`${SB_URL}/storage/v1/object/authenticated/stickers/${path}`,{headers:{apikey:SB_KEY,Authorization:`Bearer ${state.token}`},cache:'force-cache'});if(!res.ok)throw new Error('sticker '+row.gender);return{gender:row.gender,url:URL.createObjectURL(await res.blob())}}));welcomeStickerUrls.forEach(URL.revokeObjectURL);welcomeStickerUrls=loaded.map(x=>x.url);for(const item of loaded){const image=dialog.querySelector('.'+item.gender);if(image)image.src=item.url}welcomeStickerReady=loaded.length>=2}catch(err){console.error('welcome-stickers',err)}
+ let welcomeStickerPromise=null,welcomeStickerGeneration=0;
+ async function loadWelcomeStickers(generation){
+  const token=typeof state!=='undefined'?state.token:null;if(!token)return;
+  const images=[...dialog.querySelectorAll('.home-sticker')];images.forEach(image=>image.style.visibility='hidden');
+  try{const sets=await select('sticker_sets','active=eq.true&select=id&order=created_at.desc&limit=1'),set=sets[0];if(!set)return;
+   const rows=await select('stickers',`set_id=eq.${encodeURIComponent(set.id)}&state_key=eq.state1&gender=in.(female,male)&select=set_id,gender,storage_path`);
+   const loaded=await Promise.all(['female','male'].map(async gender=>{const row=rows.find(r=>r.gender===gender&&String(r.set_id)===String(set.id));if(!row)throw Error('استیکر وضعیت مطلوب نسخه فعال کامل نیست.');return{gender,url:await bamcoMedia.get('stickers',row.storage_path)}}));
+   if(generation!==welcomeStickerGeneration||state.token!==token)return;
+   for(const item of loaded){const image=dialog.querySelector('.'+item.gender);image.src=item.url;image.style.visibility='visible';image.dataset.stickerSet=String(set.id)}
+  }catch(err){if(generation===welcomeStickerGeneration)console.warn('welcome-stickers',err.message)}
  }
- function stickers(force=false){if(welcomeStickerReady&&!force)return Promise.resolve();if(!welcomeStickerPromise||force)welcomeStickerPromise=loadWelcomeStickers().finally(()=>{welcomeStickerPromise=null});return welcomeStickerPromise}
- window.bamcoPrepareWelcomeStickers=()=>stickers();stickers();window.addEventListener('bamco-stickers-ready',()=>stickers(true));document.addEventListener('bamco:stickers-changed',()=>stickers(true));
+ function stickers(force=false){if(welcomeStickerPromise&&!force)return welcomeStickerPromise;const generation=++welcomeStickerGeneration,job=loadWelcomeStickers(generation);welcomeStickerPromise=job;return job.finally(()=>{if(welcomeStickerPromise===job)welcomeStickerPromise=null})}
+ window.bamcoPrepareWelcomeStickers=()=>stickers();window.addEventListener('bamco-stickers-ready',()=>stickers(true));document.addEventListener('bamco:stickers-changed',()=>stickers(true));
  let homeExpected=false,repairFrame=0,homeEpoch=0,homeTimers=[];
  function clearHomeTimers(){homeTimers.forEach(clearTimeout);homeTimers=[]}
  function leaveHome(){

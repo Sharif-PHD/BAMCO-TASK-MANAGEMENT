@@ -21,3 +21,12 @@
 ## Limits
 
 A real newly authenticated owner-to-manager browser submission has not been executed in this review; database role-context integration and isolated frontend submission tests establish the field-preservation fix. Dates already stripped from old requests cannot be reconstructed from the retained payload and need correction by their author/manager. Real email delivery remains deferred at the user's request while the provider is unavailable. This review does not certify the entire application as defect-free or fully release-ready.
+
+## Compact system messages, Persian history and welcome pack (12 September, follow-up)
+
+- Removed the shared renderer's competing whole-document chat hydration. The system conversation now has one card renderer; detail tables and sticker assets are loaded only when a card is opened. Payload requests are deduplicated and cached per authenticated actor. Detail requests cannot overwrite a newer opened message.
+- Routed both legacy history entry points to the same Persian timeline. Status/priority use the task catalog and Persian legacy labels; owners resolve through the profile directory, with Persian fallbacks for deleted owners. The history dialog opens with a loading state before its database request finishes. User-authored text remains unchanged.
+- Replaced the global report request counter with one counter per tab, preventing concurrent report loads from cancelling each other. Limited removed-tab cleanup to relevant added elements. Corrected runtime request cleanup for synchronous/unowned routes. Added pointer cursors and touch-action for controls.
+- Welcome images use only the female/male state1 pair of the active set. Removed unrelated fallback images and permanent ready cache. Active metadata is checked on opening; an older in-flight set cannot overwrite a newly activated set. Media uses the existing authenticated cache.
+- Added executable DOM regressions for compact message cards with both scripts loaded, lazy detail rendering, immediate Persian history and owner names, actual toolbar delegation, concurrent reports, and an active-pack race.
+- These are frontend changes. Reminder body/queue and database data were not changed in this follow-up. Prior live portal reminder evidence remains above; email is unavailable per user. The new frontend's authenticated production visual/performance verification still requires loading this release in the browser; local DOM tests do not establish actual network latency or prove the entire app defect-free.

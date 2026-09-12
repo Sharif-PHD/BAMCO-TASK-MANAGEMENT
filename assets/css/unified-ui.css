@@ -577,3 +577,8 @@ html body #taskOptionDialog .catalog-error{color:#a23535!important}html body #ta
 @media(max-width:620px){html body #taskOptionDialog .catalog-edit-grid{grid-template-columns:minmax(0,1fr)!important}}
 
 html body #appView#appView :is(#kanbanView,#archiveView).bamco-interior table tbody tr.row-waiting>td{background:color-mix(in srgb,var(--task-status-color,#8b949e) 12%,white)!important}
+
+/* Immediate, consistent affordances for navigation and actionable icons. */
+button:not(:disabled):not([aria-disabled="true"]),a[href],[role="tab"]:not([aria-disabled="true"]),[data-view]:not(:disabled),[data-bamco-task-id]{cursor:pointer;touch-action:manipulation}
+#nav [data-view]:not(:disabled),#nav [data-view]:not(:disabled) *{cursor:pointer!important;transition-delay:0s!important}
+.system-message-chip.waiting{background:#f1f2f3;border-color:#c9cdd1;color:#39434a}
