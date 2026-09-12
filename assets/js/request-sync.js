@@ -32,13 +32,8 @@
   if(pending)return pending;
   const actor=state.user?.id,token=state.token;
   pending=(async()=>{
-   const requestFilter=isManager()?'select=*&request_status=in.(pending,in_review,needs_revision)&order=created_at.asc':`select=*&requested_by=eq.${actor}&request_status=in.(pending,in_review,needs_revision)&order=created_at.asc`;
-   const historyFilter=isManager()?'select=*&request_status=in.(approved,rejected,cancelled)&order=created_at.desc':`select=*&requested_by=eq.${actor}&request_status=in.(approved,rejected,cancelled)&order=created_at.desc`;
-   const [requests,routes,history]=await Promise.all([
-    selectAll('change_requests',requestFilter),
-    rpc('request_routing_status',{}).catch(()=>state.requestRoutes||[]),
-    selectAll('change_requests',historyFilter)
-   ]);
+   const workflow=await window.bamcoLoadRequestWorkflow();
+   const requests=workflow.requests,routes=workflow.routes,history=workflow.history;
    if(actor!==state.user?.id||token!==state.token)return;
    const next=JSON.stringify([requests,routes,history]);
    if(next===lastSnapshot){enforceVisibleScope();return}
