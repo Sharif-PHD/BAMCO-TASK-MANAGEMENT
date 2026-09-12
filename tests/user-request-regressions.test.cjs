@@ -51,19 +51,19 @@ test('conversation navigation exposes red aggregate and route unread badges',()=
 });
 
 test('message center is one send flow and uses one renderer for portal and email',()=>{
-  const center=read('assets/js/phase2-message-engine.js'),renderer=read('assets/js/message-renderer.js'),inbox=read('assets/js/messaging-history-root-20260911.js'),sql=read('supabase/migrations/20260911035403_unified_internal_messages_and_sent_log.sql');
+  const center=read('assets/js/phase2-message-engine.js'),renderer=read('assets/js/message-renderer.js'),inbox=read('assets/js/messaging-history-root-20260911.js'),rootFix=read('assets/js/admin-root-fixes-20260911.js'),sql=read('supabase/migrations/20260911035403_unified_internal_messages_and_sent_log.sql');
   assert.match(center,/id="messageChannel"/);
   assert.match(center,/>ارسال<\/button>/);
-  assert.doesNotMatch(center,/messageCustomText|recipient-channel|شناسه<\/th>|استیکر/);
+  assert.doesNotMatch(center,/messageCustomText|recipient-channel|messageCenterSearch|شناسه<\/th>|استیکر/);
   assert.match(renderer,/const widths=\['\d+%','\d+%','\d+%','\d+%','\d+%'\]/);
   assert.match(renderer,/kind==='warning'/);
   assert.match(renderer,/overdue_task_ids/);
   assert.match(renderer,/\?task=/);
   assert.match(center,/BamcoMessageRender\.html/);
   assert.match(inbox,/BamcoMessageRender\.html/);
-  assert.match(inbox,/qa\('\[data-mid\]',list\)\.forEach\(x=>x\.remove\(\)\)/);
-  assert.match(inbox,/qa\('\.message-actions',list\)\.forEach\(x=>x\.remove\(\)\)/);
   assert.match(inbox,/suite-table-options/);
+  assert.match(rootFix,/deadSelector=.*templates/);
+  assert.match(rootFix,/purgeMessageTextUi/);
   assert.match(sql,/create or replace view public\.sent_message_log/);
   assert.match(sql,/from public\.message_deliveries/);
   assert.match(sql,/union all[\s\S]*from public\.portal_messages/);
@@ -76,15 +76,19 @@ test('message center is one send flow and uses one renderer for portal and email
 test('task history is Persian and resolves owner names',()=>{
   const history=read('assets/js/messaging-history-root-20260911.js');
   assert.match(history,/owner_id:'متولی'/);
-  assert.match(history,/field==='owner_id'.*person/s);
-  assert.match(history,/ایجاد وظیفه/);
-  assert.match(history,/ویرایش وظیفه/);
-  assert.match(history,/عامل:/);
+  assert.match(history,/due_date:'تاریخ پایان'/);
+  assert.match(history,/status:'وضعیت'/);
+  assert.match(history,/function ownerValue/);
+  assert.match(history,/function historyValue/);
+  assert.match(history,/sourceLabel=\{direct:'تغییر مستقیم'/);
+  assert.match(history,/bamcoTaskHistory/);
 });
 
-test('template editor has one owner and verifies the saved server value',()=>{
-  const editor=read('assets/js/templates.js'),rootFix=read('assets/js/admin-root-fixes-20260911.js');
-  assert.match(editor,/q\('#openDesktopTemplateEditor',view\)\.onclick=open/);
-  assert.match(editor,/سرور تغییرات متن پیام را تأیید نکرد/);
+test('removed template editor stays removed and its purge has one owner',()=>{
+  const templatePath=path.join(root,'assets/js/templates.js'),rootFix=read('assets/js/admin-root-fixes-20260911.js'),html=read('index.html');
+  assert.equal(fs.existsSync(templatePath),false);
+  assert.doesNotMatch(html,/assets\/js\/templates\.js|data-view="templates"/);
+  assert.match(rootFix,/deadSelector=.*templates/);
+  assert.match(rootFix,/purgeMessageTextUi/);
   assert.doesNotMatch(rootFix,/installTemplateGuard|setInterval\(\(\)=>\{if\(window\.bamcoTemplateEditor/);
 });
