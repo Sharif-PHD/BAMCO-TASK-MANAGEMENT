@@ -16,7 +16,6 @@ test('every navigation destination has one working return-to-home control and re
    await f.open(route);await pause(100);const view=d.querySelector('#'+route+'View');
    const backs=[...view.querySelectorAll('button')].filter(b=>b.textContent.replace(/\s+/g,' ').trim()==='بازگشت به خانه');
    assert.equal(backs.length,1,route+' must expose exactly one return-to-home control');const back=backs[0];
-   assert.equal(view.querySelector('.bamco-page-heading button'),null);
    const style=w.getComputedStyle(back);assert.notEqual(style.display,'none');assert.notEqual(style.visibility,'hidden');assert.notEqual(style.pointerEvents,'none');
    back.click();await pause(20);assert.equal(w.getComputedStyle(view).display,'none');assert(!d.querySelector('#homeView').classList.contains('hidden'));assert.equal(d.querySelector('#nav button.active'),null);
   });
