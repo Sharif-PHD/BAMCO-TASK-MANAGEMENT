@@ -1,0 +1,10 @@
+
+/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/assets/js/phase3-response-tracking.js:62
+  qa('#responseFrom,#responseTo,#responsePerson,#responseChannel,#responseState').forEach(x=>x.addEventListener(x.tagName==='SELECT'?'change':'input',()=>{selected.clear();render()}));q('#responseState').value=b.dataset.responseQuick==='all'?'':b.dataset.responseQuick;selected.clear();if(['awaiting','reminder_needed'].includes(b.dataset.responseQuick))filtered().forEach(x=>selected.add(String(x.delivery_id)));render()});
+                                                                                                                                                                                                                                                                                                                                                                                                                                      ^
+
+SyntaxError: Unexpected token ')'
+    at wrapSafe (node:internal/modules/cjs/loader:1713:18)
+    at checkSyntax (node:internal/main/check_syntax:78:3)
+
+Node.js v22.23.2

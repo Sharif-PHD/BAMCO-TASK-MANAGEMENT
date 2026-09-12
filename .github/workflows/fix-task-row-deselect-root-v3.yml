@@ -1,8 +1,8 @@
-name: UI toolbar cleanup validation
+name: Fix task row deselection root v3
 
 on:
   push:
-    branches: [ui-toolbar-cleanup-20260912]
+    branches: [main]
     paths:
       - '.github/workflows/fix-task-row-deselect-root-v3.yml'
 
@@ -10,229 +10,83 @@ permissions:
   contents: write
 
 jobs:
-  refactor-test:
+  patch:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-
-      - name: Apply source refactor
+      - name: Patch canonical selection state
         shell: bash
         run: |
-          set -euo pipefail
-          python - <<'PY' > /tmp/ui-patch.log 2>&1 || { cat /tmp/ui-patch.log; cp /tmp/ui-patch.log ui-toolbar-failure.txt; exit 1; }
+          python - <<'PY'
           from pathlib import Path
-          import re
+          app=Path('assets/js/app.js')
+          s=app.read_text()
+          old="function chooseTask(scope,id){state.selected[scope]=Number(id);renderTasks(scope==='archive')}"
+          new="function chooseTask(scope,id){const next=String(state.selected[scope])===String(id)?null:Number(id);state.selected[scope]=next;renderTasks(scope==='archive')}"
+          assert old in s
+          s=s.replace(old,new,1)
+          old2="""  chooseTask=function(scope,id){
+    state.selected[scope]=Number(id);
+    const body=scope==='archive'?qs('#archiveBody'):qs('#kanbanBody');
+    if(body){
+      qsa('tr.task-selected',body).forEach(row=>{row.classList.remove('task-selected');row.setAttribute('aria-selected','false')});
+      const row=qsa('tr[data-task-id]',body).find(r=>String(r.dataset.taskId)===String(id));
+      if(row){row.classList.add('task-selected');row.setAttribute('aria-selected','true')}
+    }
+    updateTaskToolbar(scope);
+  };"""
+          new2="""  chooseTask=function(scope,id){
+    const next=String(state.selected[scope])===String(id)?null:Number(id);
+    state.selected[scope]=next;
+    const body=scope==='archive'?qs('#archiveBody'):qs('#kanbanBody');
+    if(body){
+      qsa('tr.task-selected',body).forEach(row=>{row.classList.remove('task-selected');row.setAttribute('aria-selected','false')});
+      if(next!==null){const row=qsa('tr[data-task-id]',body).find(r=>String(r.dataset.taskId)===String(id));if(row){row.classList.add('task-selected');row.setAttribute('aria-selected','true')}}
+    }
+    updateTaskToolbar(scope);
+  };"""
+          assert old2 in s
+          s=s.replace(old2,new2,1)
+          app.write_text(s)
 
-          def edit(path, old, new, label):
-              p=Path(path); s=p.read_text()
-              n=s.count(old)
-              if n != 1: raise RuntimeError(f'{label}: expected 1 exact match, got {n}')
-              p.write_text(s.replace(old,new,1))
+          bulk=Path('assets/js/task-bulk-delete-20260912.js')
+          b=bulk.read_text()
+          assert 'if(window.__bamcoTaskBulkDelete20260912V4)return;' in b
+          b=b.replace('if(window.__bamcoTaskBulkDelete20260912V4)return;\nwindow.__bamcoTaskBulkDelete20260912V4=true;', 'if(window.__bamcoTaskBulkDelete20260912V6)return;\nwindow.__bamcoTaskBulkDelete20260912V6=true;\nwindow.__bamcoTaskBulkDelete20260912V5=true;\nwindow.__bamcoTaskBulkDelete20260912V4=true;',1)
+          marker='const lastPicked={kanban:null,archive:null};\nlet deleting=false;'
+          assert marker in b
+          b=b.replace(marker,'const lastPicked={kanban:null,archive:null};\nconst seeded={kanban:false,archive:false};\nlet deleting=false;',1)
+          old3="if(picked[scope].size===0&&typeof state!=='undefined'&&state?.selected?.[scope]!=null&&visible.has(String(state.selected[scope])))picked[scope].add(String(state.selected[scope]));"
+          assert old3 in b
+          b=b.replace(old3,"if(!seeded[scope]){if(picked[scope].size===0&&typeof state!=='undefined'&&state?.selected?.[scope]!=null&&visible.has(String(state.selected[scope])))picked[scope].add(String(state.selected[scope]));seeded[scope]=true;}",1)
+          bulk.write_text(b)
 
-          def regex_edit(path, pattern, replacement, label, flags=0):
-              p=Path(path); s=p.read_text()
-              out,n=re.subn(pattern,replacement,s,count=1,flags=flags)
-              if n != 1: raise RuntimeError(f'{label}: expected 1 regex match, got {n}')
-              p.write_text(out)
+          loader=Path('assets/js/avatar-final-20260911.js')
+          l=loader.read_text().replace('task-bulk-delete-20260912.js?v=20260912-5','task-bulk-delete-20260912.js?v=20260912-6')
+          l=l.replace('final-production-fixes-20260911.js?v=task-filter-repair-20260912-1','final-production-fixes-20260911.js?v=task-row-deselect-root-20260912-2')
+          loader.write_text(l)
 
-          # 1. Dashboard performance range: remove the obsolete Apply control and its dead listener.
-          edit('index.html','<button id="applyPerf" type="button" class="primary">اعمال</button>','', 'dashboard Apply button')
-          edit('assets/js/app.js',"$id('applyPerf')?.addEventListener('click',render);",'', 'dashboard Apply listener')
-
-          # Fresh asset URLs after publishing.
-          cache_changes={
-            'assets/js/app.js?v=task-row-deselect-root-20260912-3':'assets/js/app.js?v=ui-toolbar-cleanup-20260912-1',
-            'assets/js/phase2-message-engine.js?v=message-unified-20260911-1':'assets/js/phase2-message-engine.js?v=ui-toolbar-cleanup-20260912-1',
-            'assets/js/phase3-response-tracking.js?v=details-20260910-1':'assets/js/phase3-response-tracking.js?v=ui-toolbar-cleanup-20260912-1',
-            'assets/js/tab-workspace.js?v=catalog-20260910-1':'assets/js/tab-workspace.js?v=ui-toolbar-cleanup-20260912-1',
-            'assets/js/admin-root-fixes-20260911.js?v=user-fixes-20260911-1':'assets/js/admin-root-fixes-20260911.js?v=ui-toolbar-cleanup-20260912-1',
-            'assets/js/report-stability-fixes-20260911.js?v=performance-toolbar-root-20260912-2':'assets/js/report-stability-fixes-20260911.js?v=ui-toolbar-cleanup-20260912-1'
-          }
-          for old,new in cache_changes.items(): edit('index.html',old,new,'cache '+old)
-
-          # 2. Response report: search is gone at both legacy and canonical renderers; buttons are regular weight.
-          p='assets/js/report-stability-fixes-20260911.js'
-          edit(p,'#responseReportView .response-command-row>*{flex:0 0 auto!important}',
-                 '#responseReportView .response-command-row>*{flex:0 0 auto!important}\n #responseReportView .response-command-row button{font-weight:400!important}',
-                 'response report regular buttons')
-          edit(p,"function responseVisible(){const term=(q('#canonicalResponseSearch')?.value||'').trim().toLocaleLowerCase(),from=inputIso(q('#canonicalResponseFrom')),to=inputIso(q('#canonicalResponseTo'));return responseRows.filter(x=>x.delivery_status!=='cancelled'&&(!from||String(x.sent_at||'').slice(0,10)>=from)&&(!to||String(x.sent_at||'').slice(0,10)<=to)&&(!term||[x.recipient_name,x.recipient_email,x.subject,x.reply_text].some(v=>String(v||'').toLocaleLowerCase().includes(term))))}",
-                 "function responseVisible(){const from=inputIso(q('#canonicalResponseFrom')),to=inputIso(q('#canonicalResponseTo'));return responseRows.filter(x=>x.delivery_status!=='cancelled'&&(!from||String(x.sent_at||'').slice(0,10)>=from)&&(!to||String(x.sent_at||'').slice(0,10)<=to)}",
-                 'response report search filter')
-          edit(p,'</div><div class="response-search-row"><input id="canonicalResponseSearch" type="search" placeholder="جست‌وجو در گزارش…" aria-label="جست‌وجو در گزارش پاسخ‌ها"></div>`}', '</div>`}', 'response report search row')
-          edit(p,";q('#canonicalResponseSearch')?.addEventListener('input',()=>{window.bamcoSelection?.clear?.('#responseReportBody');renderResponseRows()});window.bamcoInteriorUI?.decorateView?.(view)",
-                 ';window.bamcoInteriorUI?.decorateView?.(view)', 'response report search listener')
-
-          p='assets/js/tab-workspace.js'
-          old='<div class="workspace-report-tools"><input type="search" data-report-search placeholder="جست‌وجو در گزارش…" aria-label="جست‌وجو در گزارش"><button data-report-export="all" class="ghost">خروجی اکسل</button></div>'
-          new='<div class="workspace-report-tools">${id===\'responseReport\'?\'\':\'<input type="search" data-report-search placeholder="جست‌وجو در گزارش…" aria-label="جست‌وجو در گزارش">\'}<button data-report-export="all" class="ghost">خروجی اکسل</button></div>'
-          edit(p,old,new,'legacy response report search')
-
-          # 3. Message center: one command row between two rules; no search; channel immediately follows Refresh.
-          p='assets/js/phase2-message-engine.js'
-          regex_edit(p,r'function visible\(\)\{.*?\}\nfunction syncSelection','function visible(){return rows}\nfunction syncSelection','message center search logic',re.S)
-          edit(p,'#messageCenterView .message-command-row #sendSelectedMessages{',
-                 '#messageCenterView .message-command-row button{font-weight:400!important}#messageCenterView .message-command-row #sendSelectedMessages{',
-                 'message center regular buttons')
-          edit(p,'#messageCenterView .message-center-simple-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}','', 'message center obsolete toolbar css')
-          old='<div class="message-command-row"><button type="button" class="ghost" id="messageCenterHome">بازگشت به خانه</button><button type="button" class="ghost" id="messageCenterExport">خروجی اکسل</button><button type="button" class="ghost" id="refreshMessageCenter">تازه‌سازی</button><button id="sendSelectedMessages" type="button" class="primary" disabled>ارسال</button></div><div class="message-center-simple-toolbar"><label>کانال ارسال<select id="messageChannel"><option value="portal">داخل سامانه</option><option value="email">ایمیل</option><option value="both">هر دو</option></select></label><input id="messageCenterSearch" type="search" placeholder="جست‌وجوی نام یا ایمیل"><span id="messageSelectionCount">۰ نفر انتخاب شده</span></div>'
-          new='<div class="message-command-row"><button type="button" class="ghost" id="messageCenterHome">بازگشت به خانه</button><button type="button" class="ghost" id="messageCenterExport">خروجی اکسل</button><button type="button" class="ghost" id="refreshMessageCenter">تازه‌سازی</button><label class="message-channel-inline">کانال ارسال<select id="messageChannel"><option value="portal">داخل سامانه</option><option value="email">ایمیل</option><option value="both">هر دو</option></select></label><button id="sendSelectedMessages" type="button" class="primary" disabled>ارسال</button><span id="messageSelectionCount">۰ نفر انتخاب شده</span></div>'
-          edit(p,old,new,'message center command layout')
-          edit(p,"q('#messageCenterSearch').oninput=render;",'', 'message center search binding')
-          edit(p,'متولی مطابق جست‌وجو وجود ندارد.','متولی برای نمایش وجود ندارد.','message center empty text')
-
-          # 4. Sent messages: eliminate second controls row; keep record count in first row.
-          p='assets/js/admin-root-fixes-20260911.js'
-          marker='#sentMessagesView .sent-command-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 0;margin:0 0 12px;border-top:1px solid #d9e4de;border-bottom:1px solid #d9e4de}'
-          edit(p,marker,marker+'\n#sentMessagesView .sent-command-row button{font-weight:400!important}','sent messages regular buttons')
-          regex_edit(p,r'function sentFiltered\(\)\{.*?\}\nfunction renderSent',"function sentFiltered(){return sentRows.filter(r=>r.delivery_status!=='cancelled')}\nfunction renderSent",'sent messages filter logic',re.S)
-          regex_edit(p,r"function renderSent\(\)\{const view=ensureSentView\(\),filtered=sentFiltered\(\),search=q\('#sentSearch'\)\?\.value\|\|'',status=q\('#sentStatusFilter'\)\?\.value\|\|'',channel=q\('#sentChannelFilter'\)\?\.value\|\|'';view\.innerHTML=`", 'function renderSent(){const view=ensureSentView(),filtered=sentFiltered();view.innerHTML=`','sent messages renderer locals')
-          regex_edit(p,r'</div><div class="sent-controls">.*?</div><div class="table-wrap">','<span class="sent-count">${faNum(filtered.length)} رکورد نمایش داده می‌شود</span></div><div class="table-wrap">','sent messages second row',re.S)
-          edit(p,"function bindSentControls(){q('#sentSearch')?.addEventListener('input',renderSent);q('#sentStatusFilter')?.addEventListener('change',renderSent);q('#sentChannelFilter')?.addEventListener('change',renderSent);",
-                 'function bindSentControls(){','sent messages removed control bindings')
-
-          # 5. Response tracking: remove row-2 action button and row-3 quick-action buttons; keep selects functional.
-          p='assets/js/phase3-response-tracking.js'
-          edit(p,'#responseTrackingView .response-command-row>*{flex:0 0 auto}',
-                 '#responseTrackingView .response-command-row>*{flex:0 0 auto}\n    #responseTrackingView .response-command-row button{font-weight:400!important}',
-                 'response tracking regular buttons')
-          edit(p,'<div class="response-filters"><button id="responseSelectAll" type="button" class="ghost">انتخاب همه فیلترشده‌ها</button>','<div class="response-filters">','response tracking row-2 button')
-          regex_edit(p,r'</div><div class="response-quick"><button data-response-quick="all" class="active">همه</button>.*?</div><div class="table-wrap">','</div><div class="table-wrap">','response tracking row-3 buttons',re.S)
-          regex_edit(p,r"\n\s*qa\('\[data-response-quick\]'\)\.forEach\(b=>b\.onclick=.*?\);",'', 'response tracking quick bindings')
-          regex_edit(p,r"\n\s*q\('#responseSelectAll'\)\.onclick=.*?;ids\.forEach\(id=>clear\?selected\.delete\(id\):selected\.add\(id\)\);render\(\)\};",'', 'response tracking select-all binding')
-          edit(p,"\n  const all=q('#responseSelectAll');if(all)all.textContent=list.length&&list.every(x=>selected.has(String(x.delivery_id)))?'لغو انتخاب فیلترشده‌ها':'انتخاب همه فیلترشده‌ها';",'', 'response tracking select-all render')
-
-          # Existing regression expectation: channel now lives immediately after Refresh.
-          p='tests/workflow-tabs-root-20260912.test.cjs'
-          edit(p,"assert.deepEqual(texts.slice(0,4),['بازگشت به خانه','خروجی اکسل','تازه‌سازی','ارسال']);",
-                 "assert.deepEqual(texts.slice(0,3),['بازگشت به خانه','خروجی اکسل','تازه‌سازی']);assert.match(texts[3],/کانال ارسال/);assert.equal(texts[4],'ارسال');",
-                 'message-center regression expectation')
-
-          print('All requested source edits applied exactly once.')
+          index=Path('index.html')
+          h=index.read_text().replace('assets/js/app.js?v=task-filter-repair-20260912-1','assets/js/app.js?v=task-row-deselect-root-20260912-2')
+          h=h.replace('assets/js/avatar-final-20260911.js?v=task-row-deselect-20260912-1','assets/js/avatar-final-20260911.js?v=task-row-deselect-root-20260912-2')
+          index.write_text(h)
           PY
-          cat /tmp/ui-patch.log
-
-      - name: Add focused regression tests
+      - name: Verify source invariants
         shell: bash
         run: |
-          cat > tests/ui-toolbar-cleanup-20260912.test.cjs <<'TEST'
-          const test=require('node:test');
-          const assert=require('node:assert/strict');
-          const {fixture,until,pause}=require('./helpers/app-fixture.cjs');
-
-          test('dashboard performance dates auto-apply with no Apply button and Clear remains',async t=>{
-            const f=await fixture();t.after(()=>f.dispose());await f.open('dashboard');
-            assert.equal(f.d.querySelector('#applyPerf'),null);
-            assert.ok(f.d.querySelector('#clearPerf'));
-            const dateButton=f.d.querySelector('[data-dashboard-date="perfFrom"]');assert.ok(dateButton);dateButton.click();await pause(10);
-            f.d.querySelector('#setDateBtn').click();await pause(20);
-            assert.equal(f.errors.length,0,f.errors.join('\n'));
-          });
-
-          test('response report has no search and first-row buttons are regular weight',async t=>{
-            const f=await fixture({tables:{message_response_tracking:[]}});t.after(()=>f.dispose());
-            await f.open('responseReport');await until(()=>f.d.querySelector('#responseReportView .response-command-row'));
-            assert.equal(f.d.querySelector('#canonicalResponseSearch'),null);
-            assert.equal(f.d.querySelector('#responseReportView input[type="search"]'),null);
-            assert.match(f.d.querySelector('#bamcoCanonicalReportCss').textContent,/response-command-row button\{font-weight:400!important\}/);
-            assert.equal(f.errors.length,0,f.errors.join('\n'));
-          });
-
-          test('message center is one bounded row with no search and channel follows Refresh',async t=>{
-            const f=await fixture({tables:{message_recipient_live_state:[]}});t.after(()=>f.dispose());
-            await f.open('messageCenter');await until(()=>f.d.querySelector('#messageCenterView .message-command-row'));
-            const row=f.d.querySelector('#messageCenterView .message-command-row'),children=[...row.children];
-            assert.equal(f.d.querySelector('#messageCenterSearch'),null);
-            assert.equal(f.d.querySelectorAll('#messageCenterView .message-command-row').length,1);
-            const refresh=children.findIndex(x=>x.id==='refreshMessageCenter');
-            const channel=children.findIndex(x=>x.querySelector?.('#messageChannel'));
-            const send=children.findIndex(x=>x.id==='sendSelectedMessages');
-            assert.ok(refresh>=0&&channel===refresh+1&&send===channel+1);
-            assert.match(f.d.querySelector('#bamcoMessageCenterCommandCss').textContent,/message-command-row button\{font-weight:400!important\}/);
-            assert.equal(f.errors.length,0,f.errors.join('\n'));
-          });
-
-          test('sent messages has no second controls row and first-row buttons are regular weight',async t=>{
-            const f=await fixture({tables:{sent_message_log:[]}});t.after(()=>f.dispose());
-            await f.open('sentMessages');await until(()=>f.d.querySelector('#sentMessagesView .sent-command-row'));
-            assert.equal(f.d.querySelector('#sentMessagesView .sent-controls'),null);
-            assert.equal(f.d.querySelector('#sentSearch'),null);
-            assert.equal(f.d.querySelector('#sentStatusFilter'),null);
-            assert.equal(f.d.querySelector('#sentChannelFilter'),null);
-            assert.ok(f.d.querySelector('#sentMessagesView .sent-command-row .sent-count'));
-            assert.match(f.d.querySelector('#bamcoSentMessagesCss').textContent,/sent-command-row button\{font-weight:400!important\}/);
-            assert.equal(f.errors.length,0,f.errors.join('\n'));
-          });
-
-          test('response tracking removes row-2 and row-3 buttons while preserving select filters',async t=>{
-            const f=await fixture({tables:{message_response_tracking:[]}});t.after(()=>f.dispose());
-            await f.open('responseTracking');await until(()=>f.d.querySelector('#responseTrackingView .response-command-row'));
-            assert.equal(f.d.querySelector('#responseSelectAll'),null);
-            assert.equal(f.d.querySelector('.response-quick'),null);
-            assert.equal(f.d.querySelectorAll('#responseTrackingView .response-filters button').length,0);
-            assert.ok(f.d.querySelector('#responsePerson'));
-            assert.ok(f.d.querySelector('#responseChannel'));
-            assert.ok(f.d.querySelector('#responseState'));
-            assert.ok(f.d.querySelector('#reminderSendChannel'));
-            assert.match(f.d.querySelector('#bamcoResponseTrackingRootCss').textContent,/response-command-row button\{font-weight:400!important\}/);
-            assert.equal(f.errors.length,0,f.errors.join('\n'));
-          });
-          TEST
-
-      - name: Syntax and targeted tests
-        shell: bash
+          grep -q '__bamcoTaskBulkDelete20260912V6' assets/js/task-bulk-delete-20260912.js
+          grep -q 'const seeded={kanban:false,archive:false}' assets/js/task-bulk-delete-20260912.js
+          grep -q 'task-bulk-delete-20260912.js?v=20260912-6' assets/js/avatar-final-20260911.js
+          grep -q 'app.js?v=task-row-deselect-root-20260912-2' index.html
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('assets/js/app.js').read_text()
+          assert s.count("const next=String(state.selected[scope])===String(id)?null:Number(id)") >= 2
+          PY
+      - name: Commit and push
         run: |
-          set -o pipefail
-          {
-            node --check assets/js/app.js
-            node --check assets/js/phase2-message-engine.js
-            node --check assets/js/phase3-response-tracking.js
-            node --check assets/js/admin-root-fixes-20260911.js
-            node --check assets/js/report-stability-fixes-20260911.js
-            node --check assets/js/tab-workspace.js
-            npm ci
-            node --test tests/ui-toolbar-cleanup-20260912.test.cjs tests/workflow-tabs-root-20260912.test.cjs
-          } 2>&1 | tee /tmp/ui-targeted-tests.log
-
-      - name: Full regression suite
-        shell: bash
-        run: |
-          set -o pipefail
-          npm test 2>&1 | tee /tmp/ui-full-tests.log
-
-      - name: Commit only after all tests pass
-        if: success()
-        shell: bash
-        run: |
-          set -euo pipefail
-          git fetch origin main --depth=1
-          git checkout origin/main -- .github/workflows/fix-task-row-deselect-root-v3.yml
-          git rm -f .github/workflows/ui-toolbar-diagnostic.yml ui-refactor-diagnostics.txt || true
-          rm -f ui-toolbar-failure.txt ui-test-failure.txt
-          git config user.name 'BAMCO UI Refactor Bot'
+          git config user.name 'BAMCO Fix Bot'
           git config user.email 'actions@users.noreply.github.com'
-          git add index.html assets/js/app.js assets/js/phase2-message-engine.js assets/js/phase3-response-tracking.js assets/js/tab-workspace.js assets/js/admin-root-fixes-20260911.js assets/js/report-stability-fixes-20260911.js tests/workflow-tabs-root-20260912.test.cjs tests/ui-toolbar-cleanup-20260912.test.cjs .github/workflows/fix-task-row-deselect-root-v3.yml
-          git commit -m 'Clean dashboard report and messaging controls'
-          git push origin HEAD:ui-toolbar-cleanup-20260912
-
-      - name: Preserve exact failure without partial app changes
-        if: failure()
-        shell: bash
-        run: |
-          set -euo pipefail
-          patchlog=''; testlog=''
-          [ -f ui-toolbar-failure.txt ] && patchlog="$(cat ui-toolbar-failure.txt)"
-          [ -f /tmp/ui-targeted-tests.log ] && testlog="$(cat /tmp/ui-targeted-tests.log)"
-          [ -f /tmp/ui-full-tests.log ] && testlog="$testlog
-          === FULL SUITE ===
-          $(cat /tmp/ui-full-tests.log)"
-          git reset --hard HEAD
-          git fetch origin main --depth=1
-          git checkout origin/main -- .github/workflows/fix-task-row-deselect-root-v3.yml
-          printf '%s\n%s\n' "$patchlog" "$testlog" > ui-test-failure.txt
-          git config user.name 'BAMCO UI Refactor Bot'
-          git config user.email 'actions@users.noreply.github.com'
-          git add ui-test-failure.txt .github/workflows/fix-task-row-deselect-root-v3.yml
-          git commit -m 'Record UI cleanup validation failure' || true
-          git push origin HEAD:ui-toolbar-cleanup-20260912
+          git add assets/js/app.js assets/js/task-bulk-delete-20260912.js assets/js/avatar-final-20260911.js index.html
+          git commit -m 'Make task row deselection authoritative'
+          git push
