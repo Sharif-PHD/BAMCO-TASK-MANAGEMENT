@@ -113,7 +113,7 @@ async function sendReminder(){
     }
     q('#reminderResult').textContent='';
     q('#reminderPreviewContent').innerHTML=snapshots.map(s=>`<section><h4>${esc(s.recipient_name)}</h4><p>کانال: ${esc(channels[channel])}</p><div style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(s.final_text)}</div></section>`).join('<hr>');
-    q('#confirmReminderSend').disabled=false;q('#reminderPreviewDialog').showModal();
+    q('#confirmReminderSend').textContent='تأیید و ارسال';q('#confirmReminderSend').disabled=false;q('#reminderPreviewDialog').showModal();
   }catch(err){toast(err.message,true)}finally{sending=false;render()}
 }
 async function confirmReminder(){
@@ -132,7 +132,7 @@ async function confirmReminder(){
     const deliveries=await selectAll('message_deliveries',`select=id,recipient_id,channel,status,error_message&batch_id=eq.${pending.id}&order=id`);
     const ok=deliveries.filter(d=>['sent','delivered'].includes(d.status)),failed=deliveries.filter(d=>d.status==='failed'),waiting=deliveries.filter(d=>!['sent','delivered','failed','cancelled'].includes(d.status));
     q('#reminderResult').textContent=`${digits(ok.length)} ارسال موفق؛ ${digits(failed.length)} ناموفق؛ ${digits(waiting.length)} در انتظار تکمیل\n`+deliveries.map(d=>`${rows.find(r=>r.recipient_id===d.recipient_id)?.recipient_name||d.recipient_id} — ${channels[d.channel]}: ${['sent','delivered'].includes(d.status)?'موفق':d.error_message||d.status}`).join('\n')+(error?'\n'+error:'');
-    if(deliveries.length&&ok.length===deliveries.length){selected.clear();preparedReminder=null;toast('یادآوری ارسال شد.');}
+    if(deliveries.length&&ok.length===deliveries.length){selected.clear();preparedReminder=null;}
     // Retry reuses the same batch: successful channels are never resent.
     q('#confirmReminderSend').textContent='بررسی / تلاش مجدد همین ارسال';
     q('#confirmReminderSend').disabled=!preparedReminder;

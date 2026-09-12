@@ -45,5 +45,32 @@ test('automatic message renders risk and waiting work as sibling sections from o
   assert.match(html,/data-bamco-task-id="3"/);
   assert.equal((html.match(/workflow-auto-task-grid/g)||[]).length,1);
   const empty=renderer.html({...snapshot,waiting_task_ids:[],tasks:snapshot.tasks.filter(x=>x.id!==3)});
-  assert.match(empty,/موردی در انتظار پاسخ نیست/);
+  assert.doesNotMatch(empty,/workflow-waiting-section/);
+});
+
+
+test('state1 text without table tokens still renders its own waiting tasks and links',()=>{
+ const renderer=require('../assets/js/message-renderer.js');
+ const html=renderer.html({body_template:'وضعیت مطلوب',tasks:[{id:19,title:'Waiting A',status_kind:'waiting'}]});
+ assert.match(html,/وضعیت مطلوب/);assert.match(html,/workflow-waiting-section/);
+ assert.match(html,/\?task=19/);assert.match(html,/#c8b0eb/);
+ assert.doesNotMatch(renderer.html({body_template:'Recipient B',tasks:[]}),/Waiting A/);
+});
+test('localized old snapshots retain warning and overdue groups',()=>{
+ const renderer=require('../assets/js/message-renderer.js');
+ const g=renderer.taskGroups({tasks:[{id:1,due_state:'دوره هشدار'},{id:2,due_state:'دیرکرد'}]});
+ assert.equal(g.warning[0].id,1);assert.equal(g.overdue[0].id,2);
+});
+
+test('message task link closes preview and repeated navigation preserves selection',()=>{
+ const {JSDOM}=require('jsdom');
+ const dom=new JSDOM('<nav id="nav"><button data-view="kanban"></button></nav><dialog open><a data-bamco-task-id="19" href="?task=19">Waiting</a></dialog><table><tbody id="kanbanBody"><tr data-task-id="19" aria-selected="false"><td>Task</td></tr></tbody></table>',{runScripts:'outside-only',url:'https://example.test'});
+ const w=dom.window;w.CSS={escape:String};let focused=0,clicked=0;
+ w.HTMLDialogElement.prototype.close=function(){this.removeAttribute('open')};w.HTMLElement.prototype.scrollIntoView=function(){};
+ w.bamcoFocusMessageTask=()=>focused++;
+ const row=w.document.querySelector('tr');row.onclick=()=>{clicked++;row.setAttribute('aria-selected','true')};
+ w.eval(fs.readFileSync(path.join(__dirname,'..','assets/js/message-renderer.js'),'utf8'));
+ w.document.dispatchEvent(new w.Event('DOMContentLoaded'));
+ w.document.querySelector('a').click();w.document.querySelector('a').click();
+ assert.equal(w.document.querySelector('dialog').open,false);assert.equal(clicked,1);assert.equal(focused,2);assert.equal(row.getAttribute('aria-selected'),'true');dom.window.close();
 });

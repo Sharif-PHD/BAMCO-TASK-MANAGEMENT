@@ -798,6 +798,15 @@ showLogin();
   };
   renderTasks.__ascendingWrapped=true;
 
+  // Message links must reveal the target even when table filters hide it.
+  window.bamcoFocusMessageTask=function(id){
+    if(!state.tasks.some(t=>!t.archived&&String(t.id)===String(id)))return false;
+    const all=qs('#showAllKanbanTasks');if(all&&!all.closest('[hidden]'))all.click();
+    const search=qs('#kanbanSearch');if(search)search.value='';
+    Object.keys(tableFilters.kanban).forEach(key=>delete tableFilters.kanban[key]);
+    state.selected.kanban=Number(id);renderTasks(false);window.bamcoRevealTask?.(id);return true;
+  };
+
   function renderArchivePager(total,start,shown,pageCount){
     const pager=qs('#archivePager');if(!pager)return;
     pager.innerHTML=`<span>نمایش ${fa(total?start+1:0)} تا ${fa(start+shown)} از ${fa(total)} رکورد</span><div><label>تعداد در صفحه <select id="archivePageSize"><option value="50">۵۰</option><option value="100">۱۰۰</option><option value="200">۲۰۰</option></select></label><button type="button" class="ghost" data-archive-page="prev" ${archivePage<=1?'disabled':''}>صفحه قبل</button><strong>صفحه ${fa(archivePage)} از ${fa(pageCount)}</strong><button type="button" class="ghost" data-archive-page="next" ${archivePage>=pageCount?'disabled':''}>صفحه بعد</button></div>`;
