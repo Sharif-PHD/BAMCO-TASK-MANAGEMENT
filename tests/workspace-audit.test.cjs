@@ -7,26 +7,25 @@ const root=path.join(__dirname,'..');
 const today=new Date().toISOString().slice(0,10);
 const task={id:71,title:'وظیفهٔ آزمون رابط',status:'درحال انجام',priority:'متوسط',owner_id:'test-owner',start_date:today,due_date:today,archived:false};
 
-test('every navigation destination has one consistent toolbar return and releases the visible view',async t=>{
+test('every navigation destination has one working return-to-home control and releases the visible view',async t=>{
  const f=await fixture({styles:true,tables:{tasks:[task]}}),{w,d}=f;t.after(()=>f.dispose());
  const routes=[...new Set([...d.querySelectorAll('#nav [data-view]')].map(b=>b.dataset.view))];assert(routes.length>=20);
- assert(!routes.includes('emailSettings'));assert(!routes.includes('alertSettings'));
+ assert(!routes.includes('emailSettings'));assert(!routes.includes('alertSettings'));assert(!routes.includes('templates'));
  for(const route of routes){
   await t.test(route,async()=>{
    await f.open(route);await pause(100);const view=d.querySelector('#'+route+'View');
-   const backs=view.querySelectorAll('.content-back,[data-empty-home]');assert.equal(backs.length,1,route+' duplicate return');const back=backs[0];
-   assert.equal(view.querySelector('.bamco-page-heading button'),null);assert.equal(back.parentElement.firstElementChild,back);
-   const style=w.getComputedStyle(back);assert.equal(style.display,'inline-flex');
-   const height=style.height==='var(--ui-control)'?w.getComputedStyle(view).getPropertyValue('--ui-control').trim():style.height;
-   assert.equal(height,'36px');assert.equal(style.borderRadius,'7px');assert.equal(style.order,'-100');assert.notEqual(style.pointerEvents,'none');
+   const backs=[...view.querySelectorAll('button')].filter(b=>b.textContent.replace(/\s+/g,' ').trim()==='بازگشت به خانه');
+   assert.equal(backs.length,1,route+' must expose exactly one return-to-home control');const back=backs[0];
+   assert.equal(view.querySelector('.bamco-page-heading button'),null);
+   const style=w.getComputedStyle(back);assert.notEqual(style.display,'none');assert.notEqual(style.visibility,'hidden');assert.notEqual(style.pointerEvents,'none');
    back.click();await pause(20);assert.equal(w.getComputedStyle(view).display,'none');assert(!d.querySelector('#homeView').classList.contains('hidden'));assert.equal(d.querySelector('#nav button.active'),null);
   });
  }
  assert.deepEqual(f.errors,[]);
 });
 
-test('dashboard date controls, templates, sticker picker, chain form and Gantt actions',async t=>{
- const f=await fixture({tables:{tasks:[task],email_templates:[{id:1,template_key:'state1',body_html:'متن قبلی'}],app_settings:[],approval_chains:[],approval_chain_members:[],approval_chain_stages:[],approval_stage_approvers:[]}}),{w,d}=f;t.after(()=>f.dispose());
+test('dashboard date controls, removed templates route, sticker picker, chain form and Gantt actions',async t=>{
+ const f=await fixture({tables:{tasks:[task],app_settings:[],approval_chains:[],approval_chain_members:[],approval_chain_stages:[],approval_stage_approvers:[]}}),{d}=f;t.after(()=>f.dispose());
  await t.test('dashboard calendar applies dates automatically and clear resets the final-chart range',async()=>{
   await f.open('dashboard');assert.equal(d.querySelector('#workspaceActionCenter'),null);assert.equal(d.querySelector('#applyPerf'),null);
   for(const target of ['perfFrom','perfTo']){
@@ -35,10 +34,8 @@ test('dashboard date controls, templates, sticker picker, chain form and Gantt a
   d.querySelector('#clearPerf').click();assert.equal(d.querySelector('#perfFrom').value,'');assert.equal(d.querySelector('#perfTo').value,'');
   assert.equal(d.querySelectorAll('.dashboard-date-field').length,2);assert.ok(d.querySelector('#clearPerf'));
  });
- await t.test('template editor saves and re-reads fresh server data when reopened',async()=>{
-  await f.open('templates');d.querySelector('#openDesktopTemplateEditor').click();await until(()=>d.querySelector('#desktopTemplateEditor').open);
-  d.querySelector('#dteBody').value='متن اصلاح‌شده';d.querySelector('#templateEditorForm').requestSubmit();await until(()=>!d.querySelector('#desktopTemplateEditor').open);assert(f.tables.email_templates[0].body_html.includes('متن اصلاح‌شده'));
-  f.tables.email_templates[0].body_html='تغییر بیرون از این صفحه';d.querySelector('#openDesktopTemplateEditor').click();await until(()=>d.querySelector('#desktopTemplateEditor').open);assert.equal(d.querySelector('#dteBody').value,'تغییر بیرون از این صفحه');d.querySelector('#dteCancel').click();assert(!d.querySelector('#desktopTemplateEditor').open);
+ await t.test('removed template editor route cannot return',async()=>{
+  assert.equal(d.querySelector('#nav [data-view="templates"],#templatesView,#openDesktopTemplateEditor,#desktopTemplateEditor'),null);
  });
  await t.test('sticker controls open the upload form and preserve each selectable image slot',async()=>{
   await f.open('stickers');d.querySelector('#stickerNew').click();assert(d.querySelector('#stickerPackDialog').open);assert.equal(d.querySelectorAll('.sticker-pick').length,10);
