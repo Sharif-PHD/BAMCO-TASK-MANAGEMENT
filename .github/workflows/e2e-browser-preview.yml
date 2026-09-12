@@ -1,0 +1,89 @@
+name: Browser E2E document preview
+on:
+  push:
+    branches: [refactor/message-waiting-document-preview-20260912]
+permissions:
+  contents: read
+jobs:
+  browser-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refactor/message-waiting-document-preview-20260912
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: Install browser test dependencies
+        run: |
+          npm install --no-save playwright@1.55.0 docx@9.5.1 xlsx@0.18.5 pdf-lib@1.17.1
+          npx playwright install --with-deps chromium
+      - name: Run Chromium E2E for all preview formats
+        run: |
+          cat > ./bamco-e2e.mjs <<'JS'
+          import { chromium } from 'playwright';
+          import { PDFDocument, StandardFonts } from 'pdf-lib';
+          import { Document, Packer, Paragraph, TextRun } from 'docx';
+          import XLSX from 'xlsx';
+          import fs from 'node:fs';
+          import http from 'node:http';
+          import path from 'node:path';
+          import assert from 'node:assert/strict';
+
+          const root=process.cwd();
+          const pdf=await PDFDocument.create(); const page=pdf.addPage([420,300]); const font=await pdf.embedFont(StandardFonts.Helvetica); page.drawText('BAMCO PDF E2E',{x:40,y:220,size:22,font}); const pdfBytes=Buffer.from(await pdf.save());
+          const pngBytes=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFElEQVR4nGP8z8DAwMDAxMDAwMAAAAQBAQDJ/pLvAAAAAElFTkSuQmCC','base64');
+          const txtBytes=Buffer.from('BAMCO TXT E2E\nسلام تست پیش نمایش','utf8');
+          const docxDoc=new Document({sections:[{children:[new Paragraph({children:[new TextRun('BAMCO DOCX E2E')]}),new Paragraph('Document preview works')]}]});
+          const docxBytes=Buffer.from(await Packer.toBuffer(docxDoc));
+          const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Title','Value'],['BAMCO XLSX E2E',123]]),'SheetOne'); XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['SecondSheet'],['OK']]),'SheetTwo'); const xlsxBytes=Buffer.from(XLSX.write(wb,{type:'buffer',bookType:'xlsx'}));
+          const fixtures={
+            'categories/1/test.pdf':{body:pdfBytes,type:'application/pdf'},
+            'categories/1/test.png':{body:pngBytes,type:'image/png'},
+            'categories/1/test.txt':{body:txtBytes,type:'text/plain; charset=utf-8'},
+            'categories/1/test.docx':{body:docxBytes,type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'},
+            'categories/1/test.xlsx':{body:xlsxBytes,type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}
+          };
+          const docs=[
+            {id:1,category_id:1,title:'PDF Test',original_file_name:'test.pdf',storage_path:'categories/1/test.pdf',mime_type:'application/pdf',file_size:pdfBytes.length,version:1,updated_at:new Date().toISOString()},
+            {id:2,category_id:1,title:'Image Test',original_file_name:'test.png',storage_path:'categories/1/test.png',mime_type:'image/png',file_size:pngBytes.length,version:1,updated_at:new Date().toISOString()},
+            {id:3,category_id:1,title:'Text Test',original_file_name:'test.txt',storage_path:'categories/1/test.txt',mime_type:'application/octet-stream',file_size:txtBytes.length,version:1,updated_at:new Date().toISOString()},
+            {id:4,category_id:1,title:'Word Test',original_file_name:'test.docx',storage_path:'categories/1/test.docx',mime_type:'',file_size:docxBytes.length,version:1,updated_at:new Date().toISOString()},
+            {id:5,category_id:1,title:'Excel Test',original_file_name:'test.xlsx',storage_path:'categories/1/test.xlsx',mime_type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',file_size:xlsxBytes.length,version:1,updated_at:new Date().toISOString()}
+          ];
+          const harness=`<!doctype html><html dir="rtl"><head><meta charset="utf-8"><link rel="stylesheet" href="/assets/css/app.css"><link rel="stylesheet" href="/assets/css/documents-sites.css"></head><body><nav id="nav"></nav><main class="workspace"></main><div id="toast"></div><script>
+          window.state={token:'browser-e2e',user:{id:'manager-e2e'},profile:{id:'manager-e2e',role:'manager',active:true},profiles:[]};window.SB_URL='https://e2e.supabase.test';window.SB_KEY='publishable';window.titles={};window.toast=(m,e)=>{window.__toasts=(window.__toasts||[]).concat({m,e})};window.bamcoConfirm=async()=>true;
+          window.selectAll=async(table)=>table==='document_categories'?[{id:1,title:'E2E',description:'Fixtures',sort_order:0}]:table==='documents'?${JSON.stringify(docs)}:[];window.select=async()=>[];window.insert=async()=>[];window.update=async()=>[];window.rpc=async()=>{};window.api=async()=>{};
+          window.ensureBamcoXLSX=async()=>window.XLSX;
+          </script><script src="/assets/vendor/xlsx.min.js"></script><script src="/assets/vendor/jszip.min.js"></script><script src="/assets/vendor/docx-preview.min.js"></script><script src="/assets/js/documents-sites.js"></script></body></html>`;
+          const server=http.createServer((req,res)=>{const url=new URL(req.url,'http://127.0.0.1'); if(url.pathname==='/e2e.html'){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8'});return res.end(harness)} const file=path.join(root,url.pathname.replace(/^\//,'')); if(file.startsWith(root)&&fs.existsSync(file)&&fs.statSync(file).isFile()){const ext=path.extname(file);const type=ext==='.js'?'text/javascript':ext==='.css'?'text/css':'application/octet-stream';res.writeHead(200,{'Content-Type':type});return fs.createReadStream(file).pipe(res)} res.writeHead(404);res.end('not found')});
+          await new Promise(r=>server.listen(4173,'127.0.0.1',r));
+          const browser=await chromium.launch({headless:true}); const context=await browser.newContext({acceptDownloads:true,viewport:{width:1440,height:900}}); const pageObj=await context.newPage();
+          const errors=[]; const badResponses=[];
+          pageObj.on('pageerror',e=>errors.push('pageerror:'+e.message));
+          pageObj.on('console',m=>{if(m.type()==='error'||/Content Security Policy|CSP violation|Unhandled/i.test(m.text()))errors.push('console:'+m.text())});
+          pageObj.on('requestfailed',r=>{const failure=r.failure()?.errorText||'';const url=r.url();const expectedPdfAbort=failure==='net::ERR_ABORTED'&&/\/storage\/v1\/object\/sign\/documents-private\/.*\.pdf(?:\?|$)/i.test(url);if(!expectedPdfAbort)errors.push('requestfailed:'+url+':'+failure)});
+          pageObj.on('response',r=>{if(r.status()>=400)badResponses.push(r.status()+':'+r.url())});
+          await pageObj.route('https://e2e.supabase.test/storage/v1/object/sign/**',async route=>{const req=route.request(); if(req.method()!=='POST')return route.fallback(); const raw=req.url().split('/documents-private/')[1]||'';const p=decodeURIComponent(raw); await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({signedURL:'/object/sign/documents-private/'+encodeURIComponent(p)+'?token=e2e'})})});
+          await pageObj.route('https://e2e.supabase.test/storage/v1/object/authenticated/documents-private/**',async route=>{const raw=route.request().url().split('/documents-private/')[1].split('?')[0];const p=decodeURIComponent(raw);const f=fixtures[p];assert.ok(f,'missing authenticated fixture '+p);await route.fulfill({status:200,contentType:f.type,body:f.body})});
+          await pageObj.route('https://e2e.supabase.test/storage/v1/object/sign/documents-private/**',async route=>{if(route.request().method()==='POST')return route.fallback(); const u=new URL(route.request().url());const raw=u.pathname.split('/documents-private/')[1];const p=decodeURIComponent(raw);const f=fixtures[p];assert.ok(f,'missing signed fixture '+p);await route.fulfill({status:200,contentType:f.type,body:f.body})});
+          await pageObj.goto('http://127.0.0.1:4173/e2e.html'); await pageObj.waitForSelector('[data-view="documents"]'); await pageObj.click('[data-view="documents"]'); await pageObj.evaluate(()=>document.querySelector('#documentsView')?.classList.remove('hidden')); await pageObj.waitForSelector('[data-document-id="1"]',{state:'visible'});
+          async function close(){await pageObj.locator('#documentPreviewDialog [data-feature-close="documentPreviewDialog"]').click();await pageObj.waitForFunction(()=>!document.querySelector('#documentPreviewDialog')?.open)}
+          async function reopen(id){await pageObj.click(`[data-doc-preview="${id}"]`);await pageObj.waitForFunction(()=>document.querySelector('#documentPreviewDialog')?.open)}
+          await reopen(1); await pageObj.waitForSelector('#documentPreviewBody iframe.feature-pdf-preview'); const pdfSrc=await pageObj.getAttribute('#documentPreviewBody iframe','src'); assert.match(pdfSrc,/e2e\.supabase\.test\/storage\/v1\/object\/sign/); await close(); await reopen(1); await close();
+          await reopen(2); await pageObj.waitForFunction(()=>document.querySelector('.feature-image-preview')?.naturalWidth>0); await close(); await reopen(2); await close();
+          await reopen(3); await pageObj.waitForSelector('pre.feature-text-preview'); assert.match(await pageObj.textContent('pre.feature-text-preview'),/BAMCO TXT E2E/); assert.match(await pageObj.textContent('pre.feature-text-preview'),/سلام/); await close(); await reopen(3); await close();
+          await reopen(4); await pageObj.waitForFunction(()=>document.querySelector('#documentDocxHost')?.textContent?.includes('BAMCO DOCX E2E')); assert.equal(await pageObj.locator('#documentDocxHost').count(),1); await close(); await reopen(4); await pageObj.waitForFunction(()=>document.querySelector('#documentDocxHost')?.textContent?.includes('BAMCO DOCX E2E')); await close();
+          await reopen(5); await pageObj.waitForSelector('#documentPreviewSheet'); assert.deepEqual(await pageObj.locator('#documentPreviewSheet option').allTextContents(),['SheetOne','SheetTwo']); assert.match(await pageObj.textContent('#documentPreviewSheetHost'),/BAMCO XLSX E2E/); await pageObj.selectOption('#documentPreviewSheet','SheetTwo'); assert.match(await pageObj.textContent('#documentPreviewSheetHost'),/SecondSheet/); await close(); await reopen(5); await close();
+          for(const id of [1,2,3,4,5]){const dlPromise=pageObj.waitForEvent('download');await pageObj.click(`[data-doc-download="${id}"]`);const dl=await dlPromise;assert.ok(dl.suggestedFilename().startsWith('test.'))}
+          await pageObj.setViewportSize({width:390,height:844}); await reopen(5); await pageObj.waitForSelector('#documentPreviewSheet'); const metrics=await pageObj.evaluate(()=>({body:document.documentElement.scrollWidth,vw:document.documentElement.clientWidth,dialog:document.querySelector('#documentPreviewDialog').getBoundingClientRect().width})); assert.ok(metrics.body<=metrics.vw+2,JSON.stringify(metrics)); assert.ok(metrics.dialog<=metrics.vw,JSON.stringify(metrics)); await close();
+          assert.deepEqual(badResponses,[],badResponses.join('\n')); assert.deepEqual(errors,[],errors.join('\n'));
+          await browser.close(); server.close(); console.log('BROWSER_E2E_PASS all five formats, reopen, download, mobile, console/network');
+          JS
+          node ./bamco-e2e.mjs
+          rm -f ./bamco-e2e.mjs
+      - name: Run full regression suite
+        run: npm test

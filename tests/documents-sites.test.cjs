@@ -42,9 +42,9 @@ test('credential vault uses server-only key and AES-GCM with user/site binding',
 
 test('document edge enforces manager and compensates failed metadata insert',()=>{
   const src=fs.readFileSync(documentPath,'utf8');
-  assert.match(src,/role!=="manager"/);
+  assert.match(src,/role\s*!==\s*"manager"/);
   assert.match(src,/documents-private/);
-  assert.match(src,/await deleteObjects\(url,service,\[path\]\)\.catch/);
+  assert.match(src,/await\s+deleteObjects\(url,\s*service,\s*\[path\]\)\.catch/);
   assert.match(src,/document_upload/);
   assert.match(src,/document_delete/);
 });
@@ -66,7 +66,9 @@ test('feature uses local XLSX loader and no public preview service or unsafe eva
   assert.match(src,/ensureBamcoXLSX/);
   assert.doesNotMatch(src,/docs\.google|officeapps\.live|view\.officeapps|iframe[^\n]+https?:\/\//i);
   assert.doesNotMatch(src,/eval\(|new Function/);
-  assert.match(src,/پیش‌نمایش امن DOCX/);
+  assert.match(src,/window\.docx\?\.renderAsync/);
+  assert.match(src,/documentPreviewSheet/);
+  assert.match(src,/documentPreviewDialog/);
 });
 
 test('index wires both feature views and source files after integration',()=>{
@@ -137,21 +139,31 @@ test('documents and sites join the standard home card and interior command bar',
 });
 
 
-test('PDF preview uses a signed Storage URL and bypasses blob delivery',()=>{
+test('document preview is modal-first with MIME fallback and five renderer paths',()=>{
   const src=fs.readFileSync(featurePath,'utf8');
-  const start=src.indexOf('async function previewDocument');
-  const end=src.indexOf('async function downloadDocument',start);
-  const preview=src.slice(start,end);
-  assert.match(src,/storage\/v1\/object\/sign\/\$\{DOC_BUCKET\}/);
-  assert.match(src,/expiresIn:300/);
-  assert.match(src,/storage\/v1\$\{raw\.startsWith/);
-  assert.match(preview,/doc\.mime_type==='application\/pdf'/);
-  assert.match(preview,/await signedDocumentUrl\(doc\.storage_path\)/);
-  assert(preview.indexOf("doc.mime_type==='application/pdf'") < preview.indexOf('const blob=await privateFile(doc.storage_path)'));
+  assert.match(src,/function documentMime\(doc\)/);
+  assert.match(src,/mime==='application\/pdf'/);
+  assert.match(src,/mime\.startsWith\('image\/'\)/);
+  assert.match(src,/mime==='text\/plain'/);
+  assert.match(src,/window\.docx\?\.renderAsync/);
+  assert.match(src,/ensureBamcoXLSX/);
+  assert.match(src,/documentPreviewDialog/);
+  assert.match(src,/documentPreviewOpenTab/);
+  assert.match(src,/documentPreviewDownload/);
+  assert.match(src,/storage\/v1\/object\/sign/);
+  assert.doesNotMatch(src,/openDocumentPreviewTab/);
 });
 
 test('sites access buttons use the regular font face without synthetic bold',()=>{
   const css=fs.readFileSync(path.join(ROOT,'assets/css/documents-sites.css'),'utf8');
   assert.match(css,/#sitesAccessView button[^}]*font-weight:400!important/);
   assert.match(css,/#sitesAccessView button[^}]*font-synthesis:none!important/);
+});
+
+
+test('DOCX preview loads local JSZip before docx-preview',()=>{
+  const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
+  const zip=html.indexOf('assets/vendor/jszip.min.js'),docx=html.indexOf('assets/vendor/docx-preview.min.js');
+  assert.ok(zip>=0&&docx>zip);
+  assert.ok(fs.statSync(path.join(ROOT,'assets/vendor/jszip.min.js')).size>10000);
 });
