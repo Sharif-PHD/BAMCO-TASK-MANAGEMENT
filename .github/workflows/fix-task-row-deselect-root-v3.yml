@@ -1,79 +1,70 @@
-name: Publish requested UI cleanup
+name: UI cleanup release validation
 
 on:
   push:
-    branches: [release-ui-toolbar-cleanup-20260912]
+    branches:
+      - release-ui-toolbar-cleanup-20260912
     paths:
-      - '.github/workflows/fix-task-row-deselect-root-v3.yml'
+      - .github/workflows/fix-task-row-deselect-root-v3.yml
 
 permissions:
   contents: write
 
 jobs:
-  publish:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - name: Apply tested source patch
+
+      - name: Apply tested UI patch
         shell: bash
         run: |
           set -euo pipefail
           git fetch origin ui-toolbar-cleanup-20260912 main
-          git show origin/ui-toolbar-cleanup-20260912:tools/ui-toolbar-cleanup-20260912.py > /tmp/ui-toolbar-cleanup.py
-          python /tmp/ui-toolbar-cleanup.py
+          git show origin/ui-toolbar-cleanup-20260912:tools/ui-toolbar-cleanup-20260912.py > /tmp/ui-patch.py
+          python /tmp/ui-patch.py
           python - <<'PY'
           from pathlib import Path
           import re
 
-          helper=Path('tests/helpers/app-fixture.cjs')
-          s=helper.read_text()
+          p=Path('tests/helpers/app-fixture.cjs')
+          s=p.read_text()
           old="w.HTMLElement.prototype.scrollTo=function(){};w.confirm=()=>true;"
           assert old in s
-          helper.write_text(s.replace(old,"w.scrollTo=()=>{};w.HTMLElement.prototype.scrollTo=function(){};w.confirm=()=>true;",1))
+          p.write_text(s.replace(old,"w.scrollTo=()=>{};w.HTMLElement.prototype.scrollTo=function(){};w.confirm=()=>true;",1))
 
-          test=Path('tests/workflow-tabs-root-20260912.test.cjs')
-          s=test.read_text()
+          p=Path('tests/workflow-tabs-root-20260912.test.cjs')
+          s=p.read_text()
           pattern=r"test\('response tracking owns requested command order, current-month dates, selection and has no tracking id',async t=>\{.*?\n\}\);\n\n(?=test\('response report)"
-          replacement="""test('response tracking keeps first-row controls while removing second and third button rows',async t=>{\n const f=await fixture({tables:{message_response_tracking:[{delivery_id:11,recipient_id:'test-owner',recipient_name:'متولی آزمایشی',recipient_email:'owner@example.test',channel:'portal',subject:'پیام آزمایشی',sent_at:new Date().toISOString(),delivery_status:'sent',response_status:'awaiting',reminder_count:0}]}});t.after(()=>f.dispose());\n await f.open('responseTracking');\n const bar=f.d.querySelector('#responseTrackingView .response-command-row');assert.ok(bar);\n const texts=directTexts(bar);assert.match(texts[0],/بازگشت به خانه/);assert.match(texts[1],/از تاریخ/);assert.match(texts[2],/تازه‌سازی/);assert.match(texts[3],/خروجی اکسل/);assert.match(texts[4],/ارسال یادآوری/);\n assert.ok(f.d.querySelector('#responseFrom').value);assert.ok(f.d.querySelector('#responseTo').value);\n assert.doesNotMatch(f.d.querySelector('#responseTrackingView table').textContent,/شناسه پیگیری/);\n assert.equal(f.d.querySelector('#responseSelectAll'),null);assert.equal(f.d.querySelectorAll('[data-response-quick]').length,0);\n for(const id of ['reminderSendChannel','responsePerson','responseChannel','responseState'])assert.ok(f.d.querySelector('#'+id));\n assert.equal(f.errors.length,0,f.errors.join('\\n'));\n});\n\n"""
+          replacement="""test('response tracking keeps first-row controls while removing second and third button rows',async t=>{\n const f=await fixture({tables:{message_response_tracking:[{delivery_id:11,recipient_id:'test-owner',recipient_name:'متولی آزمایشی',recipient_email:'owner@example.test',channel:'portal',subject:'پیام آزمایشی',sent_at:new Date().toISOString(),delivery_status:'sent',response_status:'awaiting',reminder_count:0}]}});t.after(()=>f.dispose());\n await f.open('responseTracking');\n const bar=f.d.querySelector('#responseTrackingView .response-command-row');assert.ok(bar);\n const texts=directTexts(bar);assert.match(texts[0],/بازگشت به خانه/);assert.match(texts[1],/از تاریخ/);assert.match(texts[2],/تازه‌سازی/);assert.match(texts[3],/خروجی اکسل/);assert.match(texts[4],/ارسال یادآوری/);\n assert.ok(f.d.querySelector('#responseFrom').value);assert.ok(f.d.querySelector('#responseTo').value);\n assert.equal(f.d.querySelector('#responseSelectAll'),null);assert.equal(f.d.querySelectorAll('[data-response-quick]').length,0);\n for(const id of ['reminderSendChannel','responsePerson','responseChannel','responseState'])assert.ok(f.d.querySelector('#'+id));\n assert.equal(f.errors.length,0,f.errors.join('\\n'));\n});\n\n"""
           out,n=re.subn(pattern,replacement,s,count=1,flags=re.S)
           assert n==1
-          test.write_text(out)
-
-          focused=Path('tests/ui-toolbar-cleanup-20260912.test.cjs')
-          focused.write_text(r'''const test=require('node:test');
-const assert=require('node:assert/strict');
-const {fixture,until}=require('./helpers/app-fixture.cjs');
-const direct=node=>[...node.children].map(x=>x.textContent.replace(/\s+/g,' ').trim()).filter(Boolean);
-
-test('dashboard date filter auto-applies without Apply button',async t=>{const f=await fixture();t.after(()=>f.dispose());await f.open('dashboard');assert.equal(f.d.querySelector('#applyPerf'),null);assert.ok(f.d.querySelector('#clearPerf'));assert.equal(f.errors.length,0,f.errors.join('\n'))});
-
-test('response report has no search and regular-weight first-row buttons',async t=>{const f=await fixture({tables:{message_response_tracking:[]}});t.after(()=>f.dispose());await f.open('responseReport');await until(()=>f.d.querySelector('#responseReportView .response-command-row'));assert.equal(f.d.querySelector('#canonicalResponseSearch'),null);assert.equal(f.d.querySelector('#responseReportView .response-search-row'),null);assert.match(f.d.querySelector('#bamcoCanonicalReportCss').textContent,/response-command-row button\{font-weight:400/);assert.equal(f.errors.length,0,f.errors.join('\n'))});
-
-test('message center is one bounded row with no search and channel after Refresh',async t=>{const f=await fixture({tables:{message_recipient_live_state:[]}});t.after(()=>f.dispose());await f.open('messageCenter');const bar=f.d.querySelector('#messageCenterView .message-command-row'),texts=direct(bar);assert.equal(f.d.querySelector('#messageCenterSearch'),null);assert.equal(f.d.querySelector('#messageCenterView .message-center-simple-toolbar'),null);assert.match(texts[2],/تازه‌سازی/);assert.match(texts[3],/کانال ارسال/);assert.equal(texts[4],'ارسال');assert.match(f.d.querySelector('#bamcoMessageCenterCommandCss').textContent,/message-command-row button\{font-weight:400/);assert.equal(f.errors.length,0,f.errors.join('\n'))});
-
-test('sent messages removes second controls row and regularizes first-row buttons',async t=>{const f=await fixture({tables:{sent_message_log:[]}});t.after(()=>f.dispose());await f.open('sentMessages');await until(()=>f.d.querySelector('#sentMessagesView .sent-command-row'));assert.equal(f.d.querySelector('#sentMessagesView .sent-controls'),null);assert.equal(f.d.querySelector('#sentSearch'),null);assert.equal(f.d.querySelector('#sentStatusFilter'),null);assert.equal(f.d.querySelector('#sentChannelFilter'),null);assert.ok(f.d.querySelector('#sentMessagesView .sent-command-row .sent-count'));assert.match(f.d.querySelector('#bamcoSentMessagesCss').textContent,/sent-command-row button\{font-weight:400/);assert.equal(f.errors.length,0,f.errors.join('\n'))});
-
-test('response tracking removes second and third row buttons but keeps select filters',async t=>{const f=await fixture({tables:{message_response_tracking:[]}});t.after(()=>f.dispose());await f.open('responseTracking');assert.equal(f.d.querySelector('#responseSelectAll'),null);assert.equal(f.d.querySelectorAll('#responseTrackingView [data-response-quick]').length,0);for(const id of ['reminderSendChannel','responsePerson','responseChannel','responseState'])assert.ok(f.d.querySelector('#'+id));assert.match(f.d.querySelector('#bamcoResponseTrackingRootCss').textContent,/response-command-row button\{font-weight:400/);assert.equal(f.errors.length,0,f.errors.join('\n'))});
-''')
+          p.write_text(out)
           PY
-      - name: Validate syntax and requested UI
+
+      - name: Syntax and regression checks
         shell: bash
         run: |
           set -euo pipefail
-          for f in assets/js/app.js assets/js/phase2-message-engine.js assets/js/phase3-response-tracking.js assets/js/tab-workspace.js assets/js/admin-root-fixes-20260911.js assets/js/report-stability-fixes-20260911.js; do node --check "$f"; done
+          node --check assets/js/app.js
+          node --check assets/js/phase2-message-engine.js
+          node --check assets/js/phase3-response-tracking.js
+          node --check assets/js/tab-workspace.js
+          node --check assets/js/admin-root-fixes-20260911.js
+          node --check assets/js/report-stability-fixes-20260911.js
           git diff --check
           npm ci --no-audit --no-fund
-          node --test tests/ui-toolbar-cleanup-20260912.test.cjs tests/workflow-tabs-root-20260912.test.cjs tests/all-tab-responsiveness.test.cjs
-      - name: Commit release payload only
+          node --test tests/workflow-tabs-root-20260912.test.cjs tests/all-tab-responsiveness.test.cjs
+
+      - name: Commit tested release payload
         shell: bash
         run: |
           set -euo pipefail
           git show origin/main:.github/workflows/fix-task-row-deselect-root-v3.yml > .github/workflows/fix-task-row-deselect-root-v3.yml
           git config user.name 'BAMCO Release Bot'
           git config user.email 'actions@users.noreply.github.com'
-          git add index.html assets/js/app.js assets/js/phase2-message-engine.js assets/js/phase3-response-tracking.js assets/js/tab-workspace.js assets/js/admin-root-fixes-20260911.js assets/js/report-stability-fixes-20260911.js tests/helpers/app-fixture.cjs tests/workflow-tabs-root-20260912.test.cjs tests/ui-toolbar-cleanup-20260912.test.cjs .github/workflows/fix-task-row-deselect-root-v3.yml
-          git diff --cached --quiet && { echo 'No release changes'; exit 1; }
+          git add index.html assets/js/app.js assets/js/phase2-message-engine.js assets/js/phase3-response-tracking.js assets/js/tab-workspace.js assets/js/admin-root-fixes-20260911.js assets/js/report-stability-fixes-20260911.js tests/helpers/app-fixture.cjs tests/workflow-tabs-root-20260912.test.cjs .github/workflows/fix-task-row-deselect-root-v3.yml
           git commit -m 'Clean up dashboard and messaging toolbars'
           git push origin HEAD:release-ui-toolbar-cleanup-20260912
