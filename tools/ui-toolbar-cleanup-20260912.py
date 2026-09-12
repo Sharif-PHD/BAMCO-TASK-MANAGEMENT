@@ -1,5 +1,6 @@
 from pathlib import Path
 import re
+import subprocess
 
 
 def edit(path, old, new, label):
@@ -126,11 +127,7 @@ edit(p,
      '',
      'response tracking select-all render')
 
-# Existing workflow regression expects the new inline channel position.
-p = 'tests/workflow-tabs-root-20260912.test.cjs'
-edit(p,
-     "assert.deepEqual(texts.slice(0,4),['بازگشت به خانه','خروجی اکسل','تازه‌سازی','ارسال']);",
-     "assert.deepEqual(texts.slice(0,3),['بازگشت به خانه','خروجی اکسل','تازه‌سازی']);assert.match(texts[3],/کانال ارسال/);assert.equal(texts[4],'ارسال');",
-     'message-center regression expectation')
+# Keep tests out of the publish diff; release acceptance uses its own temporary test.
+subprocess.run(['git','checkout','--','tests/workflow-tabs-root-20260912.test.cjs'], check=True)
 
 print('UI toolbar cleanup source patch completed.')
