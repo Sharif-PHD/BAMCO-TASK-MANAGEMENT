@@ -144,6 +144,7 @@ test('PDF preview uses a signed Storage URL and bypasses blob delivery',()=>{
   const preview=src.slice(start,end);
   assert.match(src,/storage\/v1\/object\/sign\/\$\{DOC_BUCKET\}/);
   assert.match(src,/expiresIn:300/);
+  assert.match(src,/storage\/v1\$\{raw\.startsWith/);
   assert.match(preview,/doc\.mime_type==='application\/pdf'/);
   assert.match(preview,/await signedDocumentUrl\(doc\.storage_path\)/);
   assert(preview.indexOf("doc.mime_type==='application/pdf'") < preview.indexOf('const blob=await privateFile(doc.storage_path)'));
