@@ -23,8 +23,8 @@ function iso(value,end=false){
   try{const out=jalaliToISO(p[0],p[1],p[2]);return out?out+(end?'T23:59:59':'T00:00:00'):''}catch{return''}
 }
 function filtered(){
-  const from=iso(q('#responseFrom')?.value),to=iso(q('#responseTo')?.value,true),person=q('#responsePerson')?.value||'',channel=q('#responseChannel')?.value||'',status=q('#responseState')?.value||'';
-  return rows.filter(x=>x.delivery_status!=='cancelled'&&(!from||String(x.sent_at||'')>=from)&&(!to||String(x.sent_at||'')<=to)&&(!person||String(x.recipient_id)===String(person))&&(!channel||x.channel===channel)&&(!status||x.response_status===status));
+  const from=iso(q('#responseFrom')?.value),to=iso(q('#responseTo')?.value,true);
+  return rows.filter(x=>x.delivery_status!=='cancelled'&&(!from||String(x.sent_at||'')>=from)&&(!to||String(x.sent_at||'')<=to));
 }
 function ensureStyles(){
   if(q('#bamcoResponseTrackingRootCss'))return;
@@ -41,9 +41,8 @@ function ensureStyles(){
     #responseTrackingView .response-date-controls{order:2}
     #responseTrackingView [data-response-refresh]{order:3}
     #responseTrackingView [data-response-export]{order:4}
-    #responseTrackingView #sendResponseReminder{order:5}
-    #responseTrackingView .response-filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 10px}
-    #responseTrackingView .response-quick{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:0 0 10px}
+    #responseTrackingView #reminderSendChannel{order:5;height:38px;min-width:132px}
+    #responseTrackingView #sendResponseReminder{order:6}
     #responseTrackingView table{border-collapse:collapse;width:100%}
     #responseTrackingView table th,#responseTrackingView table td{border:1px solid #cbd9d3}
     #responseTrackingView tbody tr[data-delivery]{cursor:pointer}
@@ -57,9 +56,9 @@ function install(){
   ensureStyles();
   const btn=document.createElement('button');btn.dataset.view='responseTracking';btn.className='manager-only';btn.innerHTML='<b>↩</b><span>پیگیری پاسخ</span>';(anchor?.parentElement||q('#nav'))?.insertBefore(btn,anchor||null);
   const range=currentMonthRange();
-  workspace.insertAdjacentHTML('beforeend',`<section id="responseTrackingView" class="view hidden manager-only"><div class="panel table-panel response-tracking"><div class="panel-head"><div><h3>پیگیری پاسخ‌ها</h3><small>پاسخ هر فرد در کنار همان پیام ارسالی نمایش داده می‌شود.</small></div></div><div class="response-command-row"><button type="button" class="ghost" data-response-home>بازگشت به خانه</button><div class="response-date-controls"><label><span>از تاریخ</span><span class="response-date-field"><input id="responseFrom" class="jalali-input" readonly value="${esc(range.fromText)}"><button type="button" class="ghost" data-response-tracking-date="from" aria-label="انتخاب تاریخ شروع">▦</button></span></label><label><span>تا تاریخ</span><span class="response-date-field"><input id="responseTo" class="jalali-input" readonly value="${esc(range.toText)}"><button type="button" class="ghost" data-response-tracking-date="to" aria-label="انتخاب تاریخ پایان">▦</button></span></label></div><button type="button" class="ghost" data-response-refresh>تازه‌سازی</button><button type="button" class="ghost" data-response-export>خروجی اکسل</button><button id="sendResponseReminder" type="button" class="primary">ارسال یادآوری</button></div><div class="response-filters"><select id="reminderSendChannel" aria-label="کانال یادآوری"><option value="portal">داخل سامانه</option><option value="email">ایمیل</option><option value="both">هر دو</option></select><select id="responsePerson"><option value="">همه افراد</option></select><select id="responseChannel"><option value="">همه کانال‌ها</option><option value="portal">داخل سامانه</option><option value="email">ایمیل</option></select><select id="responseState"><option value="">همه وضعیت‌ها</option><option value="replied">پاسخ داده</option><option value="awaiting">بدون پاسخ</option><option value="failed">خطای ارسال</option><option value="reminder_needed">نیازمند یادآوری</option></select></div><div class="table-wrap"><table class="workspace-table"><thead><tr><th>شناسه</th><th>فرد</th><th>تاریخ ارسال</th><th>کانال</th><th>موضوع</th><th>پاسخ</th><th>تاریخ پاسخ</th><th>تعداد یادآوری</th></tr></thead><tbody id="responseTrackingBody"></tbody></table></div></div></section>`);
+  workspace.insertAdjacentHTML('beforeend',`<section id="responseTrackingView" class="view hidden manager-only"><div class="panel table-panel response-tracking"><div class="panel-head"><div><h3>پیگیری پاسخ‌ها</h3><small>پاسخ هر فرد در کنار همان پیام ارسالی نمایش داده می‌شود.</small></div></div><div class="response-command-row"><button type="button" class="ghost" data-response-home>بازگشت به خانه</button><div class="response-date-controls"><label><span>از تاریخ</span><span class="response-date-field"><input id="responseFrom" class="jalali-input" readonly value="${esc(range.fromText)}"><button type="button" class="ghost" data-response-tracking-date="from" aria-label="انتخاب تاریخ شروع">▦</button></span></label><label><span>تا تاریخ</span><span class="response-date-field"><input id="responseTo" class="jalali-input" readonly value="${esc(range.toText)}"><button type="button" class="ghost" data-response-tracking-date="to" aria-label="انتخاب تاریخ پایان">▦</button></span></label></div><button type="button" class="ghost" data-response-refresh>تازه‌سازی</button><button type="button" class="ghost" data-response-export>خروجی اکسل</button><select id="reminderSendChannel" aria-label="کانال یادآوری"><option value="portal">داخل سامانه</option><option value="email">ایمیل</option><option value="both">هر دو</option></select><button id="sendResponseReminder" type="button" class="primary">ارسال یادآوری</button></div><div class="table-wrap"><table class="workspace-table"><thead><tr><th>شناسه</th><th>فرد</th><th>تاریخ ارسال</th><th>کانال</th><th>موضوع</th><th>پاسخ</th><th>تاریخ پاسخ</th><th>تعداد یادآوری</th></tr></thead><tbody id="responseTrackingBody"></tbody></table></div></div></section>`);
   btn.onclick=()=>{if(typeof showView==='function')showView('responseTracking');setTimeout(()=>void load(),0)};
-  qa('#responseFrom,#responseTo,#responsePerson,#responseChannel,#responseState').forEach(x=>x.addEventListener(x.tagName==='SELECT'?'change':'input',()=>{selected.clear();render()}));
+  qa('#responseFrom,#responseTo').forEach(x=>x.addEventListener('input',()=>{selected.clear();render()}));
   q('#sendResponseReminder').onclick=sendReminder;
   q('[data-response-home]').onclick=()=>window.bamcoShowHome?.();
   q('[data-response-refresh]').onclick=()=>void load(true);
@@ -77,8 +76,6 @@ async function load(force=false){
   if(!isManager()||loading&&!force)return;loading=true;const refresh=q('[data-response-refresh]');if(refresh)refresh.disabled=true;
   try{
     rows=await selectAll('message_response_tracking','select=*&order=sent_at.desc');
-    const people=[...new Map(rows.filter(x=>x.recipient_id).map(x=>[String(x.recipient_id),x])).values()];
-    const select=q('#responsePerson'),current=select?.value||'';if(select){select.innerHTML='<option value="">همه افراد</option>'+people.map(x=>`<option value="${esc(x.recipient_id)}">${esc(x.recipient_name||x.recipient_email||'—')}</option>`).join('');select.value=current}
     render();
   }catch(err){toast(err.message,true)}finally{loading=false;if(refresh)refresh.disabled=false}
 }
