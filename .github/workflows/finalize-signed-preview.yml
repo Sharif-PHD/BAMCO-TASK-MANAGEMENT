@@ -1,0 +1,33 @@
+name: Final signed preview gate
+on:
+  push:
+    branches: [fix/root-preview-waiting-sites-20260912]
+permissions:
+  contents: write
+jobs:
+  test-and-commit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/root-preview-waiting-sites-20260912
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node .github/scripts/finalize_signed_preview.cjs
+      - run: node --check assets/js/documents-sites.js
+      - run: node --test tests/documents-sites.test.cjs
+      - run: git diff --check
+      - name: Commit validated canonical fix
+        run: |
+          rm -f .github/scripts/finalize_signed_preview.cjs .github/workflows/finalize-signed-preview.yml
+          git config user.name "BAMCO Fix Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "Normalize Supabase signed preview URLs"
+          git push origin HEAD:fix/root-preview-waiting-sites-20260912
