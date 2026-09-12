@@ -28,7 +28,7 @@ async def open_measure(page,tab):
     view=page.locator('#'+tab+'View')
     before=await view.evaluate("v=>({html:v.innerHTML.length,cls:v.className})") if await view.count() else {}
     start=time.monotonic()
-    await page.locator('#nav button[data-view="'+tab+'"]').click(force=True)
+    await page.locator('#nav button[data-view="'+tab+'"]').click()
     await settled(page,tab,10000)
     settle_ms=round((time.monotonic()-start)*1000)
     await heartbeat(page)
@@ -61,7 +61,7 @@ async def assert_mobile_toolbar(page,tab):
     assert data['sw'] <= data['w'] + 2, f'{tab} actions overflow: {data}'
 
 async def assert_dashboard_mobile(page):
-    await home(page);await page.locator('#nav button[data-view="dashboard"]').click(force=True);await settled(page,'dashboard')
+    await home(page);await page.locator('#nav button[data-view="dashboard"]').click();await settled(page,'dashboard')
     data=await page.evaluate('''()=>{
       const v=document.querySelector('#dashboardView'),root=v.querySelector('.desktop-dashboard-exact'),cards=v.querySelector('#dashboardCards');
       const rr=root.getBoundingClientRect(),cr=cards.getBoundingClientRect();
@@ -74,13 +74,13 @@ async def assert_dashboard_mobile(page):
     assert len(data['columns'].split()) == 1, f"dashboard is not one column: {data}"
 
 async def assert_automated_message_route(page):
-    await home(page);await page.locator('#nav button[data-view="directMessages"]').click(force=True);await settled(page,'directMessages')
+    await home(page);await page.locator('#nav button[data-view="directMessages"]').click();await settled(page,'directMessages')
     system=page.locator('#directMessagesView [data-kind="system"]').first
     await expect(system).to_be_visible();await system.click()
     await page.locator('#directMessagesView .system-message-open').first.click()
     link=page.locator('#bamcoSystemMessageDialog [data-bamco-task-id]').first
     await expect(link).to_be_visible();task_id=await link.get_attribute('data-bamco-task-id');assert task_id
-    await link.click(force=True)
+    await link.click()
     await expect(page.locator('#kanbanView')).to_be_visible()
     row=page.locator(f'#kanbanBody tr[data-task-id="{task_id}"]')
     await expect(row).to_be_visible();await expect(row).to_have_class(__import__('re').compile(r'task-selected|suite-selected'))

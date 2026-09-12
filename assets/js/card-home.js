@@ -116,7 +116,7 @@ function install(){
   clearHomeTimers();homeExpected=true;const epoch=++homeEpoch;showHome();
   homeTimers=[0,40,120,300,700,1400].map(ms=>setTimeout(()=>{
    if(epoch!==homeEpoch||!homeExpected||dialog.open||app.classList.contains('hidden'))return;
-   showHome();
+   if(homeBroken())showHome();
   },ms));
  }
  function syncMode(){const loggedIn=!app.classList.contains('hidden'),atHome=!home.classList.contains('hidden');document.body.classList.toggle('card-home-active',loggedIn&&atHome);document.body.classList.toggle('content-only',loggedIn&&!atHome);if(homeExpected&&!dialog.open)scheduleHomeRepair()}

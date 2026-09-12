@@ -53,7 +53,7 @@
 
   /* Dashboard: true one-column mobile dashboard. */
   #dashboardView{width:100%!important;max-width:100%!important;overflow-y:auto!important;overflow-x:hidden!important;background:#f3f7f5!important}
-  #dashboardView .desktop-dashboard-exact{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px!important;width:100%!important;max-width:100%!important;padding:7px!important;margin:0!important;box-sizing:border-box!important}
+  html body #appView#appView #dashboardView.bamco-interior .desktop-dashboard-exact{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px!important;width:100%!important;max-width:100%!important;padding:7px!important;margin:0!important;box-sizing:border-box!important}
   #dashboardView .dashboard-filters,#dashboardView .dashboard-cards,#dashboardView .dashboard-performance-range,#dashboardView .dashboard-chart-card{grid-column:1!important;width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important}
   #dashboardView .dashboard-filter-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important}
   #dashboardView .dashboard-filter-grid label{min-width:0!important}
