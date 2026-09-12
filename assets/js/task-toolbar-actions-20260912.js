@@ -1,6 +1,7 @@
 (()=>{
 'use strict';
-if(window.__bamcoTaskToolbarActions20260912V1)return;
+if(window.__bamcoTaskToolbarActions20260912V2)return;
+window.__bamcoTaskToolbarActions20260912V2=true;
 window.__bamcoTaskToolbarActions20260912V1=true;
 
 const q=(s,r=document)=>r?.querySelector?.(s)||null;
@@ -29,6 +30,7 @@ function sync(scope){
   const edit=q(config[scope].edit),secondary=q(config[scope].secondary);
   if(edit)edit.disabled=count!==1;
   if(secondary)secondary.disabled=count!==1;
+  qa(`#${scope}View [data-task-history]`).forEach(button=>button.disabled=count!==1);
   if(typeof state!=='undefined'&&state?.selected)state.selected[scope]=count===1?Number(selectedIds(scope)[0]):null;
 }
 function syncAll(){sync('kanban');sync('archive')}
@@ -36,6 +38,11 @@ function openEditor(task){
   const fn=window.openTask||(typeof openTask==='function'?openTask:null);
   if(!fn)throw Error('فرم ویرایش وظیفه در دسترس نیست.');
   fn(task);
+}
+async function openHistory(task){
+  const api=window.bamcoTaskHistory;
+  if(typeof api?.open!=='function')throw Error('تاریخچه وظیفه هنوز بارگذاری نشده است.');
+  await api.open(task);
 }
 async function archiveSelected(task){
   const fn=window.archiveTask||(typeof archiveTask==='function'?archiveTask:null);
@@ -64,6 +71,7 @@ async function run(scope,action){
   try{
     busy=true;
     if(action==='edit')openEditor(task);
+    else if(action==='history')await openHistory(task);
     else if(action==='archive')await archiveSelected(task);
     else if(action==='restore')await restoreSelected(task);
   }catch(err){if(typeof toast==='function')toast(err?.message||String(err),true)}
@@ -71,6 +79,12 @@ async function run(scope,action){
 }
 
 window.addEventListener('click',event=>{
+  const history=event.target?.closest?.('#kanbanView [data-task-history],#archiveView [data-task-history]');
+  if(history){
+    event.preventDefault();event.stopImmediatePropagation();
+    void run(history.closest('#archiveView')?'archive':'kanban','history');
+    return;
+  }
   const button=event.target?.closest?.('#kanbanEditBtn,#kanbanArchiveBtn,#archiveEditBtn,#archiveRestoreBtn');
   if(!button)return;
   event.preventDefault();event.stopImmediatePropagation();

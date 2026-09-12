@@ -68,11 +68,11 @@ test('role-hidden routes stay hidden; visibility changes update their group',()=
  b.classList.remove('hidden');f.sync();assert.equal(f.boxes.people.parentElement.classList.contains('hidden'),false);
 });
 
-test('home styles have one owner, loaded last; phase modules load once',()=>{
+test('home base styles and final post-welcome correction load once in shipped order',()=>{
  const stagedEntry=path.resolve(__dirname,'../../review-next/index.html');
  const html=fs.readFileSync(fs.existsSync(stagedEntry)?stagedEntry:path.resolve(__dirname,'../index.html'),'utf8');
  const sheets=[...html.matchAll(/<link[^>]+rel="stylesheet"[^>]+href="([^"]+)"/g)].map(x=>x[1]);
- assert.match(sheets.at(-1),/home-stable\.css/);
+ const stable=sheets.findIndex(x=>/home-stable\.css/.test(x)),post=sheets.findIndex(x=>/home-post-welcome-fix-20260911\.css/.test(x));assert.ok(stable>=0);assert.ok(post>stable);assert.equal(post,sheets.length-1);
  for(const file of ['card-home','interface-refinement','visual-polish','release-fixes'])assert.doesNotMatch(read('assets/css/'+file+'.css'),/#homeView|\.card-topbar|\.card-home-active/);
  const home=read('assets/css/home-stable.css');assert.match(home,/grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);assert.match(home,/grid-auto-rows:var\(--home-row-height/);
  for(const module of ['phase1-workflow','phase2-message-engine','phase3-response-tracking'])assert.equal(html.split('src="assets/js/'+module+'.js').length-1,1);
