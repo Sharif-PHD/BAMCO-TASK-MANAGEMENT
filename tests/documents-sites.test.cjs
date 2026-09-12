@@ -2,6 +2,8 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
+const vm=require('node:vm');
+const {JSDOM}=require('jsdom');
 const ROOT=path.resolve(__dirname,'..');
 const featurePath=path.join(ROOT,'assets/js/documents-sites.js');
 const credentialPath=path.join(ROOT,'supabase/functions/credential-vault/index.ts');
@@ -75,4 +77,47 @@ test('index wires both feature views and source files after integration',()=>{
   assert.match(html,/id="sitesAccessView"/);
   assert.match(html,/assets\/js\/documents-sites\.js/);
   assert.match(html,/assets\/css\/documents-sites\.css/);
+});
+
+test('feature runtime boots without console error and exposes both views for a normal user',async()=>{
+  const dom=new JSDOM('<!doctype html><body><nav id="nav"></nav><div class="workspace"></div></body>',{url:'https://example.test/',runScripts:'outside-only'});
+  const ctx=dom.getInternalVMContext();
+  Object.assign(ctx,{
+    state:{token:'token',user:{id:'user-a'},profile:{id:'user-a',role:'owner',active:true},profiles:[]},
+    SB_URL:'https://example.supabase.co',SB_KEY:'publishable',titles:{},
+    toast:()=>{},selectAll:async()=>[],select:async()=>[],insert:async()=>[],update:async()=>[],rpc:async()=>{},api:async()=>{},
+    fetch:async()=>({ok:true,text:async()=>'{"items":[]}',blob:async()=>new dom.window.Blob(['x'])})
+  });
+  const errors=[];ctx.console={...console,error:(...x)=>errors.push(x.join(' ')),warn:()=>{}};
+  vm.runInContext(fs.readFileSync(featurePath,'utf8'),ctx,{filename:'documents-sites.js'});
+  assert.ok(ctx.document.querySelector('[data-view="documents"]'));
+  assert.ok(ctx.document.querySelector('[data-view="sitesAccess"]'));
+  assert.ok(ctx.document.querySelector('#documentsView'));
+  assert.ok(ctx.document.querySelector('#sitesAccessView'));
+  assert.ok(ctx.document.querySelector('#docCategoryDialog'));
+  assert.equal(ctx.document.querySelector('#addDocumentCategory').classList.contains('hidden'),true);
+  assert.equal(ctx.document.querySelector('#addOrganizationSite').classList.contains('hidden'),true);
+  assert.deepEqual(errors,[]);
+  dom.window.close();
+});
+
+test('manager controls become visible on entering feature tabs',async()=>{
+  const dom=new JSDOM('<!doctype html><body><nav id="nav"><button data-view="documents"></button><button data-view="sitesAccess"></button></nav><div class="workspace"><section id="documentsView" class="view hidden"><button id="addDocumentCategory" class="hidden"></button><input id="documentsSearch"><button id="documentsRefresh"></button><div id="documentsFeatureBody"></div></section><section id="sitesAccessView" class="view hidden"><input id="sitesSearch"><select id="sitesFilter"><option value="all">all</option></select><button id="sitesRefresh"></button><button id="addPersonalSite"></button><button id="addOrganizationSite" class="hidden"></button><button id="sitesExcel"></button><button id="sitesManagerExcel" class="hidden"></button><div id="sitesFeatureBody"></div></section></div></body>',{url:'https://example.test/',runScripts:'outside-only'});
+  const ctx=dom.getInternalVMContext();
+  Object.assign(ctx,{state:{token:'token',user:{id:'manager'},profile:{id:'manager',role:'manager',active:true},profiles:[]},SB_URL:'https://example.supabase.co',SB_KEY:'publishable',titles:{},toast:()=>{},selectAll:async()=>[],select:async()=>[],insert:async()=>[],update:async()=>[],rpc:async()=>{},api:async()=>{},fetch:async()=>({ok:true,text:async()=>'{"items":[]}'})});
+  vm.runInContext(fs.readFileSync(featurePath,'utf8'),ctx,{filename:'documents-sites.js'});
+  ctx.document.querySelector('[data-view="documents"]').dispatchEvent(new dom.window.MouseEvent('click',{bubbles:true}));
+  ctx.document.querySelector('[data-view="sitesAccess"]').dispatchEvent(new dom.window.MouseEvent('click',{bubbles:true}));
+  await new Promise(r=>setTimeout(r,5));
+  assert.equal(ctx.document.querySelector('#addDocumentCategory').classList.contains('hidden'),false);
+  assert.equal(ctx.document.querySelector('#addOrganizationSite').classList.contains('hidden'),false);
+  assert.equal(ctx.document.querySelector('#sitesManagerExcel').classList.contains('hidden'),false);
+  dom.window.close();
+});
+
+test('feature CSS includes dedicated mobile layouts',()=>{
+  const css=fs.readFileSync(path.join(ROOT,'assets/css/documents-sites.css'),'utf8');
+  assert.match(css,/@media\(max-width:760px\)/);
+  assert.match(css,/\.feature-site-grid\{grid-template-columns:1fr\}/);
+  assert.match(css,/\.feature-toolbar\{align-items:stretch;flex-direction:column\}/);
 });
