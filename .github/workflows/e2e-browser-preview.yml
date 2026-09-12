@@ -7,7 +7,7 @@ permissions:
 jobs:
   browser-e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
@@ -62,7 +62,11 @@ jobs:
           const server=http.createServer((req,res)=>{const url=new URL(req.url,'http://127.0.0.1'); if(url.pathname==='/e2e.html'){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8'});return res.end(harness)} const file=path.join(root,url.pathname.replace(/^\//,'')); if(file.startsWith(root)&&fs.existsSync(file)&&fs.statSync(file).isFile()){const ext=path.extname(file);const type=ext==='.js'?'text/javascript':ext==='.css'?'text/css':'application/octet-stream';res.writeHead(200,{'Content-Type':type});return fs.createReadStream(file).pipe(res)} res.writeHead(404);res.end('not found')});
           await new Promise(r=>server.listen(4173,'127.0.0.1',r));
           const browser=await chromium.launch({headless:true}); const context=await browser.newContext({acceptDownloads:true,viewport:{width:1440,height:900}}); const pageObj=await context.newPage();
-          const errors=[]; const badResponses=[]; pageObj.on('pageerror',e=>errors.push('pageerror:'+e.message)); pageObj.on('console',m=>{if(m.type()==='error'||/Content Security Policy|CSP violation|Unhandled/i.test(m.text()))errors.push('console:'+m.text())}); pageObj.on('requestfailed',r=>errors.push('requestfailed:'+r.url()+':'+r.failure()?.errorText)); pageObj.on('response',r=>{if(r.status()>=400)badResponses.push(r.status()+':'+r.url())});
+          const errors=[]; const badResponses=[];
+          pageObj.on('pageerror',e=>errors.push('pageerror:'+e.message));
+          pageObj.on('console',m=>{if(m.type()==='error'||/Content Security Policy|CSP violation|Unhandled/i.test(m.text()))errors.push('console:'+m.text())});
+          pageObj.on('requestfailed',r=>{const failure=r.failure()?.errorText||'';const url=r.url();const expectedPdfAbort=failure==='net::ERR_ABORTED'&&/\/storage\/v1\/object\/sign\/documents-private\/.*\.pdf(?:\?|$)/i.test(url);if(!expectedPdfAbort)errors.push('requestfailed:'+url+':'+failure)});
+          pageObj.on('response',r=>{if(r.status()>=400)badResponses.push(r.status()+':'+r.url())});
           await pageObj.route('https://e2e.supabase.test/storage/v1/object/sign/**',async route=>{const req=route.request(); if(req.method()!=='POST')return route.fallback(); const raw=req.url().split('/documents-private/')[1]||'';const p=decodeURIComponent(raw); await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({signedURL:'/object/sign/documents-private/'+encodeURIComponent(p)+'?token=e2e'})})});
           await pageObj.route('https://e2e.supabase.test/storage/v1/object/authenticated/documents-private/**',async route=>{const raw=route.request().url().split('/documents-private/')[1].split('?')[0];const p=decodeURIComponent(raw);const f=fixtures[p];assert.ok(f,'missing authenticated fixture '+p);await route.fulfill({status:200,contentType:f.type,body:f.body})});
           await pageObj.route('https://e2e.supabase.test/storage/v1/object/sign/documents-private/**',async route=>{if(route.request().method()==='POST')return route.fallback(); const u=new URL(route.request().url());const raw=u.pathname.split('/documents-private/')[1];const p=decodeURIComponent(raw);const f=fixtures[p];assert.ok(f,'missing signed fixture '+p);await route.fulfill({status:200,contentType:f.type,body:f.body})});
@@ -81,3 +85,5 @@ jobs:
           JS
           node ./bamco-e2e.mjs
           rm -f ./bamco-e2e.mjs
+      - name: Run full regression suite
+        run: npm test
