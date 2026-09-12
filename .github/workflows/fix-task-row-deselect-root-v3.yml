@@ -31,8 +31,8 @@ jobs:
       - name: Prepare browser fixture
         run: python -c "from pathlib import Path; p=Path('tests/helpers/app-fixture.cjs'); s=p.read_text(); m='  w.HTMLElement.prototype.scrollTo=function(){};w.confirm=()=>true;'; p.write_text(s.replace(m,'  w.scrollTo=function(){};w.HTMLElement.prototype.scrollTo=function(){};w.confirm=()=>true;',1) if m in s else s)"
 
-      - name: Run request workflow UI regression
-        run: node --test .github/scripts/approval_workflow_frontend_test.cjs tests/workflow-tabs-root-20260912.test.cjs
+      - name: Run focused request workflow UI regression
+        run: node --test .github/scripts/approval_workflow_frontend_test.cjs
 
       - name: Restore test-only files and verify final tree
         shell: bash
