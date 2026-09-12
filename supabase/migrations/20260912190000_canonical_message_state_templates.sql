@@ -92,7 +92,7 @@ begin
       v_body:=replace(replace(replace(replace(replace(replace(v_body,'&nbsp;',' '),'&lt;','<'),'&gt;','>'),'&quot;','"'),'&#39;',''''),'&amp;','&');
     end if;
     v_subject:=coalesce(nullif(btrim(p_subject),''),nullif(v_subject,''),'گزارش وضعیت امور');
-    v_title:=(case when p.gender='خانم' then 'سرکار خانم ' else 'جناب آقای ' end)||coalesce(nullif(p.display_name,''),p.full_name,p.email);
+    v_title:=private.message_salutation(p.salutation,coalesce(nullif(p.display_name,''),p.full_name,p.email),p.gender);
     select max(d.sent_at)::date::text into last_sent from public.message_deliveries d where d.recipient_id=rid and d.status in ('sent','delivered');
 
     for v_pair in select * from (values

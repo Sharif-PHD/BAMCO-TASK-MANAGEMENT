@@ -36,19 +36,30 @@ function apiErrorMessage(data,status){
     (status>=500?'سرویس پایگاه داده موقتاً در دسترس نیست.':'درخواست به پایگاه داده انجام نشد.');
 }
 
+const safeReadRpcs=new Set(['chat_directory_v2','chat_directory','chat_conversation_list','chat_system_message_payload','resolve_message_sticker']);
+window.bamcoNetworkErrors=[];
 async function api(path,{method='GET',body,auth=true,prefer,keepalive=false}={}){
-  const headers={apikey:SB_KEY,'Content-Type':'application/json',Accept:'application/json'};
-  if(auth&&state.token) headers.Authorization=`Bearer ${state.token}`;
-  if(prefer) headers.Prefer=prefer;
-  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),20000);
+ const token=state.token,headers={apikey:SB_KEY,'Content-Type':'application/json',Accept:'application/json'};
+ if(auth&&token)headers.Authorization=`Bearer ${token}`;if(prefer)headers.Prefer=prefer;
+ const endpoint=path.split('?')[0],readOnly=method==='GET'||(method==='POST'&&safeReadRpcs.has(endpoint.split('/').pop()));
+ for(let attempt=0;attempt<(readOnly?2:1);attempt++){
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);
   try{
-    const res=await fetch(SB_URL+path,{method,headers,keepalive,cache:'no-store',signal:controller.signal,body:body===undefined?undefined:JSON.stringify(body)});
-    const text=await res.text();let data=null;try{data=text?JSON.parse(text):null}catch{data=text}
-    if(!res.ok)throw new Error(apiErrorMessage(data,res.status));
-    return data;
-  }catch(err){if(controller.signal.aborted)throw new Error('ارتباط با سامانه بیش از حد طول کشید. دوباره تلاش کنید.');throw err}
-  finally{clearTimeout(timer)}
+   const res=await fetch(SB_URL+path,{method,headers,keepalive,cache:'no-store',signal:controller.signal,body:body===undefined?undefined:JSON.stringify(body)});
+   const text=await res.text();let data=null;try{data=text?JSON.parse(text):null}catch{data=text}
+   if(!res.ok){const error=new Error(apiErrorMessage(data,res.status));error.status=res.status;error.code=data?.code;throw error}
+   if(auth&&token!==state.token)throw new Error('نشست کاربری تغییر کرده است؛ صفحه موردنظر را دوباره باز کنید.');
+   return data;
+  }catch(err){
+   const network=err.name==='TypeError'||err.name==='AbortError'||controller.signal.aborted,temporary=network||[502,503,504].includes(err.status);
+   if(readOnly&&attempt===0&&temporary&&(!auth||token===state.token)&&navigator.onLine!==false){await new Promise(resolve=>setTimeout(resolve,350));continue}
+   if(network){const detail=navigator.onLine===false?'اتصال اینترنت قطع است.':controller.signal.aborted?'پاسخ سرور در زمان مقرر دریافت نشد.':'ارتباط با سرور برقرار نشد.';const error=new Error(detail+(readOnly?' دوباره تلاش کنید.':' نتیجه عملیات مشخص نیست؛ پیش از تکرار، وضعیت آن را بررسی کنید.'));error.code='NETWORK_ERROR';error.cause=err;err=error}
+   window.bamcoNetworkErrors.push({endpoint,method,status:err.status||0,code:err.code||'REQUEST_ERROR',at:new Date().toISOString()});if(window.bamcoNetworkErrors.length>30)window.bamcoNetworkErrors.shift();
+   throw err;
+  }finally{clearTimeout(timer)}
+ }
 }
+
 const select=(table,q='select=*')=>api(`/rest/v1/${table}?${q}`);
 async function selectAll(table,q='select=*',pageSize=1000){
   const rows=[];

@@ -123,9 +123,8 @@ async function confirmReminder(){
   try{
     await rpc('queue_message_batch',{p_batch_id:pending.id});
     if(pending.channel!=='portal'){
-      const response=await fetch(`${SB_URL}/functions/v1/send-message-queue`,{method:'POST',headers:{apikey:SB_KEY,Authorization:`Bearer ${state.token}`,'Content-Type':'application/json'},body:JSON.stringify({batch_id:pending.id})});
-      const result=await response.json().catch(()=>({}));
-      if(!response.ok||result.failed||result.pending||result.errors?.length)error=result.error||result.errors?.map(x=>x.message).join('؛ ')||'برخی ارسال‌ها هنوز تکمیل نشده‌اند.';
+      const result=await api('/functions/v1/send-message-queue',{method:'POST',body:{batch_id:pending.id}});
+      if(result.failed||result.pending||result.errors?.length)error=result.error||result.errors?.map(x=>x.message).join('؛ ')||'برخی ارسال‌ها هنوز تکمیل نشده‌اند.';
     }
   }catch(err){error=err.message}
   try{
