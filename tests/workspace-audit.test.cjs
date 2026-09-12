@@ -17,7 +17,6 @@ test('every navigation destination has one consistent toolbar return and release
    const backs=view.querySelectorAll('.content-back,[data-empty-home]');assert.equal(backs.length,1,route+' duplicate return');const back=backs[0];
    assert.equal(view.querySelector('.bamco-page-heading button'),null);assert.equal(back.parentElement.firstElementChild,back);
    const style=w.getComputedStyle(back);assert.equal(style.display,'inline-flex');
-   // JSDOM retains inherited CSS variables in a few computed declarations.
    const height=style.height==='var(--ui-control)'?w.getComputedStyle(view).getPropertyValue('--ui-control').trim():style.height;
    assert.equal(height,'36px');assert.equal(style.borderRadius,'7px');assert.equal(style.order,'-100');assert.notEqual(style.pointerEvents,'none');
    back.click();await pause(20);assert.equal(w.getComputedStyle(view).display,'none');assert(!d.querySelector('#homeView').classList.contains('hidden'));assert.equal(d.querySelector('#nav button.active'),null);
@@ -28,13 +27,13 @@ test('every navigation destination has one consistent toolbar return and release
 
 test('dashboard date controls, templates, sticker picker, chain form and Gantt actions',async t=>{
  const f=await fixture({tables:{tasks:[task],email_templates:[{id:1,template_key:'state1',body_html:'متن قبلی'}],app_settings:[],approval_chains:[],approval_chain_members:[],approval_chain_stages:[],approval_stage_approvers:[]}}),{w,d}=f;t.after(()=>f.dispose());
- await t.test('dashboard calendar applies dates and clears the final-chart range',async()=>{
-  await f.open('dashboard');assert.equal(d.querySelector('#workspaceActionCenter'),null);
+ await t.test('dashboard calendar applies dates automatically and clear resets the final-chart range',async()=>{
+  await f.open('dashboard');assert.equal(d.querySelector('#workspaceActionCenter'),null);assert.equal(d.querySelector('#applyPerf'),null);
   for(const target of ['perfFrom','perfTo']){
    d.querySelector('[data-dashboard-date="'+target+'"]').click();await until(()=>d.querySelector('#calendarDialog').open);d.querySelector('#calDay').value='1';d.querySelector('#setDateBtn').click();assert(d.querySelector('#'+target).value);assert(!d.querySelector('#calendarDialog').open);
   }
-  d.querySelector('#applyPerf').click();d.querySelector('#clearPerf').click();assert.equal(d.querySelector('#perfFrom').value,'');assert.equal(d.querySelector('#perfTo').value,'');
-  assert.equal(d.querySelectorAll('.dashboard-date-field').length,2);assert.equal(d.querySelector('#applyPerf').parentElement,d.querySelector('#clearPerf').parentElement);
+  d.querySelector('#clearPerf').click();assert.equal(d.querySelector('#perfFrom').value,'');assert.equal(d.querySelector('#perfTo').value,'');
+  assert.equal(d.querySelectorAll('.dashboard-date-field').length,2);assert.ok(d.querySelector('#clearPerf'));
  });
  await t.test('template editor saves and re-reads fresh server data when reopened',async()=>{
   await f.open('templates');d.querySelector('#openDesktopTemplateEditor').click();await until(()=>d.querySelector('#desktopTemplateEditor').open);
