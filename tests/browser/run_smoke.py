@@ -56,6 +56,10 @@ async def command_texts(page,selector):
 async def visible_count(page,selector):
     return await page.locator(selector).evaluate_all("els=>els.filter(el=>{const s=getComputedStyle(el);return s.display!=='none'&&s.visibility!=='hidden'&&el.getClientRects().length>0}).length")
 
+async def assert_regular_buttons(page,selector):
+    weights=await page.locator(selector+' button').evaluate_all("els=>els.map(el=>getComputedStyle(el).fontWeight)")
+    assert weights and all(w in ('400','normal') for w in weights),f'bold button leaked in {selector}: {weights!r}'
+
 async def manager_checks(page,result):
     assert await page.locator('#nav [data-view="templates"],#nav [data-view="messageTemplates"],#templatesView,#messageTemplatesView').count()==0,'removed message-text UI returned'
     result['message_text_removed']='pass'
@@ -63,11 +67,18 @@ async def manager_checks(page,result):
     result['removed_request_report_stays_removed']='pass'
     await page.evaluate('__testApi.responseTrackingFixture=__testApi.deliveries.map(x=>({...x}))')
 
+    await open_tab(page,'dashboard')
+    assert await page.locator('#applyPerf').count()==0,'dashboard apply button returned'
+    await expect(page.locator('#clearPerf')).to_be_visible()
+    await home(page); result['dashboard_performance_auto_apply']='pass'
+
     await open_tab(page,'responseReport')
     controls=await command_texts(page,'#responseReportView .response-command-row')
     assert controls[0]=='بازگشت به خانه','response report home order'
     assert 'از تاریخ' in controls[1] and 'تا تاریخ' in controls[1],'response report date order'
     assert controls[2:5]==['تازه‌سازی','خروجی اکسل','حذف رکورد'],'response report action order'
+    assert await page.locator('#responseReportView [data-report-search],#responseReportView [data-response-search]').count()==0,'response report search returned'
+    await assert_regular_buttons(page,'#responseReportView .response-command-row')
     assert await page.locator('#canonicalResponseFrom').input_value() and await page.locator('#canonicalResponseTo').input_value(),'response report current-month defaults missing'
     rows=page.locator('#responseReportBody tr[data-delivery-id]')
     await expect(rows).to_have_count(3)
@@ -92,10 +103,12 @@ async def manager_checks(page,result):
     headers=await page.locator('#messageCenterView thead tr:first-child th').all_text_contents()
     assert headers==['نام','کار فعال','هشدار','دیرکرد','وضعیت پیام','آخرین ارسال'],f'message headers: {headers!r}'
     controls=await command_texts(page,'#messageCenterView .message-command-row')
-    assert controls[:4]==['بازگشت به خانه','خروجی اکسل','تازه‌سازی','ارسال'],f'message controls: {controls!r}'
+    assert controls[:3]==['بازگشت به خانه','خروجی اکسل','تازه‌سازی'],f'message controls: {controls!r}'
     assert await visible_count(page,'#messageCenterView button')>=4,'message controls not visible'
     assert await visible_count(page,'#messageCenterView .bamco-management-toolbar .content-back')==0,'duplicate message-center home button visible'
     await expect(page.locator('#messageChannel')).to_be_visible()
+    assert await page.locator('#messageCenterSearch,.message-center-simple-toolbar').count()==0,'message center second/search row returned'
+    await assert_regular_buttons(page,'#messageCenterView .message-command-row')
     assert await page.locator('#messageSubject,#messageCustomText').count()==0,'removed custom message fields returned'
     assert await visible_count(page,'#messageCenterView .suite-table-options')==0,'table settings leaked into message center'
     recipient=page.locator('#messageCenterBody tr[data-id]').first
@@ -113,8 +126,9 @@ async def manager_checks(page,result):
     headers=await page.locator('#sentMessagesView thead tr:first-child th').all_text_contents()
     expected=['ردیف','نوع','فرستنده','گیرنده','موضوع','کانال','وضعیت','زمان ارسال','تلاش','خطا','جزئیات']
     assert headers==expected,f'sent headers: {headers!r}'
-    assert await page.locator('#sentMessagesView .sent-overview,#sentMessagesView .sent-log-summary').count()==0,'sent overview cards returned'
-    await expect(page.locator('#sentSearch')).to_be_visible(); await expect(page.locator('#sentStatusFilter')).to_be_visible(); await expect(page.locator('#sentChannelFilter')).to_be_visible()
+    assert await page.locator('#sentMessagesView .sent-overview,#sentMessagesView .sent-log-summary,#sentMessagesView .sent-controls').count()==0,'sent second row or overview returned'
+    await expect(page.locator('#sentMessagesView .sent-command-row #sentSearch')).to_be_visible(); await expect(page.locator('#sentMessagesView .sent-command-row #sentStatusFilter')).to_be_visible(); await expect(page.locator('#sentMessagesView .sent-command-row #sentChannelFilter')).to_be_visible()
+    await assert_regular_buttons(page,'#sentMessagesView .sent-command-row')
     await expect(page.locator('#sentMessagesView tbody')).to_contain_text('مدیر آزمایشی'); await expect(page.locator('#sentMessagesView tbody')).to_contain_text('به‌روزرسانی وظیفه'); await expect(page.locator('#sentMessagesView tbody')).to_contain_text('پیام داخل سامانه')
     assert await visible_count(page,'#sentMessagesView .suite-table-options')==0,'table settings leaked into sent messages'
     await home(page); result['sent_log_unified_without_cards']='pass'
@@ -123,7 +137,11 @@ async def manager_checks(page,result):
     controls=await command_texts(page,'#responseTrackingView .response-command-row')
     assert controls[0]=='بازگشت به خانه','tracking home order'
     assert 'از تاریخ' in controls[1] and 'تا تاریخ' in controls[1],'tracking date order'
-    assert controls[2:5]==['تازه‌سازی','خروجی اکسل','ارسال یادآوری'],f'tracking controls: {controls!r}'
+    assert controls[2:4]==['تازه‌سازی','خروجی اکسل'],f'tracking controls: {controls!r}'
+    assert await page.locator('#responseTrackingView .response-filters,#responseTrackingView .response-quick').count()==0,'tracking second/third rows returned'
+    for selector in ['#reminderSendChannel','#responsePerson','#responseChannel','#responseState','#sendResponseReminder']:
+        await expect(page.locator('#responseTrackingView .response-command-row '+selector)).to_be_visible()
+    await assert_regular_buttons(page,'#responseTrackingView .response-command-row')
     assert await page.locator('#responseFrom').input_value() and await page.locator('#responseTo').input_value(),'tracking current-month defaults missing'
     assert 'شناسه پیگیری' not in ''.join(await page.locator('#responseTrackingView thead tr:first-child th').all_text_contents()),'tracking id still visible'
     assert await visible_count(page,'#responseTrackingView .bamco-management-toolbar .content-back')==0,'duplicate tracking home button visible'
