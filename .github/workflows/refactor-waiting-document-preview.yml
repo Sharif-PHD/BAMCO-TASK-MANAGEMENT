@@ -27,7 +27,7 @@ jobs:
           cp /tmp/docx-preview/package/dist/docx-preview.min.js assets/vendor/docx-preview.min.js
           rm -f "$pkg"
       - name: Apply canonical refactor
-        run: node .github/scripts/refactor_waiting_document_preview.cjs
+        run: python3 .github/scripts/refactor_waiting_document_preview.py
       - name: Syntax and static gates
         run: |
           node --check assets/js/card-home.js
@@ -48,7 +48,7 @@ jobs:
           grep -q 'workflow-waiting-section' assets/js/message-renderer.js
       - name: Commit validated canonical changes
         run: |
-          rm -f .github/scripts/refactor_waiting_document_preview.cjs .github/workflows/refactor-waiting-document-preview.yml
+          rm -f .github/scripts/refactor_waiting_document_preview.cjs .github/scripts/refactor_waiting_document_preview.py .github/workflows/refactor-waiting-document-preview.yml
           git config user.name "BAMCO Refactor Bot"
           git config user.email "actions@users.noreply.github.com"
           git add -A
