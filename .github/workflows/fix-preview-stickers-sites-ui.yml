@@ -1,0 +1,83 @@
+name: Fix preview stickers sites UI
+on:
+  push:
+    branches: [fix/document-preview-welcome-stickers-sites-ui-20260912]
+permissions:
+  contents: write
+jobs:
+  fix-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/document-preview-welcome-stickers-sites-ui-20260912
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Apply root fixes
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          js=Path('assets/js/documents-sites.js')
+          s=js.read_text()
+          pattern=r"let previewObjectUrl='';function resetPreview\(\)\{.*?\}\nasync function previewDocument\(id,button\)\{.*?\}\nasync function downloadDocument"
+          replacement=r'''function openDocumentPreviewTab(){
+            const tab=window.open('about:blank','_blank');
+            if(!tab)throw Error('مرورگر اجازه باز کردن تب پیش‌نمایش را نداد. لطفاً Pop-up را برای این سامانه مجاز کنید.');
+            try{tab.opener=null;tab.document.title='در حال آماده‌سازی پیش‌نمایش…';tab.document.body.innerHTML='<div style="font-family:Tahoma,sans-serif;direction:rtl;padding:24px">در حال آماده‌سازی پیش‌نمایش…</div>'}catch{}
+            return tab
+          }
+          function previewHtml(title,body){return `<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><style>body{font-family:Tahoma,sans-serif;margin:24px;color:#173f34;background:#f7faf8}h1{font-size:18px}table{border-collapse:collapse;width:100%;background:#fff}th,td{border:1px solid #d7e2dd;padding:6px 8px;text-align:right;vertical-align:top}th{background:#edf4f0;position:sticky;top:0}.wrap{overflow:auto;max-height:calc(100vh - 90px)}.note{padding:14px;background:#fff;border:1px solid #d7e2dd;border-radius:10px}</style></head><body><h1>${esc(title)}</h1>${body}</body></html>`}
+          async function previewDocument(id,button){const doc=feature.documents.find(d=>String(d.id)===String(id));if(!doc)return;let tab=null;setBusy(button,true,'در حال دریافت…');try{tab=openDocumentPreviewTab();const blob=await privateFile(doc.storage_path);let previewBlob=blob;if(doc.mime_type.includes('spreadsheet')||doc.mime_type==='application/vnd.ms-excel'){const XLSX=await window.ensureBamcoXLSX(),wb=XLSX.read(await blob.arrayBuffer(),{type:'array'}),name=wb.SheetNames[0],rows=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:''}).slice(0,200),cols=Math.min(40,Math.max(1,...rows.map(r=>r.length))),table=rows.map((r,i)=>`<tr>${Array.from({length:cols},(_,j)=>`<${i===0?'th':'td'}>${esc(r[j]??'')}</${i===0?'th':'td'}>`).join('')}</tr>`).join('');previewBlob=new Blob([previewHtml(doc.title,`<p>Sheet: ${esc(name)} · پیش‌نمایش حداکثر ۲۰۰ ردیف و ۴۰ ستون</p><div class="wrap"><table><tbody>${table}</tbody></table></div>`)],{type:'text/html;charset=utf-8'})}else if(doc.mime_type.includes('wordprocessingml')){previewBlob=new Blob([previewHtml(doc.title,'<div class="note">پیش‌نمایش مستقیم DOCX توسط مرورگر پشتیبانی نمی‌شود. برای مشاهده فایل از دکمه دانلود استفاده کنید.</div>')],{type:'text/html;charset=utf-8'})}else if(!(doc.mime_type==='application/pdf'||doc.mime_type.startsWith('image/')||doc.mime_type==='text/plain'||doc.mime_type==='text/csv')){previewBlob=new Blob([previewHtml(doc.title,'<div class="note">مرورگر برای این نوع فایل پیش‌نمایش داخلی ندارد. برای مشاهده فایل از دکمه دانلود استفاده کنید.</div>')],{type:'text/html;charset=utf-8'})}const url=URL.createObjectURL(previewBlob);try{tab.location.replace(url)}catch{tab.location.href=url}setTimeout(()=>URL.revokeObjectURL(url),300000)}catch(e){try{tab?.close()}catch{}notice(e.message,true)}finally{setBusy(button,false)}}
+          async function downloadDocument'''
+          ns,count=re.subn(pattern,replacement,s,count=1,flags=re.S)
+          if count!=1: raise SystemExit(f'preview block replacement count={count}')
+          js.write_text(ns)
+
+          idx=Path('index.html')
+          s=idx.read_text()
+          note='        <div class="feature-confidential-note">رمز عبور فقط با درخواست صریح شما از سرور امن دریافت می‌شود و به‌صورت پیش‌فرض نمایش داده نمی‌شود.</div>\n'
+          if s.count(note)!=1: raise SystemExit('confidential note mismatch')
+          s=s.replace(note,'',1)
+          s=s.replace('assets/js/documents-sites.js?v=documents-sites-20260912-1','assets/js/documents-sites.js?v=documents-sites-20260912-2',1)
+          s=s.replace('assets/js/card-home.js?v=welcome-home-20260911-2','assets/js/card-home.js?v=welcome-home-20260912-3',1)
+          idx.write_text(s)
+
+          css=Path('assets/css/documents-sites.css')
+          s=css.read_text()
+          rule='\n/* Sites actions follow the standard BAMCO non-bold button language. */\n#sitesAccessView button,#siteDialog button,#credentialDialog button,#credentialRevealDialog button{font-weight:400!important}\n'
+          if 'Sites actions follow the standard BAMCO non-bold button language.' not in s:s+=rule
+          css.write_text(s)
+
+          migration=Path('supabase/migrations/20260912_allow_authenticated_welcome_sticker_read.sql')
+          migration.write_text('''-- Welcome stickers are shared presentation assets for every active authenticated account.\n-- Mutation remains manager-only via the existing ALL policies.\ndrop policy if exists sticker_sets_read_authenticated on public.sticker_sets;\ncreate policy sticker_sets_read_authenticated\non public.sticker_sets\nfor select\nto authenticated\nusing ((select private.has_account()) and active = true);\n\ndrop policy if exists stickers_read_authenticated on public.stickers;\ncreate policy stickers_read_authenticated\non public.stickers\nfor select\nto authenticated\nusing (\n  (select private.has_account())\n  and exists (\n    select 1 from public.sticker_sets s\n    where s.id = stickers.set_id and s.active = true\n  )\n);\n''')
+
+          test=Path('tests/documents-sites.test.cjs')
+          s=test.read_text()
+          block=r'''\n\ntest('document preview stays in app and opens authenticated content in a separate browser tab',()=>{\n  const src=fs.readFileSync(path.join(ROOT,'assets/js/documents-sites.js'),'utf8');\n  const start=src.indexOf('async function previewDocument');\n  const end=src.indexOf('async function downloadDocument');\n  assert(start>0&&end>start);\n  const preview=src.slice(start,end);\n  assert.match(preview,/openDocumentPreviewTab\(\)/);\n  assert.match(src,/window\.open\('about:blank','_blank'\)/);\n  assert.match(preview,/await privateFile\(doc\.storage_path\)/);\n  assert.match(preview,/URL\.createObjectURL\(previewBlob\)/);\n  assert.match(preview,/tab\.location\.replace\(url\)/);\n  assert.doesNotMatch(preview,/documentPreviewDialog.*showModal/);\n});\n\ntest('sites access removes the password notice and uses non-bold buttons',()=>{\n  const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');\n  const css=fs.readFileSync(path.join(ROOT,'assets/css/documents-sites.css'),'utf8');\n  assert.doesNotMatch(html,/رمز عبور فقط با درخواست صریح شما/);\n  assert.match(css,/#sitesAccessView button[^}]*font-weight:400!important/);\n});\n\ntest('welcome sticker migration grants read access to active authenticated accounts only',()=>{\n  const sql=fs.readFileSync(path.join(ROOT,'supabase/migrations/20260912_allow_authenticated_welcome_sticker_read.sql'),'utf8');\n  assert.match(sql,/for select\s+to authenticated/i);\n  assert.match(sql,/private\.has_account\(\)/);\n  assert.match(sql,/active = true/);\n  assert.doesNotMatch(sql,/for (insert|update|delete)\s+to authenticated/i);\n});\n'''
+          if "document preview stays in app and opens authenticated content" not in s:test.write_text(s+block)
+
+          Path('.github/workflows/fix-preview-stickers-sites-ui.yml').unlink()
+          PY
+      - name: Syntax checks
+        run: |
+          node --check assets/js/documents-sites.js
+          node --check assets/js/card-home.js
+      - name: Focused regression tests
+        run: node --test tests/documents-sites.test.cjs
+      - name: Existing home navigation tests
+        run: node --test tests/home-layout.test.cjs --test-name-pattern="eight cards|only duplicate shortcuts|reconciliation stabilizes|role-hidden routes|search polishing" || node --test tests/home-layout.test.cjs --test-name-pattern="cards and each subsection|only duplicate shortcuts|reconciliation stabilizes|role-hidden routes|search polishing"
+      - name: Commit validated fixes
+        run: |
+          git config user.name "BAMCO Fix Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "Fix document preview, welcome stickers and sites UI"
+          git push origin HEAD:fix/document-preview-welcome-stickers-sites-ui-20260912
