@@ -1,8 +1,8 @@
-name: UI toolbar source diagnostic
+name: Fix task row deselection root v3
 
 on:
   push:
-    branches: [ui-toolbar-cleanup-20260912]
+    branches: [main]
     paths:
       - '.github/workflows/fix-task-row-deselect-root-v3.yml'
 
@@ -10,51 +10,83 @@ permissions:
   contents: write
 
 jobs:
-  diagnose:
+  patch:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-      - name: Record source-pattern counts
+      - name: Patch canonical selection state
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
-          import re
-          out=[]
-          def c(label,path,pattern,flags=0):
-              s=Path(path).read_text();out.append(f'{label}={len(re.findall(pattern,s,flags))}')
-          c('dashboard_apply','index.html',r'<button id="applyPerf" type="button" class="primary">اعمال</button>')
-          for token in ['phase2-message-engine.js?v=message-unified-20260911-1','phase3-response-tracking.js?v=details-20260910-1','tab-workspace.js?v=catalog-20260910-1','admin-root-fixes-20260911.js?v=user-fixes-20260911-1','report-stability-fixes-20260911.js?v=performance-toolbar-root-20260912-2']:
-              c('cache_'+token.split('?')[0].split('/')[-1],'index.html',re.escape(token))
-          c('report_button_marker','assets/js/report-stability-fixes-20260911.js',re.escape('#responseReportView .response-command-row>*{flex:0 0 auto!important}'))
-          c('report_visible','assets/js/report-stability-fixes-20260911.js',r'function responseVisible\(\)\{.*?\}\nfunction syncResponseDelete',re.S)
-          c('report_tools','assets/js/report-stability-fixes-20260911.js',r'function responseTools\(range\)\{return `.*?`\}\nasync function renderResponse',re.S)
-          c('workspace_toolbar','assets/js/tab-workspace.js',re.escape('<div class="workspace-report-tools"><input type="search" data-report-search placeholder="جست‌وجو در گزارش…" aria-label="جست‌وجو در گزارش"><button data-report-export="all" class="ghost">خروجی اکسل</button></div>'))
-          c('message_visible','assets/js/phase2-message-engine.js',r'function visible\(\)\{.*?\}\nfunction syncSelection',re.S)
-          c('message_css_marker','assets/js/phase2-message-engine.js',re.escape('#messageCenterView .message-command-row #sendSelectedMessages{'))
-          c('message_layout','assets/js/phase2-message-engine.js',r'<div class="message-command-row"><button type="button" class="ghost" id="messageCenterHome">بازگشت به خانه</button><button type="button" class="ghost" id="messageCenterExport">خروجی اکسل</button><button type="button" class="ghost" id="refreshMessageCenter">تازه‌سازی</button><button id="sendSelectedMessages" type="button" class="primary" disabled>ارسال</button></div><div class="message-center-simple-toolbar"><label>کانال ارسال<select id="messageChannel">(.*?)</select></label><input id="messageCenterSearch" type="search" placeholder="جست‌وجوی نام یا ایمیل"><span id="messageSelectionCount">۰ نفر انتخاب شده</span></div>',re.S)
-          c('message_search_binding','assets/js/phase2-message-engine.js',re.escape("q('#messageCenterSearch').oninput=render;"))
-          c('sent_css_marker','assets/js/admin-root-fixes-20260911.js',re.escape('#sentMessagesView .sent-command-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 0;margin:0 0 12px;border-top:1px solid #d9e4de;border-bottom:1px solid #d9e4de}'))
-          c('sent_filtered','assets/js/admin-root-fixes-20260911.js',r'function sentFiltered\(\)\{.*?\}\nfunction renderSent',re.S)
-          c('sent_render','assets/js/admin-root-fixes-20260911.js',r'function renderSent\(\)\{.*?\}\nfunction bindSentControls',re.S)
-          c('sent_bind','assets/js/admin-root-fixes-20260911.js',r'function bindSentControls\(\)\{.*?\}\nasync function exportSent',re.S)
-          c('tracking_css_marker','assets/js/phase3-response-tracking.js',re.escape('#responseTrackingView .response-command-row>*{flex:0 0 auto}'))
-          c('tracking_second_button','assets/js/phase3-response-tracking.js',r'<div class="response-filters"><button id="responseSelectAll" type="button" class="ghost">انتخاب همه فیلترشده‌ها</button>')
-          c('tracking_third_row','assets/js/phase3-response-tracking.js',r'</div><div class="response-quick"><button data-response-quick="all" class="active">همه</button>.*?</div><div class="table-wrap">',re.S)
-          c('test_message_expect','tests/workflow-tabs-root-20260912.test.cjs',re.escape("assert.deepEqual(texts.slice(0,4),['بازگشت به خانه','خروجی اکسل','تازه‌سازی','ارسال']);"))
-          Path('ui-refactor-diagnostics.txt').write_text('\n'.join(out)+'\n')
-          print('\n'.join(out))
+          app=Path('assets/js/app.js')
+          s=app.read_text()
+          old="function chooseTask(scope,id){state.selected[scope]=Number(id);renderTasks(scope==='archive')}"
+          new="function chooseTask(scope,id){const next=String(state.selected[scope])===String(id)?null:Number(id);state.selected[scope]=next;renderTasks(scope==='archive')}"
+          assert old in s
+          s=s.replace(old,new,1)
+          old2="""  chooseTask=function(scope,id){
+    state.selected[scope]=Number(id);
+    const body=scope==='archive'?qs('#archiveBody'):qs('#kanbanBody');
+    if(body){
+      qsa('tr.task-selected',body).forEach(row=>{row.classList.remove('task-selected');row.setAttribute('aria-selected','false')});
+      const row=qsa('tr[data-task-id]',body).find(r=>String(r.dataset.taskId)===String(id));
+      if(row){row.classList.add('task-selected');row.setAttribute('aria-selected','true')}
+    }
+    updateTaskToolbar(scope);
+  };"""
+          new2="""  chooseTask=function(scope,id){
+    const next=String(state.selected[scope])===String(id)?null:Number(id);
+    state.selected[scope]=next;
+    const body=scope==='archive'?qs('#archiveBody'):qs('#kanbanBody');
+    if(body){
+      qsa('tr.task-selected',body).forEach(row=>{row.classList.remove('task-selected');row.setAttribute('aria-selected','false')});
+      if(next!==null){const row=qsa('tr[data-task-id]',body).find(r=>String(r.dataset.taskId)===String(id));if(row){row.classList.add('task-selected');row.setAttribute('aria-selected','true')}}
+    }
+    updateTaskToolbar(scope);
+  };"""
+          assert old2 in s
+          s=s.replace(old2,new2,1)
+          app.write_text(s)
+
+          bulk=Path('assets/js/task-bulk-delete-20260912.js')
+          b=bulk.read_text()
+          assert 'if(window.__bamcoTaskBulkDelete20260912V4)return;' in b
+          b=b.replace('if(window.__bamcoTaskBulkDelete20260912V4)return;\nwindow.__bamcoTaskBulkDelete20260912V4=true;', 'if(window.__bamcoTaskBulkDelete20260912V6)return;\nwindow.__bamcoTaskBulkDelete20260912V6=true;\nwindow.__bamcoTaskBulkDelete20260912V5=true;\nwindow.__bamcoTaskBulkDelete20260912V4=true;',1)
+          marker='const lastPicked={kanban:null,archive:null};\nlet deleting=false;'
+          assert marker in b
+          b=b.replace(marker,'const lastPicked={kanban:null,archive:null};\nconst seeded={kanban:false,archive:false};\nlet deleting=false;',1)
+          old3="if(picked[scope].size===0&&typeof state!=='undefined'&&state?.selected?.[scope]!=null&&visible.has(String(state.selected[scope])))picked[scope].add(String(state.selected[scope]));"
+          assert old3 in b
+          b=b.replace(old3,"if(!seeded[scope]){if(picked[scope].size===0&&typeof state!=='undefined'&&state?.selected?.[scope]!=null&&visible.has(String(state.selected[scope])))picked[scope].add(String(state.selected[scope]));seeded[scope]=true;}",1)
+          bulk.write_text(b)
+
+          loader=Path('assets/js/avatar-final-20260911.js')
+          l=loader.read_text().replace('task-bulk-delete-20260912.js?v=20260912-5','task-bulk-delete-20260912.js?v=20260912-6')
+          l=l.replace('final-production-fixes-20260911.js?v=task-filter-repair-20260912-1','final-production-fixes-20260911.js?v=task-row-deselect-root-20260912-2')
+          loader.write_text(l)
+
+          index=Path('index.html')
+          h=index.read_text().replace('assets/js/app.js?v=task-filter-repair-20260912-1','assets/js/app.js?v=task-row-deselect-root-20260912-2')
+          h=h.replace('assets/js/avatar-final-20260911.js?v=task-row-deselect-20260912-1','assets/js/avatar-final-20260911.js?v=task-row-deselect-root-20260912-2')
+          index.write_text(h)
           PY
-      - name: Save diagnostics and restore workflow
+      - name: Verify source invariants
         shell: bash
         run: |
-          set -euo pipefail
-          git fetch origin main --depth=1
-          git checkout origin/main -- .github/workflows/fix-task-row-deselect-root-v3.yml
-          git config user.name 'BAMCO UI Refactor Bot'
+          grep -q '__bamcoTaskBulkDelete20260912V6' assets/js/task-bulk-delete-20260912.js
+          grep -q 'const seeded={kanban:false,archive:false}' assets/js/task-bulk-delete-20260912.js
+          grep -q 'task-bulk-delete-20260912.js?v=20260912-6' assets/js/avatar-final-20260911.js
+          grep -q 'app.js?v=task-row-deselect-root-20260912-2' index.html
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('assets/js/app.js').read_text()
+          assert s.count("const next=String(state.selected[scope])===String(id)?null:Number(id)") >= 2
+          PY
+      - name: Commit and push
+        run: |
+          git config user.name 'BAMCO Fix Bot'
           git config user.email 'actions@users.noreply.github.com'
-          git add ui-refactor-diagnostics.txt .github/workflows/fix-task-row-deselect-root-v3.yml
-          git commit -m 'Record UI refactor source diagnostics'
-          git push origin HEAD:ui-toolbar-cleanup-20260912
+          git add assets/js/app.js assets/js/task-bulk-delete-20260912.js assets/js/avatar-final-20260911.js index.html
+          git commit -m 'Make task row deselection authoritative'
+          git push
