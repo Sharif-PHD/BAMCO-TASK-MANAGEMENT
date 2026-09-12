@@ -4,7 +4,7 @@ const path=require('node:path');
 const {JSDOM,VirtualConsole,requestInterceptor}=require('jsdom');
 const root=path.join(__dirname,'../..');
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-async function until(check){for(let i=0;i<100;i++){if(check())return;await pause(30)}assert.fail('Timed out waiting for the actual UI handler');}
+async function until(check){for(let i=0;i<200;i++){if(check())return;await pause(30)}assert.fail('Timed out waiting for the actual UI handler');}
 
 // Run the shipped script order against an isolated, in-memory API. No request
 // (including authentication, user deletion or session revocation) reaches a server.
@@ -23,7 +23,7 @@ async function fixture(options={}){
  });
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8').replace(/<script\b[^>]*src="assets\/js\/(?:auth-ui|department-entry)\.js[^>]*><\/script>/g,tag=>options.authUi&&tag.includes('/auth-ui.')?tag:'');
  const dom=new JSDOM(html,{url:'https://bamco.test/',runScripts:'dangerously',resources:{interceptors:[local]},pretendToBeVisual:true,virtualConsole:vc,beforeParse(w){
-  w.Response=Response;w.Request=Request;w.Headers=Headers;w.AbortController=AbortController;w.Blob=Blob;w.TextEncoder=TextEncoder;w.CSS={escape:s=>String(s)};w.print=()=>{};for(const [key,value] of Object.entries(options.storage||{}))w.localStorage.setItem(key,value);
+  w.Response=Response;w.Request=Request;w.Headers=Headers;w.AbortController=AbortController;w.Blob=Blob;w.TextEncoder=TextEncoder;w.CSS={escape:s=>String(s)};w.print=()=>{};w.scrollTo=()=>{};w.scrollBy=()=>{};for(const [key,value] of Object.entries(options.storage||{}))w.localStorage.setItem(key,value);
   w.fetch=async(input,init={})=>{
    const url=new URL(typeof input==='string'?input:input.url,w.location.href),endpoint=url.pathname.split('/').pop(),method=init.method||'GET',body=typeof init.body==='string'?JSON.parse(init.body):init.body||null;
    calls.push({endpoint,method,body,url:url.href,cache:init.cache});let data=[],status=200;

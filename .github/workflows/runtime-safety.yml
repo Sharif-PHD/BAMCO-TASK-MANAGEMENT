@@ -62,4 +62,7 @@ jobs:
           PY
 
       - name: Navigation and loading regression tests
-        run: node --test tests/*.test.cjs
+        # The JSDOM UI fixtures are intentionally integration-heavy and share a
+        # single hosted runner. Serial execution removes cross-file CPU/timer
+        # contention without skipping or weakening any assertion.
+        run: node --test --test-concurrency=1 tests/*.test.cjs
