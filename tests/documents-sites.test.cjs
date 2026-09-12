@@ -66,7 +66,9 @@ test('feature uses local XLSX loader and no public preview service or unsafe eva
   assert.match(src,/ensureBamcoXLSX/);
   assert.doesNotMatch(src,/docs\.google|officeapps\.live|view\.officeapps|iframe[^\n]+https?:\/\//i);
   assert.doesNotMatch(src,/eval\(|new Function/);
-  assert.match(src,/پیش‌نمایش امن DOCX/);
+  assert.match(src,/window\.docx\?\.renderAsync/);
+  assert.match(src,/documentPreviewSheet/);
+  assert.match(src,/documentPreviewDialog/);
 });
 
 test('index wires both feature views and source files after integration',()=>{
@@ -137,17 +139,19 @@ test('documents and sites join the standard home card and interior command bar',
 });
 
 
-test('PDF preview uses a signed Storage URL and bypasses blob delivery',()=>{
+test('document preview is modal-first with MIME fallback and five renderer paths',()=>{
   const src=fs.readFileSync(featurePath,'utf8');
-  const start=src.indexOf('async function previewDocument');
-  const end=src.indexOf('async function downloadDocument',start);
-  const preview=src.slice(start,end);
-  assert.match(src,/storage\/v1\/object\/sign\/\$\{DOC_BUCKET\}/);
-  assert.match(src,/expiresIn:300/);
-  assert.match(src,/storage\/v1\$\{raw\.startsWith/);
-  assert.match(preview,/doc\.mime_type==='application\/pdf'/);
-  assert.match(preview,/await signedDocumentUrl\(doc\.storage_path\)/);
-  assert(preview.indexOf("doc.mime_type==='application/pdf'") < preview.indexOf('const blob=await privateFile(doc.storage_path)'));
+  assert.match(src,/function documentMime\(doc\)/);
+  assert.match(src,/mime==='application\/pdf'/);
+  assert.match(src,/mime\.startsWith\('image\/'\)/);
+  assert.match(src,/mime==='text\/plain'/);
+  assert.match(src,/window\.docx\?\.renderAsync/);
+  assert.match(src,/ensureBamcoXLSX/);
+  assert.match(src,/documentPreviewDialog/);
+  assert.match(src,/documentPreviewOpenTab/);
+  assert.match(src,/documentPreviewDownload/);
+  assert.match(src,/storage\/v1\/object\/sign/);
+  assert.doesNotMatch(src,/openDocumentPreviewTab/);
 });
 
 test('sites access buttons use the regular font face without synthetic bold',()=>{

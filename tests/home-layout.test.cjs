@@ -93,15 +93,8 @@ test('search polishing and cell cleanup stop writing once values are stable',()=
 });
 
 
-test('automatic welcome exposes waiting work and routes it to the Kanban status filter',()=>{
-  const src=read('assets/js/card-home.js');
-  const css=read('assets/css/card-home.css');
-  assert.match(src,/data-welcome-waiting/);
-  assert.match(src,/امور منتظر پاسخ/);
-  assert.match(src,/bamcoOptions\?\.label\?\.\('status','waiting'\)/);
-  assert.match(src,/tableFilters\.kanban\[4\]=label/);
-  assert.match(src,/showView\('kanban'\)/);
-  assert.match(src,/task_status_view.*archived=eq\.false/);
-  assert.match(css,/#c8b0eb/);
-  assert.match(css,/#69459a/);
+test('welcome card contains no waiting-work UI or logic',()=>{
+  const src=read('assets/js/card-home.js'),css=read('assets/css/card-home.css');
+  assert.doesNotMatch(src,/welcome-waiting|syncWelcomeWaiting|openWaitingKanban|امور منتظر پاسخ/);
+  assert.doesNotMatch(css,/welcome-waiting/);
 });
