@@ -51,7 +51,7 @@ test('all data tables default to compact multi-selection behavior',()=>{
 test('people can omit email and never enter an initial password',()=>{
   const js=read('assets/js/shell.js'),edge=read('supabase/functions/admin-users/index.ts');
   assert.doesNotMatch(js,/name="initial_password"/);
-  assert.match(js,/ایمیل \(اختیاری\)/);
+  assert.match(js,/پست الکترونیک سازمانی \(اختیاری\)/);
   assert.match(js,/messaging_enabled/);
   assert.doesNotMatch(edge,/password:"123456"/);
   assert.match(edge,/crypto.getRandomValues/);
