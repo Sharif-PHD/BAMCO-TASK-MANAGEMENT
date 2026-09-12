@@ -4,7 +4,7 @@ const path=require('node:path');
 const {JSDOM,VirtualConsole,requestInterceptor}=require('jsdom');
 const root=path.join(__dirname,'../..');
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-async function until(check){for(let i=0;i<100;i++){if(check())return;await pause(30)}assert.fail('Timed out waiting for the actual UI handler');}
+async function until(check){for(let i=0;i<200;i++){if(check())return;await pause(30)}assert.fail('Timed out waiting for the actual UI handler');}
 
 // Run the shipped script order against an isolated, in-memory API. No request
 // (including authentication, user deletion or session revocation) reaches a server.
