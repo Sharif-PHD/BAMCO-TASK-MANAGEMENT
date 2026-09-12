@@ -14,6 +14,6 @@ test('group photo validates files, retries failed metadata without duplicating g
  f.failures.delete('chat_set_group_avatar');form.requestSubmit();await until(()=>!d.querySelector('#groupManageDialog').open);await until(()=>d.querySelector('[data-kind=group] .conversation-avatar img'));
  assert.equal(f.threads.filter(t=>t.thread_type==='group').length,1);assert.match(f.threads.find(t=>t.thread_type==='group').avatar_path,/\.png$/);
  d.querySelector('[data-kind=group]').click();await until(()=>d.querySelector('.messenger-head .chat-avatar img'));
- [...d.querySelectorAll('.messenger-head-actions button')].find(b=>b.textContent==='مدیریت اعضا').click();await until(()=>d.querySelector('[data-remove-group-photo]'));
+ [...d.querySelectorAll('.messenger-head-actions button')].find(b=>b.textContent==='تنظیمات گروه').click();await until(()=>d.querySelector('[data-remove-group-photo]'));
  d.querySelector('[data-remove-group-photo]').click();d.querySelector('#conversationGroupForm').requestSubmit();await until(()=>!d.querySelector('#groupManageDialog').open);assert.equal(f.threads.find(t=>t.thread_type==='group').avatar_path,null);assert.deepEqual(f.errors,[]);
 });

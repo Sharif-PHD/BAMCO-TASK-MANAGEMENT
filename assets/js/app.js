@@ -42,6 +42,8 @@ async function api(path,{method='GET',body,auth=true,prefer,keepalive=false}={})
  const token=state.token,headers={apikey:SB_KEY,'Content-Type':'application/json',Accept:'application/json'};
  if(auth&&token)headers.Authorization=`Bearer ${token}`;if(prefer)headers.Prefer=prefer;
  const endpoint=path.split('?')[0],readOnly=method==='GET'||(method==='POST'&&safeReadRpcs.has(endpoint.split('/').pop()));
+ const taskMutation=method!=='GET'&&(endpoint==='/rest/v1/tasks'||(endpoint==='/functions/v1/admin-users'&&method==='DELETE')||['delete_tasks_and_resequence','restore_tasks_to_kanban_and_resequence','review_request_stage'].includes(endpoint.split('/').pop()));
+ if(taskMutation)state.taskRevision=(state.taskRevision||0)+1;
  for(let attempt=0;attempt<(readOnly?2:1);attempt++){
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);
   try{
@@ -56,7 +58,7 @@ async function api(path,{method='GET',body,auth=true,prefer,keepalive=false}={})
    if(network){const detail=navigator.onLine===false?'اتصال اینترنت قطع است.':controller.signal.aborted?'پاسخ سرور در زمان مقرر دریافت نشد.':'ارتباط با سرور برقرار نشد.';const error=new Error(detail+(readOnly?' دوباره تلاش کنید.':' نتیجه عملیات مشخص نیست؛ پیش از تکرار، وضعیت آن را بررسی کنید.'));error.code='NETWORK_ERROR';error.cause=err;err=error}
    window.bamcoNetworkErrors.push({endpoint,method,status:err.status||0,code:err.code||'REQUEST_ERROR',at:new Date().toISOString()});if(window.bamcoNetworkErrors.length>30)window.bamcoNetworkErrors.shift();
    throw err;
-  }finally{clearTimeout(timer)}
+  }finally{clearTimeout(timer);if(taskMutation)state.taskRevision=(state.taskRevision||0)+1}
  }
 }
 
@@ -861,7 +863,7 @@ showLogin();
 
   refresh=async function(){
     if(!state.profile||state.profile.must_change_password)return;
-    const loadingUser=state.user?.id;
+    const loadingUser=state.user?.id,taskRevision=state.taskRevision||0;
     try{
       const optionsPromise=window.bamcoOptions.load();
       const profilesPromise=isManager()?select('profiles','select=id,email,login_name,must_change_password,password_changed_at,full_name,display_name,gender,excel_name,role,active,default_message_channel,messaging_enabled&order=full_name'):Promise.resolve([state.profile]);
@@ -871,7 +873,7 @@ showLogin();
       const routesPromise=rpc('request_routing_status',{}).catch(()=>[]);
       const [profiles,tasks,requests,history,routes]=await Promise.all([profilesPromise,tasksPromise,requestsPromise,historyPromise,routesPromise,optionsPromise]);
       if(state.user?.id!==loadingUser)return;
-      state.profiles=profiles;state.tasks=tasks;state.requests=requests;state.requestHistory=history;state.requestRoutes=routes;
+      state.profiles=profiles;if(taskRevision===(state.taskRevision||0))state.tasks=tasks;state.requests=requests;state.requestHistory=history;state.requestRoutes=routes;
       dataVersion++;resetRenderCaches();
       renderAll();
       requestAnimationFrame(()=>{installResizableTable('kanban');installResizableTable('archive')});

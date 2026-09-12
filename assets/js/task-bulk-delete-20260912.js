@@ -134,7 +134,7 @@ async function deleteSelected(scope){
   try{
     const deleted=await rpc('delete_tasks_and_resequence',{p_task_ids:selected.map(Number)});
     if(Number(deleted)!==tasks.length)throw new Error('تعداد ردیف‌های حذف‌شده با انتخاب شما مطابقت ندارد.');
-    try{const rows=await selectAll('task_status_view','select=*&order=id.desc');if(Array.isArray(rows))state.tasks=rows}catch(refreshError){console.warn('authoritative task refresh after delete failed',refreshError)}
+    try{const taskRevision=state.taskRevision||0,rows=await selectAll('task_status_view','select=*&order=id.desc');if(Array.isArray(rows)&&taskRevision===(state.taskRevision||0))state.tasks=rows}catch(refreshError){console.warn('authoritative task refresh after delete failed',refreshError)}
     renderBoth();
     if(typeof toast==='function')toast(tasks.length===1?'وظیفه حذف شد و شناسه‌ها بازشماری شد.':`${faDigits(tasks.length)} وظیفه حذف شدند و شناسه‌ها بازشماری شد.`);
     window.dispatchEvent(new CustomEvent('bamco:tasks-deleted',{detail:{scope,ids:selected,count:tasks.length}}));
