@@ -42,9 +42,9 @@ test('credential vault uses server-only key and AES-GCM with user/site binding',
 
 test('document edge enforces manager and compensates failed metadata insert',()=>{
   const src=fs.readFileSync(documentPath,'utf8');
-  assert.match(src,/role!=="manager"/);
+  assert.match(src,/role\s*!==\s*"manager"/);
   assert.match(src,/documents-private/);
-  assert.match(src,/await deleteObjects\(url,service,\[path\]\)\.catch/);
+  assert.match(src,/await\s+deleteObjects\(url,\s*service,\s*\[path\]\)\.catch/);
   assert.match(src,/document_upload/);
   assert.match(src,/document_delete/);
 });
@@ -158,4 +158,12 @@ test('sites access buttons use the regular font face without synthetic bold',()=
   const css=fs.readFileSync(path.join(ROOT,'assets/css/documents-sites.css'),'utf8');
   assert.match(css,/#sitesAccessView button[^}]*font-weight:400!important/);
   assert.match(css,/#sitesAccessView button[^}]*font-synthesis:none!important/);
+});
+
+
+test('DOCX preview loads local JSZip before docx-preview',()=>{
+  const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
+  const zip=html.indexOf('assets/vendor/jszip.min.js'),docx=html.indexOf('assets/vendor/docx-preview.min.js');
+  assert.ok(zip>=0&&docx>zip);
+  assert.ok(fs.statSync(path.join(ROOT,'assets/vendor/jszip.min.js')).size>10000);
 });
