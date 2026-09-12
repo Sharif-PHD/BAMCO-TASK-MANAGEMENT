@@ -11,7 +11,7 @@ async function until(check){for(let i=0;i<100;i++){if(check())return;await pause
 async function fixture(options={}){
  const profiles=[{id:'test-manager',full_name:'مدیر آزمایشی',display_name:'مدیر آزمایشی',email:'manager@example.test',role:'manager',active:true},{id:'test-owner',full_name:'متولی آزمایشی',email:'owner@example.test',role:'owner',active:true}];
  const sessions=[{id:'test-session',auth_session_id:'test-auth-session',user_id:'test-owner',login_at:new Date().toISOString(),last_activity_at:new Date().toISOString()}];
- const actor=options.role==='owner'?profiles[1]:profiles[0],tables={...options.tables};
+ const actor=options.role==='owner'?profiles[1]:profiles[0],tables={task_statuses:[['registered','ثبت شده','registered','none','none','none',false],['doing','در حال انجام','active','required','required','required',true],['waiting','منتظر پاسخ','waiting','required','required','none',false],['done','انجام شده','completed','required','optional','optional',false]].map(([key,label,kind,owner_mode,start_mode,due_mode,tracks_deadline],i)=>({key,label,kind,owner_mode,start_mode,due_mode,tracks_deadline,active:true,color:'#8b949e',sort_order:i+1})),priorities:[{key:'medium',label:'متوسط',color:'#f2a93b',active:true,sort_order:1}],...options.tables};
  const threads=[{id:'test-room',thread_type:'public',title:'گفت‌وگوی عمومی',is_active:true}],members=[],messages=[],uploads=[];
  const calls=[],errors=[],downloads=[],observers=[],blobs=new Map();let failSave=false;const failures=new Set();
 
@@ -23,7 +23,7 @@ async function fixture(options={}){
  });
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8').replace(/<script\b[^>]*src="assets\/js\/(?:auth-ui|department-entry)\.js[^>]*><\/script>/g,tag=>options.authUi&&tag.includes('/auth-ui.')?tag:'');
  const dom=new JSDOM(html,{url:'https://bamco.test/',runScripts:'dangerously',resources:{interceptors:[local]},pretendToBeVisual:true,virtualConsole:vc,beforeParse(w){
-  w.Response=Response;w.Request=Request;w.Headers=Headers;w.AbortController=AbortController;w.Blob=Blob;w.TextEncoder=TextEncoder;w.CSS={escape:s=>String(s)};w.print=()=>{};for(const [key,value] of Object.entries(options.storage||{}))w.localStorage.setItem(key,value);
+  w.Response=Response;w.Request=Request;w.Headers=Headers;w.AbortController=AbortController;w.Blob=Blob;w.TextEncoder=TextEncoder;w.CSS={escape:s=>String(s)};w.print=()=>{};w.scrollTo=()=>{};w.HTMLElement.prototype.scrollTo=function(){};w.HTMLElement.prototype.scrollIntoView=function(){};for(const [key,value] of Object.entries(options.storage||{}))w.localStorage.setItem(key,value);
   w.fetch=async(input,init={})=>{
    const url=new URL(typeof input==='string'?input:input.url,w.location.href),endpoint=url.pathname.split('/').pop(),method=init.method||'GET',body=typeof init.body==='string'?JSON.parse(init.body):init.body||null;
    calls.push({endpoint,method,body,url:url.href,cache:init.cache});let data=[],status=200;
@@ -51,7 +51,7 @@ async function fixture(options={}){
    if(endpoint==='chat_ensure_public')data='test-room';
    if(endpoint==='chat_directory'||endpoint==='chat_directory_v2')data=profiles;
    if(endpoint==='chat_threads')data=filter(threads).filter(t=>t.is_active);
-   if(endpoint==='chat_conversation_list')data=threads.filter(t=>(t.is_active||t.participant_deleted_at)&&(t.thread_type==='public'||members.some(m=>m.thread_id===t.id&&m.user_id===actor.id))).map(t=>{const peer=members.find(m=>m.thread_id===t.id&&m.user_id!==actor.id),p=profiles.find(p=>p.id===peer?.user_id);return{...t,title:t.thread_type==='direct'&&!t.system_recipient_id?p?.full_name||t.title:t.title,person_id:p?.id,last_message:messages.filter(m=>m.thread_id===t.id&&!m.deleted_at).at(-1)?.body,unread_count:0}});
+   if(endpoint==='chat_conversation_list')data=threads.filter(t=>(t.is_active||t.participant_deleted_at)&&(t.thread_type==='public'||members.some(m=>m.thread_id===t.id&&m.user_id===actor.id))).map(t=>{const peer=members.find(m=>m.thread_id===t.id&&m.user_id!==actor.id),p=profiles.find(p=>p.id===peer?.user_id);return{...t,title:t.thread_type==='direct'&&!t.system_recipient_id?p?.full_name||t.title:t.title,person_id:t.thread_type==='direct'?p?.id:null,last_message:messages.filter(m=>m.thread_id===t.id&&!m.deleted_at).at(-1)?.body,unread_count:0}});
 
    if(endpoint==='chat_members')data=filter(members);
    if(endpoint==='chat_messages')data=filter(messages).filter(m=>!m.deleted_at);

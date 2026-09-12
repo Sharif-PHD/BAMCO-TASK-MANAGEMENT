@@ -8,7 +8,7 @@ test('workflow message renderer is compact, centered and warning/overdue colored
   const renderer=read('assets/js/message-renderer.js');
   assert.match(renderer,/workflow-sticker/);
   assert.match(renderer,/display:block;margin:0 auto/);
-  assert.match(renderer,/width:calc\(100% - 28px\);max-width:980px;margin:10px auto 12px/);
+  assert.match(renderer,/width:100%;max-width:980px;margin:10px auto 12px/);
   assert.match(renderer,/#f0c44c/);
   assert.match(renderer,/#e8756e/);
   assert.match(renderer,/text-align:center!important/);
@@ -35,11 +35,11 @@ test('database migration exposes only own system chain and creates self-system a
 });
 
 
-test('automatic message renders risk and waiting work as sibling sections from one snapshot',()=>{
+test('automatic message renders three separate task sections from one snapshot',()=>{
   const renderer=require(path.join(__dirname,'..','assets/js/message-renderer.js'));
   const snapshot={body_template:'[جدول امور دیرکردی]\n\n[جدول امور هشداری]',warning_task_ids:[2],overdue_task_ids:[1],waiting_task_ids:[3],tasks:[{id:1,legacy_id:11,title:'Late',status:'در حال انجام',priority:'فوری',due_date:'2026-09-01',due_state:'overdue'},{id:2,legacy_id:12,title:'Warn',status:'در حال انجام',priority:'متوسط',due_date:'2026-09-20',due_state:'warning'},{id:3,legacy_id:13,title:'Wait',status:'منتظر پاسخ',status_key:'waiting',status_kind:'waiting',priority:'متوسط',start_date:'2026-09-02',due_state:'none'}]};
   const html=renderer.html(snapshot);
-  assert.match(html,/امور هشداری و دیرکردی/);
+  assert.match(html,/امور هشداری/);assert.match(html,/امور دیرکردی/);assert.doesNotMatch(html,/workflow-risk-section/);
   assert.match(html,/امور منتظر پاسخ/);
   assert.match(html,/workflow-auto-task-grid/);
   assert.match(html,/data-bamco-task-id="3"/);
@@ -53,7 +53,7 @@ test('state1 text without table tokens still renders its own waiting tasks and l
  const renderer=require('../assets/js/message-renderer.js');
  const html=renderer.html({body_template:'وضعیت مطلوب',tasks:[{id:19,title:'Waiting A',status_kind:'waiting'}]});
  assert.match(html,/وضعیت مطلوب/);assert.match(html,/workflow-waiting-section/);
- assert.match(html,/\?task=19/);assert.match(html,/#c8b0eb/);
+ assert.match(html,/\?task=19/);assert.match(html,/#8b949e/);
  assert.doesNotMatch(renderer.html({body_template:'Recipient B',tasks:[]}),/Waiting A/);
 });
 test('localized old snapshots retain warning and overdue groups',()=>{
@@ -73,4 +73,19 @@ test('message task link closes preview and repeated navigation preserves selecti
  w.document.dispatchEvent(new w.Event('DOMContentLoaded'));
  w.document.querySelector('a').click();w.document.querySelector('a').click();
  assert.equal(w.document.querySelector('dialog').open,false);assert.equal(clicked,1);assert.equal(focused,2);assert.equal(row.getAttribute('aria-selected'),'true');dom.window.close();
+});
+
+test('each task group has its own table, Kanban colors and only its own task links',()=>{
+ const {JSDOM}=require('jsdom'),renderer=require('../assets/js/message-renderer.js');
+ const dom=new JSDOM(renderer.html({body_template:'[جدول امور هشداری]\n[جدول امور دیرکردی]',tasks:[{id:1,due_state:'warning'},{id:2,due_state:'overdue'},{id:3,status_kind:'waiting',status_color:'#8b949e'}]}));
+ const d=dom.window.document;assert.equal(d.querySelectorAll('.workflow-auto-section').length,3);
+ for(const [kind,id,bg] of [['warning',1,'rgb(255, 248, 229)'],['overdue',2,'rgb(255, 240, 239)'],['waiting',3,'rgb(241, 242, 243)']]){
+  const section=d.querySelector('.workflow-'+kind+'-section');assert.equal(section.querySelectorAll('tbody tr').length,1);assert.equal(section.querySelector('tbody a').dataset.bamcoTaskId,String(id));assert.equal(section.querySelector('tbody td').style.backgroundColor,bg);
+ }
+ dom.window.close();
+});
+test('automatic message sticker is resolved from the active pack every time',async()=>{
+ const renderer=require('../assets/js/message-renderer.js'),calls=[];let current='new-pack/female-state3.png';
+ global.rpc=async(name,args)=>{calls.push([name,args]);return current};global.bamcoMedia={get:async(bucket,path)=>path};
+ try{const snapshot={id:70,sticker_path:'old-pack/female-state3.png'};assert.equal(await renderer.stickerUrl(snapshot),current);current='third-pack/female-state3.png';assert.equal(await renderer.stickerUrl(snapshot),current);assert.equal(calls.length,2);assert.equal(calls[0][0],'resolve_message_sticker');assert.equal(calls[0][1].p_snapshot_id,70)}finally{delete global.rpc;delete global.bamcoMedia}
 });

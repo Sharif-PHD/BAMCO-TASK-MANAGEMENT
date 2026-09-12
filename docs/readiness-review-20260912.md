@@ -1,0 +1,23 @@
+# Request preservation and readiness review — 12 September 2026
+
+## Fixed and verified
+
+- Creation requests previously overwrote owner, status and all three dates in `submit_change_request`. The authorization-checked private implementation now retains submitted content and dates, binds owner-created requests to their authenticated requester, and rejects missing titles / inverted dates. The public API signature is unchanged and runs as invoker. Existing status rules still apply on approval (a registered task intentionally has no scheduling fields).
+- `private.apply_change_request` omitted reminder_days during updates. This now reaches the approved task. Manager review also displays the submitted description and reminder interval.
+- Automatic messages render warning, overdue and waiting tasks in independent tables. Warning and overdue rows match Kanban; waiting uses its catalog color. Links reveal the correct Kanban page, clear filters and select through the authoritative task-selection controller.
+- Sticker activation is an atomic, manager-only RPC that verifies all ten Storage-backed images before switching. A failed activation preserves the prior active set. Preview/system-message display resolves the current active set for that recipient/state, and reopening a message no longer reuses a stale rendered sticker. Welcome images refresh after activation. REST metadata reads bypass HTTP caching; immutable image paths retain the media cache. Sent email bytes are historical and cannot be changed retroactively.
+- Generic table consumers (Excel/task handover/history) now delegate task selection to the existing task-selection controller. Previously, a clicked Kanban row could be ignored by Excel or handover because they read a separate selection store.
+- Removed anonymous execute grants from message cancellation and system-message payload APIs. Authenticated permissions are preserved. The security review also lists existing privileged RPCs and the public citext extension; these were not indiscriminately rewritten. See the [database advisor guidance](https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable).
+
+## Evidence
+
+- `tests/sql/approval-payload-preservation.sql`: on the configured database, an owner submission was routed through the configured approval stages to task creation, then through a second update request. Dates, owner, description and reminder_days were verified at submission and on the resulting task; unauthorized self-approval was denied. Entire transaction rolled back.
+- `tests/sql/active-message-stickers.sql`: switched the active pack and resolved a snapshot to its matching new asset; an incomplete-pack attempt was rejected without losing the current set. Entire transaction rolled back.
+- `tests/owner-request-preservation.test.cjs`: real frontend handlers with isolated network fixtures; failed submission retains all form fields, retry submits dates/status/description correctly; selected-only Excel contents, selection clearing and navigation to a filtered/paginated task verified.
+- Twelve focused renderer/reminder regressions passed, including three independent tables and colors, per-recipient task links, active-pack resolution, original-delivery reminder selection, missing email and double-click handling.
+- Live authenticated manager browser: Kanban, approval queue, existing request 28 dates, dashboard, applying/clearing a dashboard date, performance report, sticker images and document listing inspected. No app warning/error appeared in the inspected browser logs. Existing real requests were not approved or altered during this read-only inspection.
+- Broad suite initial run: 158/210 passed, 52 failed. Test environment lacked browser scrolling and default task catalogs; after correcting those fixtures, 186/211 passed and 25 failed. Many remaining checks reference removed template screens, old calendar/toolbar selectors or old report column positions. This is not a fully green release gate; failures are retained, not skipped to manufacture success. The task-selection defect exposed by the suite was separately fixed and verified.
+
+## Limits
+
+A real newly authenticated owner-to-manager browser submission has not been executed in this review; database role-context integration and isolated frontend submission tests establish the field-preservation fix. Dates already stripped from old requests cannot be reconstructed from the retained payload and need correction by their author/manager. Real email delivery remains deferred at the user's request while the provider is unavailable. This review does not certify the entire application as defect-free or fully release-ready.

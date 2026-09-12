@@ -42,7 +42,7 @@ async function api(path,{method='GET',body,auth=true,prefer,keepalive=false}={})
   if(prefer) headers.Prefer=prefer;
   const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),20000);
   try{
-    const res=await fetch(SB_URL+path,{method,headers,keepalive,cache:/\/(stickers|sticker_sets)(?:\?|$)/.test(path)?'default':'no-store',signal:controller.signal,body:body===undefined?undefined:JSON.stringify(body)});
+    const res=await fetch(SB_URL+path,{method,headers,keepalive,cache:'no-store',signal:controller.signal,body:body===undefined?undefined:JSON.stringify(body)});
     const text=await res.text();let data=null;try{data=text?JSON.parse(text):null}catch{data=text}
     if(!res.ok)throw new Error(apiErrorMessage(data,res.status));
     return data;
@@ -288,7 +288,7 @@ async function restoreTask(id){if(!isManager())return;const task=state.tasks.fin
 $('#kanbanEditBtn').addEventListener('click',()=>{const t=selectedTask('kanban');if(t)openTask(t)});$('#archiveEditBtn').addEventListener('click',()=>{const t=selectedTask('archive');if(t)openTask(t)});
 $('#kanbanArchiveBtn').addEventListener('click',()=>{const t=selectedTask('kanban');if(t)archiveTask(t.id)});$('#archiveRestoreBtn').addEventListener('click',()=>{const t=selectedTask('archive');if(t)restoreTask(t.id)});
 $('#kanbanDeleteBtn').addEventListener('click',()=>{const t=selectedTask('kanban');if(t)deleteTask(t.id)});$('#archiveDeleteBtn').addEventListener('click',()=>{const t=selectedTask('archive');if(t)deleteTask(t.id)});
-window.openReview=id=>{state.reviewing=state.requests.find(r=>String(r.id)===String(id));const r=state.reviewing,types={create:'تعریف فعالیت جدید',update:'ویرایش وظیفه',status:'تغییر وضعیت',priority:'تغییر اولویت',description:'تغییر توضیحات',complete:'اعلام انجام',delete:'درخواست حذف',due_date:'تغییر تاریخ پایان'};const task=state.tasks.find(t=>String(t.id)===String(r.task_id));$('#reviewDetails').innerHTML=`<p><b>نوع درخواست:</b> ${types[r.request_type]||r.request_type}</p><p><b>مرحله:</b> ${fa(r.current_stage||1)}</p><p><b>عنوان:</b> ${safe(r.proposed_data?.title||task?.title||'—')}</p><p><b>متولی:</b> ${safe(state.profiles.find(p=>p.id===r.proposed_data?.owner_id)?.full_name||ownerName(task||{}))}</p><p><b>وضعیت پیشنهادی:</b> ${safe(r.proposed_data?.status||'—')}</p><p><b>اولویت پیشنهادی:</b> ${safe(r.proposed_data?.priority||'—')}</p><p><b>تاریخ شروع:</b> ${jalaliText(r.proposed_data?.start_date)}</p><p><b>تاریخ پایان:</b> ${jalaliText(r.proposed_data?.due_date)}</p><p><b>تاریخ انجام:</b> ${jalaliText(r.proposed_data?.done_date)}</p>`;$('#managerNote').value='';$('#reviewDialog').showModal()};
+window.openReview=id=>{state.reviewing=state.requests.find(r=>String(r.id)===String(id));const r=state.reviewing,types={create:'تعریف فعالیت جدید',update:'ویرایش وظیفه',status:'تغییر وضعیت',priority:'تغییر اولویت',description:'تغییر توضیحات',complete:'اعلام انجام',delete:'درخواست حذف',due_date:'تغییر تاریخ پایان'};const task=state.tasks.find(t=>String(t.id)===String(r.task_id));$('#reviewDetails').innerHTML=`<p><b>نوع درخواست:</b> ${types[r.request_type]||r.request_type}</p><p><b>مرحله:</b> ${fa(r.current_stage||1)}</p><p><b>عنوان:</b> ${safe(r.proposed_data?.title||task?.title||'—')}</p><p><b>متولی:</b> ${safe(state.profiles.find(p=>p.id===r.proposed_data?.owner_id)?.full_name||ownerName(task||{}))}</p><p><b>وضعیت پیشنهادی:</b> ${safe(r.proposed_data?.status||'—')}</p><p><b>توضیحات:</b> ${safe(r.proposed_data?.description??task?.description??'—')}</p><p><b>یادآور (روز):</b> ${fa(r.proposed_data?.reminder_days??task?.reminder_days??0)}</p><p><b>اولویت پیشنهادی:</b> ${safe(r.proposed_data?.priority||'—')}</p><p><b>تاریخ شروع:</b> ${jalaliText(r.proposed_data?.start_date)}</p><p><b>تاریخ پایان:</b> ${jalaliText(r.proposed_data?.due_date)}</p><p><b>تاریخ انجام:</b> ${jalaliText(r.proposed_data?.done_date)}</p>`;$('#managerNote').value='';$('#reviewDialog').showModal()};
 async function review(decision){try{const result=await rpc('review_request_stage',{p_request_id:state.reviewing.id,p_decision:decision,p_note:$('#managerNote').value.trim()||null,p_final_data:null});$('#reviewDialog').close();toast(decision==='approved'?(result==='next_stage'?'مرحله اول تأیید شد و درخواست به مرحله بعد رفت.':'درخواست تأیید و اعمال شد.'):decision==='needs_revision'?'درخواست جهت اصلاح به متولی برگشت.':'درخواست رد شد.');await refresh()}catch(err){toast(err.message,true)}}
 window.reviseRequest=id=>{const r=state.requests.find(x=>String(x.id)===String(id));if(!r)return;state.resubmitting=r;const task=state.tasks.find(t=>String(t.id)===String(r.task_id))||{};openTask({...task,...r.proposed_data,owner_id:state.profile.id})};
 $('#approveBtn').addEventListener('click',()=>review('approved'));$('#rejectBtn').addEventListener('click',()=>review('rejected'));$('#revisionBtn').addEventListener('click',()=>review('needs_revision'));$('#editRequestBtn').addEventListener('click',()=>{const r=state.reviewing,task=state.tasks.find(t=>String(t.id)===String(r.task_id))||{};state.reviewEdit={...r,managerNote:$('#managerNote').value.trim()};$('#reviewDialog').close();openTask({...task,...r.proposed_data,owner_id:r.proposed_data?.owner_id||task.owner_id||r.requested_by})});
@@ -792,7 +792,7 @@ showLogin();
       const due=norm(t.due_state),status=norm(t.status),rowClass=window.bamcoOptions.kind(t)==='waiting'?'row-waiting':due==='دیرکرد'?'row-overdue':due.includes('هشدار')?'row-warning':'row-normal';
       const values=taskColumnValues(t,archived);
       const selected=String(state.selected[scope])===String(t.id);
-      return `<tr class="${rowClass}${selected?' task-selected':''}" data-task-id="${t.id}" data-scope="${scope}" aria-selected="${selected?'true':'false'}">${values.map((v,i)=>i===4?window.bamcoOptions.cell('status',v):i===5?window.bamcoOptions.cell('priority',v):cell(v)).join('')}</tr>`;
+      return `<tr class="${rowClass}${selected?' task-selected':''}" data-task-id="${t.id}" data-scope="${scope}" style="--task-status-color:${/^#[0-9a-f]{6}$/i.test(t.status_color||'')?t.status_color:'#8b949e'}" aria-selected="${selected?'true':'false'}">${values.map((v,i)=>i===4?window.bamcoOptions.cell('status',v):i===5?window.bamcoOptions.cell('priority',v):cell(v)).join('')}</tr>`;
     }).join('');
     updateTaskToolbar(scope);rendered[scope]=true;
   };
@@ -804,7 +804,7 @@ showLogin();
     const all=qs('#showAllKanbanTasks');if(all&&!all.closest('[hidden]'))all.click();
     const search=qs('#kanbanSearch');if(search)search.value='';
     Object.keys(tableFilters.kanban).forEach(key=>delete tableFilters.kanban[key]);
-    state.selected.kanban=Number(id);renderTasks(false);window.bamcoRevealTask?.(id);return true;
+    state.selected.kanban=Number(id);renderTasks(false);if(window.bamcoTaskSelection){window.bamcoTaskSelection.clear('kanban');window.bamcoTaskSelection.toggle('kanban',id)}window.bamcoRevealTask?.(id);return true;
   };
 
   function renderArchivePager(total,start,shown,pageCount){

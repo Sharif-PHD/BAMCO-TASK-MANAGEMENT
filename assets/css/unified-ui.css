@@ -575,3 +575,5 @@ html body #taskOptionDialog .catalog-check input{flex:none!important;width:18px!
 html body #taskOptionDialog .catalog-edit-note,html body #taskOptionDialog .catalog-error{margin:0!important;padding:0 18px 14px!important;font-family:inherit!important;line-height:1.7!important}
 html body #taskOptionDialog .catalog-error{color:#a23535!important}html body #taskOptionDialog .catalog-error:empty{display:none!important}
 @media(max-width:620px){html body #taskOptionDialog .catalog-edit-grid{grid-template-columns:minmax(0,1fr)!important}}
+
+html body #appView#appView :is(#kanbanView,#archiveView).bamco-interior table tbody tr.row-waiting>td{background:color-mix(in srgb,var(--task-status-color,#8b949e) 12%,white)!important}
