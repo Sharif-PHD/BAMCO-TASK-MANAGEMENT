@@ -1,4 +1,4 @@
-name: UI toolbar cleanup branch runner
+name: UI toolbar source diagnostic
 
 on:
   push:
@@ -10,176 +10,51 @@ permissions:
   contents: write
 
 jobs:
-  refactor-and-test:
+  diagnose:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - name: Refactor requested UI at source
+      - name: Record source-pattern counts
         shell: bash
         run: |
-          set -euo pipefail
           python - <<'PY'
           from pathlib import Path
           import re
-
-          def read(path): return Path(path).read_text()
-          def write(path, text): Path(path).write_text(text)
-          def sub_once(text, pattern, replacement, label, flags=0):
-              out, n = re.subn(pattern, replacement, text, count=1, flags=flags)
-              assert n == 1, f'{label}: expected one replacement, got {n}'
-              return out
-
-          # 1) Dashboard: remove only Apply; keep Clear. Date selection already renders automatically.
-          p='index.html'; s=read(p)
-          s=sub_once(s, r'<button id="applyPerf" type="button" class="primary">اعمال</button>\s*', '', 'dashboard apply button')
-          cache_updates={
-              'assets/js/phase2-message-engine.js?v=message-unified-20260911-1':'assets/js/phase2-message-engine.js?v=ui-toolbar-cleanup-20260912-1',
-              'assets/js/phase3-response-tracking.js?v=details-20260910-1':'assets/js/phase3-response-tracking.js?v=ui-toolbar-cleanup-20260912-1',
-              'assets/js/tab-workspace.js?v=catalog-20260910-1':'assets/js/tab-workspace.js?v=ui-toolbar-cleanup-20260912-1',
-              'assets/js/admin-root-fixes-20260911.js?v=user-fixes-20260911-1':'assets/js/admin-root-fixes-20260911.js?v=ui-toolbar-cleanup-20260912-1',
-              'assets/js/report-stability-fixes-20260911.js?v=performance-toolbar-root-20260912-2':'assets/js/report-stability-fixes-20260911.js?v=ui-toolbar-cleanup-20260912-1',
-          }
-          for old,new in cache_updates.items():
-              assert old in s, f'cache key missing: {old}'
-              s=s.replace(old,new,1)
-          write(p,s)
-
-          # 2) Canonical response report: no search, all command buttons regular weight.
-          p='assets/js/report-stability-fixes-20260911.js'; s=read(p)
-          s=s.replace('#responseReportView .response-command-row>*{flex:0 0 auto!important}', '#responseReportView .response-command-row>*{flex:0 0 auto!important}\n #responseReportView .response-command-row button{font-weight:400!important}',1)
-          s=sub_once(s, r'function responseVisible\(\)\{.*?\}\nfunction syncResponseDelete', "function responseVisible(){const from=inputIso(q('#canonicalResponseFrom')),to=inputIso(q('#canonicalResponseTo'));return responseRows.filter(x=>x.delivery_status!=='cancelled'&&(!from||String(x.sent_at||'').slice(0,10)>=from)&&(!to||String(x.sent_at||'').slice(0,10)<=to))}\nfunction syncResponseDelete", 'canonical response filtering', re.S)
-          s=sub_once(s, r'function responseTools\(range\)\{return `.*?`\}\nasync function renderResponse', '''function responseTools(range){return `<div class="response-command-row"><button type="button" class="ghost" data-response-home>بازگشت به خانه</button><div class="canonical-date-controls"><label><span>از تاریخ</span><span class="canonical-date-field"><input id="canonicalResponseFrom" class="jalali-input" readonly value="${esc(range?.fromText||'')}"><button type="button" class="ghost" data-canonical-date="response-from" aria-label="انتخاب تاریخ شروع">▦</button></span></label><label><span>تا تاریخ</span><span class="canonical-date-field"><input id="canonicalResponseTo" class="jalali-input" readonly value="${esc(range?.toText||'')}"><button type="button" class="ghost" data-canonical-date="response-to" aria-label="انتخاب تاریخ پایان">▦</button></span></label></div><button type="button" class="ghost" data-canonical-refresh="responseReport">تازه‌سازی</button><button type="button" class="ghost" data-canonical-export="response">خروجی اکسل</button><button type="button" class="ghost" data-response-bulk-delete disabled>حذف رکورد</button></div>`}\nasync function renderResponse''', 'canonical response toolbar', re.S)
-          s=s.replace(";q('#canonicalResponseSearch')?.addEventListener('input',()=>{window.bamcoSelection?.clear?.('#responseReportBody');renderResponseRows()});window.bamcoInteriorUI?.decorateView?.(view)", ";window.bamcoInteriorUI?.decorateView?.(view)",1)
-          write(p,s)
-
-          # Prevent the legacy workspace renderer from briefly recreating response search before canonical renderer settles.
-          p='assets/js/tab-workspace.js'; s=read(p)
-          old='<div class="workspace-report-tools"><input type="search" data-report-search placeholder="جست‌وجو در گزارش…" aria-label="جست‌وجو در گزارش"><button data-report-export="all" class="ghost">خروجی اکسل</button></div>'
-          new='<div class="workspace-report-tools">${id===\'responseReport\'?\'\':\'<input type="search" data-report-search placeholder="جست‌وجو در گزارش…" aria-label="جست‌وجو در گزارش">\'}<button data-report-export="all" class="ghost">خروجی اکسل</button></div>'
-          assert old in s, 'workspace report toolbar source not found'
-          s=s.replace(old,new,1)
-          write(p,s)
-
-          # 3) Send message: one command row between two lines, regular-weight buttons, no search, channel after Refresh.
-          p='assets/js/phase2-message-engine.js'; s=read(p)
-          s=sub_once(s, r'function visible\(\)\{.*?\}\nfunction syncSelection', 'function visible(){return rows}\nfunction syncSelection', 'message visible', re.S)
-          marker='#messageCenterView .message-command-row #sendSelectedMessages{'
-          assert marker in s
-          s=s.replace(marker,'#messageCenterView .message-command-row button{font-weight:400!important}'+marker,1)
-          s=sub_once(s, r'<div class="message-command-row"><button type="button" class="ghost" id="messageCenterHome">بازگشت به خانه</button><button type="button" class="ghost" id="messageCenterExport">خروجی اکسل</button><button type="button" class="ghost" id="refreshMessageCenter">تازه‌سازی</button><button id="sendSelectedMessages" type="button" class="primary" disabled>ارسال</button></div><div class="message-center-simple-toolbar"><label>کانال ارسال<select id="messageChannel">(.*?)</select></label><input id="messageCenterSearch" type="search" placeholder="جست‌وجوی نام یا ایمیل"><span id="messageSelectionCount">۰ نفر انتخاب شده</span></div>', r'<div class="message-command-row"><button type="button" class="ghost" id="messageCenterHome">بازگشت به خانه</button><button type="button" class="ghost" id="messageCenterExport">خروجی اکسل</button><button type="button" class="ghost" id="refreshMessageCenter">تازه‌سازی</button><label class="message-channel-inline">کانال ارسال<select id="messageChannel">\1</select></label><button id="sendSelectedMessages" type="button" class="primary" disabled>ارسال</button><span id="messageSelectionCount">۰ نفر انتخاب شده</span></div>', 'message command layout', re.S)
-          s=s.replace("q('#messageCenterSearch').oninput=render;",'',1)
-          s=s.replace('متولی مطابق جست‌وجو وجود ندارد.','متولی برای نمایش وجود ندارد.',1)
-          write(p,s)
-
-          # 4) Sent messages: remove the second controls row; keep one regular-weight command row.
-          p='assets/js/admin-root-fixes-20260911.js'; s=read(p)
-          marker='#sentMessagesView .sent-command-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 0;margin:0 0 12px;border-top:1px solid #d9e4de;border-bottom:1px solid #d9e4de}'
-          assert marker in s, 'sent command css missing'
-          s=s.replace(marker,marker+'\n#sentMessagesView .sent-command-row button{font-weight:400!important}',1)
-          s=sub_once(s, r'function sentFiltered\(\)\{.*?\}\nfunction renderSent', "function sentFiltered(){return sentRows.filter(r=>r.delivery_status!=='cancelled')}\nfunction renderSent", 'sent filtering', re.S)
-          sent_render='''function renderSent(){const view=ensureSentView(),filtered=sentFiltered();view.innerHTML=`<div class="panel workspace-panel"><div class="panel-head"><div><h3>پیام‌های ارسال‌شده</h3><small>ارسال‌های دستی و همه پیام‌های خودکار سامانه در یک سابقه واحد</small></div></div><div class="sent-command-row"><button type="button" class="ghost content-back">بازگشت به خانه</button><button type="button" class="ghost" data-sent-export>خروجی اکسل</button><button type="button" class="ghost" data-sent-refresh>تازه‌سازی</button><span class="sent-count">${faNum(filtered.length)} رکورد نمایش داده می‌شود</span></div><div class="table-wrap"><table class="workspace-table sent-table"><thead><tr><th>ردیف</th><th>نوع</th><th>فرستنده</th><th>گیرنده</th><th>موضوع</th><th>کانال</th><th>وضعیت</th><th>زمان ارسال</th><th>تلاش</th><th>خطا</th><th>جزئیات</th></tr></thead><tbody>${filtered.length?filtered.map((r,i)=>`<tr data-sent-key="${esc(r.log_key)}"><td>${faNum(filtered.length-i)}</td><td>${esc(SOURCE_LABEL[r.source_type]||r.source_type||'—')}</td><td>${esc(r.sender_name||'سامانه')}</td><td>${esc(r.recipient_name||'—')}</td><td>${esc(r.subject||'—')}</td><td>${esc(SENT_CHANNEL[r.channel]||r.channel||'—')}</td><td><span class="sent-status ${esc(r.delivery_status||'')}">${esc(SENT_STATUS[r.delivery_status]||r.delivery_status||'—')}</span></td><td>${esc(sentDate(r.sent_at))}</td><td>${faNum(r.attempt_count||0)}</td><td class="sent-error">${esc(r.error_message||'—')}</td><td><button type="button" class="ghost" data-sent-detail="${esc(r.log_key)}">مشاهده</button></td></tr>`).join(''):'<tr><td colspan="11" class="empty">رکوردی برای نمایش وجود ندارد.</td></tr>'}</tbody></table></div></div>`;bindSentControls()}'''
-          s=sub_once(s, r'function renderSent\(\)\{.*?\}\nfunction bindSentControls', sent_render+'\nfunction bindSentControls', 'sent renderer', re.S)
-          s=sub_once(s, r'function bindSentControls\(\)\{.*?\}\nasync function exportSent', "function bindSentControls(){q('[data-sent-refresh]')?.addEventListener('click',()=>void loadSent(true));q('[data-sent-export]')?.addEventListener('click',exportSent);q('#sentMessagesView .content-back')?.addEventListener('click',()=>window.bamcoShowHome?.());qa('[data-sent-detail]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();void openSentDetail(b.dataset.sentDetail)}));qa('#sentMessagesView tr[data-sent-key]').forEach(r=>r.addEventListener('dblclick',()=>void openSentDetail(r.dataset.sentKey)))}\nasync function exportSent", 'sent control bindings', re.S)
-          write(p,s)
-
-          # 5) Response tracking: remove row-2 button and all row-3 quick buttons; first-row buttons regular weight.
-          p='assets/js/phase3-response-tracking.js'; s=read(p)
-          marker='#responseTrackingView .response-command-row>*{flex:0 0 auto}'
-          assert marker in s
-          s=s.replace(marker,marker+'\n    #responseTrackingView .response-command-row button{font-weight:400!important}',1)
-          s=sub_once(s, r'<div class="response-filters"><button id="responseSelectAll" type="button" class="ghost">انتخاب همه فیلترشده‌ها</button>', '<div class="response-filters">', 'tracking second-row button')
-          s=sub_once(s, r'</div><div class="response-quick"><button data-response-quick="all" class="active">همه</button>.*?</div><div class="table-wrap">', '</div><div class="table-wrap">', 'tracking third row', re.S)
-          s=re.sub(r"^\s*qa\('\[data-response-quick\]'\).*?\n",'',s,count=1,flags=re.M)
-          s=re.sub(r"^\s*q\('#responseSelectAll'\).*?\n",'',s,count=1,flags=re.M)
-          s=s.replace("  const all=q('#responseSelectAll');if(all)all.textContent=list.length&&list.every(x=>selected.has(String(x.delivery_id)))?'لغو انتخاب فیلترشده‌ها':'انتخاب همه فیلترشده‌ها';\n",'',1)
-          write(p,s)
-
-          # Update one existing expectation for the new inline channel position.
-          p='tests/workflow-tabs-root-20260912.test.cjs'; s=read(p)
-          old="assert.deepEqual(texts.slice(0,4),['بازگشت به خانه','خروجی اکسل','تازه‌سازی','ارسال']);"
-          new="assert.deepEqual(texts.slice(0,3),['بازگشت به خانه','خروجی اکسل','تازه‌سازی']);assert.match(texts[3],/کانال ارسال/);assert.equal(texts[4],'ارسال');"
-          assert old in s
-          s=s.replace(old,new,1)
-          write(p,s)
-
-          # Dedicated regression test for the five requested visual changes.
-          Path('tests/ui-toolbar-cleanup-20260912.test.cjs').write_text(r'''const test=require('node:test');
-          const assert=require('node:assert/strict');
-          const {fixture,until}=require('./helpers/app-fixture.cjs');
-
-          test('dashboard performance range has no Apply and keeps Clear',async t=>{
-            const f=await fixture();t.after(()=>f.dispose());await f.open('dashboard');
-            assert.equal(f.d.querySelector('#applyPerf'),null);assert.ok(f.d.querySelector('#clearPerf'));
-            assert.equal(f.errors.length,0,f.errors.join('\n'));
-          });
-
-          test('response report has no search and command buttons are regular weight',async t=>{
-            const f=await fixture({tables:{message_response_tracking:[]}});t.after(()=>f.dispose());
-            await f.open('responseReport');await until(()=>f.d.querySelector('#responseReportView .response-command-row'));
-            assert.equal(f.d.querySelector('#canonicalResponseSearch'),null);
-            assert.equal(f.d.querySelector('#responseReportView input[type="search"]'),null);
-            assert.match(f.d.querySelector('#bamcoCanonicalReportCss').textContent,/response-command-row button\{font-weight:400!important\}/);
-            assert.equal(f.errors.length,0,f.errors.join('\n'));
-          });
-
-          test('message center has one bounded command row, no search, inline channel after refresh and regular buttons',async t=>{
-            const f=await fixture({tables:{message_recipient_live_state:[]}});t.after(()=>f.dispose());
-            await f.open('messageCenter');await until(()=>f.d.querySelector('#messageCenterView .message-command-row'));
-            const row=f.d.querySelector('#messageCenterView .message-command-row'),children=[...row.children];
-            assert.equal(f.d.querySelector('#messageCenterSearch'),null);
-            const refresh=children.findIndex(x=>x.id==='refreshMessageCenter'),channel=children.findIndex(x=>x.querySelector?.('#messageChannel')),send=children.findIndex(x=>x.id==='sendSelectedMessages');
-            assert.ok(refresh>=0&&channel===refresh+1&&send===channel+1);
-            assert.equal(f.d.querySelectorAll('#messageCenterView .message-command-row').length,1);
-            assert.match(f.d.querySelector('#bamcoMessageCenterCommandCss').textContent,/message-command-row button\{font-weight:400!important\}/);
-            assert.equal(f.errors.length,0,f.errors.join('\n'));
-          });
-
-          test('sent messages has no second controls row and first command buttons are regular weight',async t=>{
-            const f=await fixture({tables:{sent_message_log:[]}});t.after(()=>f.dispose());
-            await f.open('sentMessages');await until(()=>f.d.querySelector('#sentMessagesView .sent-command-row'));
-            assert.equal(f.d.querySelector('#sentMessagesView .sent-controls'),null);
-            assert.equal(f.d.querySelector('#sentSearch'),null);
-            assert.match(f.d.querySelector('#bamcoSentMessagesCss').textContent,/sent-command-row button\{font-weight:400!important\}/);
-            assert.equal(f.errors.length,0,f.errors.join('\n'));
-          });
-
-          test('response tracking removes row-2 and row-3 buttons while first-row buttons are regular weight',async t=>{
-            const f=await fixture({tables:{message_response_tracking:[]}});t.after(()=>f.dispose());
-            await f.open('responseTracking');await until(()=>f.d.querySelector('#responseTrackingView .response-command-row'));
-            assert.equal(f.d.querySelector('#responseSelectAll'),null);
-            assert.equal(f.d.querySelector('.response-quick'),null);
-            assert.equal(f.d.querySelectorAll('#responseTrackingView .response-filters button').length,0);
-            assert.ok(f.d.querySelector('#responsePerson'));assert.ok(f.d.querySelector('#reminderSendChannel'));
-            assert.match(f.d.querySelector('#bamcoResponseTrackingRootCss').textContent,/response-command-row button\{font-weight:400!important\}/);
-            assert.equal(f.errors.length,0,f.errors.join('\n'));
-          });
-          '''.replace(/^          /gm,''))
+          out=[]
+          def c(label,path,pattern,flags=0):
+              s=Path(path).read_text();out.append(f'{label}={len(re.findall(pattern,s,flags))}')
+          c('dashboard_apply','index.html',r'<button id="applyPerf" type="button" class="primary">اعمال</button>')
+          for token in ['phase2-message-engine.js?v=message-unified-20260911-1','phase3-response-tracking.js?v=details-20260910-1','tab-workspace.js?v=catalog-20260910-1','admin-root-fixes-20260911.js?v=user-fixes-20260911-1','report-stability-fixes-20260911.js?v=performance-toolbar-root-20260912-2']:
+              c('cache_'+token.split('?')[0].split('/')[-1],'index.html',re.escape(token))
+          c('report_button_marker','assets/js/report-stability-fixes-20260911.js',re.escape('#responseReportView .response-command-row>*{flex:0 0 auto!important}'))
+          c('report_visible','assets/js/report-stability-fixes-20260911.js',r'function responseVisible\(\)\{.*?\}\nfunction syncResponseDelete',re.S)
+          c('report_tools','assets/js/report-stability-fixes-20260911.js',r'function responseTools\(range\)\{return `.*?`\}\nasync function renderResponse',re.S)
+          c('workspace_toolbar','assets/js/tab-workspace.js',re.escape('<div class="workspace-report-tools"><input type="search" data-report-search placeholder="جست‌وجو در گزارش…" aria-label="جست‌وجو در گزارش"><button data-report-export="all" class="ghost">خروجی اکسل</button></div>'))
+          c('message_visible','assets/js/phase2-message-engine.js',r'function visible\(\)\{.*?\}\nfunction syncSelection',re.S)
+          c('message_css_marker','assets/js/phase2-message-engine.js',re.escape('#messageCenterView .message-command-row #sendSelectedMessages{'))
+          c('message_layout','assets/js/phase2-message-engine.js',r'<div class="message-command-row"><button type="button" class="ghost" id="messageCenterHome">بازگشت به خانه</button><button type="button" class="ghost" id="messageCenterExport">خروجی اکسل</button><button type="button" class="ghost" id="refreshMessageCenter">تازه‌سازی</button><button id="sendSelectedMessages" type="button" class="primary" disabled>ارسال</button></div><div class="message-center-simple-toolbar"><label>کانال ارسال<select id="messageChannel">(.*?)</select></label><input id="messageCenterSearch" type="search" placeholder="جست‌وجوی نام یا ایمیل"><span id="messageSelectionCount">۰ نفر انتخاب شده</span></div>',re.S)
+          c('message_search_binding','assets/js/phase2-message-engine.js',re.escape("q('#messageCenterSearch').oninput=render;"))
+          c('sent_css_marker','assets/js/admin-root-fixes-20260911.js',re.escape('#sentMessagesView .sent-command-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 0;margin:0 0 12px;border-top:1px solid #d9e4de;border-bottom:1px solid #d9e4de}'))
+          c('sent_filtered','assets/js/admin-root-fixes-20260911.js',r'function sentFiltered\(\)\{.*?\}\nfunction renderSent',re.S)
+          c('sent_render','assets/js/admin-root-fixes-20260911.js',r'function renderSent\(\)\{.*?\}\nfunction bindSentControls',re.S)
+          c('sent_bind','assets/js/admin-root-fixes-20260911.js',r'function bindSentControls\(\)\{.*?\}\nasync function exportSent',re.S)
+          c('tracking_css_marker','assets/js/phase3-response-tracking.js',re.escape('#responseTrackingView .response-command-row>*{flex:0 0 auto}'))
+          c('tracking_second_button','assets/js/phase3-response-tracking.js',r'<div class="response-filters"><button id="responseSelectAll" type="button" class="ghost">انتخاب همه فیلترشده‌ها</button>')
+          c('tracking_third_row','assets/js/phase3-response-tracking.js',r'</div><div class="response-quick"><button data-response-quick="all" class="active">همه</button>.*?</div><div class="table-wrap">',re.S)
+          c('test_message_expect','tests/workflow-tabs-root-20260912.test.cjs',re.escape("assert.deepEqual(texts.slice(0,4),['بازگشت به خانه','خروجی اکسل','تازه‌سازی','ارسال']);"))
+          Path('ui-refactor-diagnostics.txt').write_text('\n'.join(out)+'\n')
+          print('\n'.join(out))
           PY
-
-      - name: Syntax and regression tests
-        shell: bash
-        run: |
-          set -euo pipefail
-          node --check assets/js/phase2-message-engine.js
-          node --check assets/js/phase3-response-tracking.js
-          node --check assets/js/admin-root-fixes-20260911.js
-          node --check assets/js/report-stability-fixes-20260911.js
-          node --check assets/js/tab-workspace.js
-          npm ci
-          node --test tests/ui-toolbar-cleanup-20260912.test.cjs tests/workflow-tabs-root-20260912.test.cjs
-          npm test
-
-      - name: Commit tested source changes and restore temporary workflow
+      - name: Save diagnostics and restore workflow
         shell: bash
         run: |
           set -euo pipefail
           git fetch origin main --depth=1
           git checkout origin/main -- .github/workflows/fix-task-row-deselect-root-v3.yml
-          git rm -f .github/workflows/ui-toolbar-diagnostic.yml || true
           git config user.name 'BAMCO UI Refactor Bot'
           git config user.email 'actions@users.noreply.github.com'
-          git add index.html assets/js/phase2-message-engine.js assets/js/phase3-response-tracking.js assets/js/tab-workspace.js assets/js/admin-root-fixes-20260911.js assets/js/report-stability-fixes-20260911.js tests/workflow-tabs-root-20260912.test.cjs tests/ui-toolbar-cleanup-20260912.test.cjs .github/workflows/fix-task-row-deselect-root-v3.yml
-          git commit -m 'Refactor report and messaging toolbars'
+          git add ui-refactor-diagnostics.txt .github/workflows/fix-task-row-deselect-root-v3.yml
+          git commit -m 'Record UI refactor source diagnostics'
           git push origin HEAD:ui-toolbar-cleanup-20260912
