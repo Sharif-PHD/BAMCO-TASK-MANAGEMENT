@@ -27,20 +27,47 @@ jobs:
           python /tmp/ui-patch.py
           python - <<'PY'
           from pathlib import Path
-          import re
 
-          p=Path('assets/js/report-stability-fixes-20260911.js')
-          s=p.read_text()
-          bad="function responseVisible(){const from=inputIso(q('#canonicalResponseFrom')),to=inputIso(q('#canonicalResponseTo'));return responseRows.filter(x=>x.delivery_status!=='cancelled'&&(!from||String(x.sent_at||'').slice(0,10)>=from)&&(!to||String(x.sent_at||'').slice(0,10)<=to)}"
-          good="function responseVisible(){const from=inputIso(q('#canonicalResponseFrom')),to=inputIso(q('#canonicalResponseTo'));return responseRows.filter(x=>x.delivery_status!=='cancelled'&&(!from||String(x.sent_at||'').slice(0,10)>=from)&&(!to||String(x.sent_at||'').slice(0,10)<=to))}"
-          assert bad in s
-          p.write_text(s.replace(bad,good,1))
+          def one(path,old,new,label):
+              p=Path(path);s=p.read_text();n=s.count(old)
+              assert n==1,f'{label}: {n}'
+              p.write_text(s.replace(old,new,1))
 
-          p=Path('tests/helpers/app-fixture.cjs')
-          s=p.read_text();old="w.HTMLElement.prototype.scrollTo=function(){};w.confirm=()=>true;";assert old in s;p.write_text(s.replace(old,"w.scrollTo=()=>{};w.HTMLElement.prototype.scrollTo=function(){};w.confirm=()=>true;",1))
+          one('assets/js/report-stability-fixes-20260911.js',
+              "function responseVisible(){const from=inputIso(q('#canonicalResponseFrom')),to=inputIso(q('#canonicalResponseTo'));return responseRows.filter(x=>x.delivery_status!=='cancelled'&&(!from||String(x.sent_at||'').slice(0,10)>=from)&&(!to||String(x.sent_at||'').slice(0,10)<=to)}",
+              "function responseVisible(){const from=inputIso(q('#canonicalResponseFrom')),to=inputIso(q('#canonicalResponseTo'));return responseRows.filter(x=>x.delivery_status!=='cancelled'&&(!from||String(x.sent_at||'').slice(0,10)>=from)&&(!to||String(x.sent_at||'').slice(0,10)<=to))}",
+              'response filter close')
+          one('tests/helpers/app-fixture.cjs',
+              'w.HTMLElement.prototype.scrollTo=function(){};w.confirm=()=>true;',
+              'w.HTMLElement.prototype.scrollTo=function(){};w.scrollTo=()=>{};w.confirm=()=>true;',
+              'jsdom window scrollTo stub')
+          old="const row=f.d.querySelector('#responseTrackingBody tr[data-delivery=\"11\"]');assert.ok(row);assert.equal(f.d.querySelector('#sendResponseReminder').disabled,true);row.click();await pause(20);assert.equal(row.classList.contains('suite-selected'),true);assert.equal(f.d.querySelector('#sendResponseReminder').disabled,false);"
+          new="const row=f.d.querySelector('#responseTrackingBody tr[data-delivery=\"11\"]');assert.ok(row);assert.equal(f.d.querySelector('#responseSelectAll'),null);assert.equal(f.d.querySelector('.response-quick'),null);assert.equal(f.d.querySelector('#sendResponseReminder').disabled,true);row.click();await pause(20);const selectedRow=f.d.querySelector('#responseTrackingBody tr[data-delivery=\"11\"]');assert.equal(selectedRow.classList.contains('suite-selected'),true);assert.equal(f.d.querySelector('#sendResponseReminder').disabled,false);"
+          one('tests/workflow-tabs-root-20260912.test.cjs',old,new,'response tracking updated behavior')
+          PY
 
-          p=Path('tests/workflow-tabs-root-20260912.test.cjs')
-          s=p.read_text();pattern=r"test\('response tracking owns requested command order, current-month dates, selection and has no tracking id',async t=>\{.*?\n\}\);\n\n(?=test\('response report)";replacement="""test('response tracking keeps first-row controls while removing second and third button rows',async t=>{\n const f=await fixture({tables:{message_response_tracking:[{delivery_id:11,recipient_id:'test-owner',recipient_name:'متولی آزمایشی',recipient_email:'owner@example.test',channel:'portal',subject:'پیام آزمایشی',sent_at:new Date().toISOString(),delivery_status:'sent',response_status:'awaiting',reminder_count:0}]}});t.after(()=>f.dispose());\n await f.open('responseTracking');\n const bar=f.d.querySelector('#responseTrackingView .response-command-row');assert.ok(bar);\n const texts=directTexts(bar);assert.match(texts[0],/بازگشت به خانه/);assert.match(texts[1],/از تاریخ/);assert.match(texts[2],/تازه‌سازی/);assert.match(texts[3],/خروجی اکسل/);assert.match(texts[4],/ارسال یادآوری/);\n assert.ok(f.d.querySelector('#responseFrom').value);assert.ok(f.d.querySelector('#responseTo').value);\n assert.equal(f.d.querySelector('#responseSelectAll'),null);assert.equal(f.d.querySelectorAll('[data-response-quick]').length,0);\n for(const id of ['reminderSendChannel','responsePerson','responseChannel','responseState'])assert.ok(f.d.querySelector('#'+id));\n assert.equal(f.errors.length,0,f.errors.join('\\n'));\n});\n\n""";out,n=re.subn(pattern,replacement,s,count=1,flags=re.S);assert n==1;p.write_text(out)
+      - name: Check requested source invariants
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          idx=Path('index.html').read_text()
+          app=Path('assets/js/app.js').read_text()
+          resp=Path('assets/js/report-stability-fixes-20260911.js').read_text()
+          msg=Path('assets/js/phase2-message-engine.js').read_text()
+          sent=Path('assets/js/admin-root-fixes-20260911.js').read_text()
+          track=Path('assets/js/phase3-response-tracking.js').read_text()
+          assert 'id="applyPerf"' not in idx and "#applyPerf" not in app
+          assert 'canonicalResponseSearch' not in resp
+          assert '#responseReportView .response-command-row button{font-weight:400!important}' in resp
+          assert 'id="messageCenterSearch"' not in msg and 'message-center-simple-toolbar' not in msg
+          assert '<button type="button" class="ghost" id="refreshMessageCenter">تازه‌سازی</button><label class="message-channel-inline">کانال ارسال' in msg
+          assert '#messageCenterView .message-command-row button{font-weight:400!important}' in msg
+          assert 'class="sent-controls"' not in sent and 'id="sentSearch"' not in sent
+          assert '#sentMessagesView .sent-command-row button{font-weight:400!important}' in sent
+          assert 'id="responseSelectAll"' not in track and 'data-response-quick=' not in track
+          assert '#responseTrackingView .response-command-row button{font-weight:400!important}' in track
           PY
 
       - name: Check JavaScript syntax
