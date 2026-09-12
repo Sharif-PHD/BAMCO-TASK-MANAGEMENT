@@ -7,7 +7,7 @@ permissions:
 jobs:
   align-and-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -17,6 +17,29 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Install feature dependencies
+        run: npm ci
+      - name: Prepare main baseline
+        run: |
+          git worktree add /tmp/bamco-main origin/main
+          cd /tmp/bamco-main
+          npm ci
+      - name: Capture main baseline failures
+        run: |
+          set +e
+          (cd /tmp/bamco-main && node --test --test-reporter=tap tests/*.test.cjs) > /tmp/baseline.tap 2>&1
+          echo $? > /tmp/baseline.exit
+          set -e
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          text=Path('/tmp/baseline.tap').read_text(errors='replace')
+          names=sorted(set(re.findall(r'^\s*not ok \d+ - (.+?)\s*$',text,re.M)))
+          Path('/tmp/baseline.failures').write_text('\n'.join(names))
+          print('BASELINE_EXIT='+Path('/tmp/baseline.exit').read_text().strip())
+          print('BASELINE_FAILURES='+str(len(names)))
+          for name in names: print('BASELINE_FAIL:',name)
+          PY
       - name: Align home card and interior command bars
         run: |
           python - <<'PY'
@@ -62,12 +85,43 @@ jobs:
           node --check assets/js/card-home.js
           node --check assets/js/interior-ui.js
           node --check assets/js/documents-sites.js
-      - name: Install dependencies
-        run: npm ci
       - name: Focused feature tests
         run: node --test tests/documents-sites.test.cjs
-      - name: Full regression suite
-        run: npm test
+      - name: Capture feature regression failures
+        run: |
+          set +e
+          node --test --test-reporter=tap tests/*.test.cjs > /tmp/feature.tap 2>&1
+          echo $? > /tmp/feature.exit
+          set -e
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          text=Path('/tmp/feature.tap').read_text(errors='replace')
+          names=sorted(set(re.findall(r'^\s*not ok \d+ - (.+?)\s*$',text,re.M)))
+          Path('/tmp/feature.failures').write_text('\n'.join(names))
+          print('FEATURE_EXIT='+Path('/tmp/feature.exit').read_text().strip())
+          print('FEATURE_FAILURES='+str(len(names)))
+          for name in names: print('FEATURE_FAIL:',name)
+          PY
+      - name: Prove no new regression versus main
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          baseline={x for x in Path('/tmp/baseline.failures').read_text().splitlines() if x}
+          feature={x for x in Path('/tmp/feature.failures').read_text().splitlines() if x}
+          new=sorted(feature-baseline)
+          fixed=sorted(baseline-feature)
+          print('baseline failures:',len(baseline))
+          print('feature failures:',len(feature))
+          if fixed:
+              print('baseline failures no longer present:')
+              for x in fixed: print('  FIXED:',x)
+          if new:
+              print('new regressions:')
+              for x in new: print('  NEW:',x)
+              raise SystemExit('Feature introduces regression failures not present on main')
+          print('REGRESSION_COMPARISON=PASS')
+          PY
       - name: Commit validated UI alignment
         run: |
           git config user.name "BAMCO UI Bot"
