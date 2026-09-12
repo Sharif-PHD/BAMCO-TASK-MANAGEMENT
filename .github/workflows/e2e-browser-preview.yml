@@ -23,7 +23,7 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Run Chromium E2E for all preview formats
         run: |
-          cat > /tmp/bamco-e2e.mjs <<'JS'
+          cat > ./bamco-e2e.mjs <<'JS'
           import { chromium } from 'playwright';
           import { PDFDocument, StandardFonts } from 'pdf-lib';
           import { Document, Packer, Paragraph, TextRun } from 'docx';
@@ -69,24 +69,18 @@ jobs:
           await pageObj.goto('http://127.0.0.1:4173/e2e.html'); await pageObj.waitForSelector('[data-view="documents"]'); await pageObj.click('[data-view="documents"]'); await pageObj.waitForSelector('[data-document-id="1"]');
           async function close(){await pageObj.locator('#documentPreviewDialog [data-feature-close="documentPreviewDialog"]').click();await pageObj.waitForFunction(()=>!document.querySelector('#documentPreviewDialog')?.open)}
           async function reopen(id){await pageObj.click(`[data-doc-preview="${id}"]`);await pageObj.waitForFunction(()=>document.querySelector('#documentPreviewDialog')?.open)}
-          // PDF: signed URL inside in-app iframe, successful browser request, close/reopen.
           await reopen(1); await pageObj.waitForSelector('#documentPreviewBody iframe.feature-pdf-preview'); const pdfSrc=await pageObj.getAttribute('#documentPreviewBody iframe','src'); assert.match(pdfSrc,/e2e\.supabase\.test\/storage\/v1\/object\/sign/); await close(); await reopen(1); await close();
-          // Image: actual decode in Chromium.
           await reopen(2); await pageObj.waitForFunction(()=>document.querySelector('.feature-image-preview')?.naturalWidth>0); await close(); await reopen(2); await close();
-          // TXT: extension fallback from application/octet-stream and UTF-8 render.
           await reopen(3); await pageObj.waitForSelector('pre.feature-text-preview'); assert.match(await pageObj.textContent('pre.feature-text-preview'),/BAMCO TXT E2E/); assert.match(await pageObj.textContent('pre.feature-text-preview'),/سلام/); await close(); await reopen(3); await close();
-          // DOCX: local docx-preview rendering.
           await reopen(4); await pageObj.waitForFunction(()=>document.querySelector('#documentDocxHost')?.textContent?.includes('BAMCO DOCX E2E')); assert.equal(await pageObj.locator('#documentDocxHost').count(),1); await close(); await reopen(4); await pageObj.waitForFunction(()=>document.querySelector('#documentDocxHost')?.textContent?.includes('BAMCO DOCX E2E')); await close();
-          // XLSX: sheet switcher and two sheets.
           await reopen(5); await pageObj.waitForSelector('#documentPreviewSheet'); assert.deepEqual(await pageObj.locator('#documentPreviewSheet option').allTextContents(),['SheetOne','SheetTwo']); assert.match(await pageObj.textContent('#documentPreviewSheetHost'),/BAMCO XLSX E2E/); await pageObj.selectOption('#documentPreviewSheet','SheetTwo'); assert.match(await pageObj.textContent('#documentPreviewSheetHost'),/SecondSheet/); await close(); await reopen(5); await close();
-          // Download remains independent; verify browser download for all fixtures.
           for(const id of [1,2,3,4,5]){const dlPromise=pageObj.waitForEvent('download');await pageObj.click(`[data-doc-download="${id}"]`);const dl=await dlPromise;assert.ok(dl.suggestedFilename().startsWith('test.'))}
-          // Mobile layout: no page-level horizontal overflow and modal fits viewport.
           await pageObj.setViewportSize({width:390,height:844}); await reopen(5); await pageObj.waitForSelector('#documentPreviewSheet'); const metrics=await pageObj.evaluate(()=>({body:document.documentElement.scrollWidth,vw:document.documentElement.clientWidth,dialog:document.querySelector('#documentPreviewDialog').getBoundingClientRect().width})); assert.ok(metrics.body<=metrics.vw+2,JSON.stringify(metrics)); assert.ok(metrics.dialog<=metrics.vw,JSON.stringify(metrics)); await close();
           assert.deepEqual(badResponses,[],badResponses.join('\n')); assert.deepEqual(errors,[],errors.join('\n'));
           await browser.close(); server.close(); console.log('BROWSER_E2E_PASS all five formats, reopen, download, mobile, console/network');
           JS
-          node /tmp/bamco-e2e.mjs
+          node ./bamco-e2e.mjs
+          rm -f ./bamco-e2e.mjs
       - name: Run full regression suite
         run: npm test
       - name: Remove temporary workflow after success
