@@ -44,10 +44,11 @@ async def assert_mobile_geometry(page):
       innerWidth:innerWidth,
       bodyScroll:document.documentElement.scrollWidth,
       workspace:document.querySelector('#appView .workspace')?.getBoundingClientRect().width||0,
-      nav:document.querySelector('#sidebar #nav')?.getBoundingClientRect().width||0
+      nav:document.querySelector('#nav')?.getBoundingClientRect().width||0, sidebar:document.querySelector('#sidebar')?.getBoundingClientRect().height||0, header:document.querySelector('.workspace>header')?.getBoundingClientRect().height||0
     })''')
     assert geom['bodyScroll'] <= geom['innerWidth'] + 2, f"page horizontal overflow: {geom}"
     assert geom['workspace'] <= geom['innerWidth'] + 1 and geom['workspace'] >= geom['innerWidth'] - 4, f"workspace width mismatch: {geom}"
+    assert geom['sidebar']==0 and geom['header']==0, f'empty legacy shell reappeared: {geom}'
     assert geom['nav'] <= geom['innerWidth'] + 1, f"mobile nav overflow: {geom}"
 
 async def assert_mobile_toolbar(page,tab):
@@ -56,28 +57,28 @@ async def assert_mobile_toolbar(page,tab):
     if not await toolbar.count() or not await toolbar.is_visible(): return
     data=await toolbar.evaluate('''n=>{const r=n.getBoundingClientRect(),s=getComputedStyle(n);return {w:r.width,sw:n.scrollWidth,h:r.height,wrap:s.flexWrap,overflowX:s.overflowX,children:[...n.children].filter(x=>getComputedStyle(x).display!=='none').map(x=>{const b=x.getBoundingClientRect();return {w:b.width,h:b.height}})}}''')
     assert data['w'] <= 390.5, f'{tab} toolbar wider than viewport: {data}'
-    assert data['wrap']=='nowrap', f'{tab} toolbar wraps on mobile: {data}'
-    assert data['overflowX'] in ('auto','scroll'), f'{tab} toolbar cannot scroll horizontally: {data}'
-    assert data['h'] < 70, f'{tab} toolbar became multi-row/tall: {data}'
+    assert data['wrap']=='wrap', f'{tab} actions do not wrap: {data}'
+    assert data['sw'] <= data['w'] + 2, f'{tab} actions overflow: {data}'
 
 async def assert_dashboard_mobile(page):
     await home(page);await page.locator('#nav button[data-view="dashboard"]').click(force=True);await settled(page,'dashboard')
     data=await page.evaluate('''()=>{
       const v=document.querySelector('#dashboardView'),root=v.querySelector('.desktop-dashboard-exact'),cards=v.querySelector('#dashboardCards');
       const rr=root.getBoundingClientRect(),cr=cards.getBoundingClientRect();
-      const chart=[...v.querySelectorAll('.dashboard-chart-card')].map(x=>x.getBoundingClientRect().width);
+      const chart=[...v.querySelectorAll('.dashboard-chart-card')].map(x=>({w:x.getBoundingClientRect().width,sw:x.scrollWidth,cw:x.clientWidth,overflow:getComputedStyle(x).overflowX}));
       return {root:rr.width,cards:cr.width,columns:getComputedStyle(root).gridTemplateColumns,cardColumns:getComputedStyle(cards).gridTemplateColumns,chart,innerWidth};
     }''')
     assert data['root'] <= data['innerWidth'] + 1, data
     assert data['cards'] <= data['innerWidth'] + 1, data
-    assert all(w <= data['innerWidth'] + 1 for w in data['chart']), data
+    assert all(x['w'] <= data['innerWidth'] + 1 and x['sw'] > x['cw'] and x['overflow']=='auto' for x in data['chart']), data
     assert len(data['columns'].split()) == 1, f"dashboard is not one column: {data}"
 
 async def assert_automated_message_route(page):
     await home(page);await page.locator('#nav button[data-view="directMessages"]').click(force=True);await settled(page,'directMessages')
     system=page.locator('#directMessagesView [data-kind="system"]').first
     await expect(system).to_be_visible();await system.click()
-    link=page.locator('#directMessagesView [data-bamco-task-id]').first
+    await page.locator('#directMessagesView .system-message-open').first.click()
+    link=page.locator('#bamcoSystemMessageDialog [data-bamco-task-id]').first
     await expect(link).to_be_visible();task_id=await link.get_attribute('data-bamco-task-id');assert task_id
     await link.click(force=True)
     await expect(page.locator('#kanbanView')).to_be_visible()

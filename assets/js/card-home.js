@@ -62,7 +62,7 @@ function install(){
  }
  syncGroups();
  const dialog=document.createElement('dialog');dialog.className='home-welcome-dialog';dialog.setAttribute('aria-labelledby','homeWelcomeTitle');dialog.innerHTML='<button class="welcome-dismiss" type="button" aria-label="بستن خوشامدگویی" autofocus><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button><div class="home-welcome-copy"><p class="welcome-person"></p><h2 id="homeWelcomeTitle">به سامانه مدیریت، پایش و پیگیری امور خوش آمدید</h2></div><img class="home-sticker female" alt="استیکر زن در وضعیت مطلوب"><img class="home-sticker male" alt="استیکر مرد در وضعیت مطلوب">';document.body.append(dialog);
- let welcomeStickerPromise=null,welcomeStickerGeneration=0;
+ let welcomeStickerPromise=null,welcomeStickerGeneration=0,welcomeStickerReadyToken=null;
  async function loadWelcomeStickers(generation){
   const token=typeof state!=='undefined'?state.token:null;if(!token)return;
   const images=[...dialog.querySelectorAll('.home-sticker')];images.forEach(image=>image.style.visibility='hidden');
@@ -70,10 +70,11 @@ function install(){
    const rows=await select('stickers',`set_id=eq.${encodeURIComponent(set.id)}&state_key=eq.state1&gender=in.(female,male)&select=set_id,gender,storage_path`);
    const loaded=await Promise.all(['female','male'].map(async gender=>{const row=rows.find(r=>r.gender===gender&&String(r.set_id)===String(set.id));if(!row)throw Error('استیکر وضعیت مطلوب نسخه فعال کامل نیست.');return{gender,url:await bamcoMedia.get('stickers',row.storage_path)}}));
    if(generation!==welcomeStickerGeneration||state.token!==token)return;
+   welcomeStickerReadyToken=token;
    for(const item of loaded){const image=dialog.querySelector('.'+item.gender);image.src=item.url;image.style.visibility='visible';image.dataset.stickerSet=String(set.id)}
   }catch(err){if(generation===welcomeStickerGeneration)console.warn('welcome-stickers',err.message)}
  }
- function stickers(force=false){if(welcomeStickerPromise&&!force)return welcomeStickerPromise;const generation=++welcomeStickerGeneration,job=loadWelcomeStickers(generation);welcomeStickerPromise=job;return job.finally(()=>{if(welcomeStickerPromise===job)welcomeStickerPromise=null})}
+ function stickers(force=false){if(!force&&welcomeStickerReadyToken&&welcomeStickerReadyToken===state.token)return Promise.resolve();if(force)welcomeStickerReadyToken=null;if(welcomeStickerPromise&&!force)return welcomeStickerPromise;const generation=++welcomeStickerGeneration,job=loadWelcomeStickers(generation);welcomeStickerPromise=job;return job.finally(()=>{if(welcomeStickerPromise===job)welcomeStickerPromise=null})}
  window.bamcoPrepareWelcomeStickers=()=>stickers();window.addEventListener('bamco-stickers-ready',()=>stickers(true));document.addEventListener('bamco:stickers-changed',()=>stickers(true));
  let homeExpected=false,repairFrame=0,homeEpoch=0,homeTimers=[];
  function clearHomeTimers(){homeTimers.forEach(clearTimeout);homeTimers=[]}
