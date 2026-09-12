@@ -1,0 +1,78 @@
+name: Documents sites UI alignment
+on:
+  push:
+    branches: [documents-sites-ui-alignment-20260912]
+permissions:
+  contents: write
+jobs:
+  align-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: documents-sites-ui-alignment-20260912
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Align home card and interior command bars
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new):
+              p=Path(path); s=p.read_text()
+              if s.count(old)!=1:
+                  raise SystemExit(f'{path}: expected one match, got {s.count(old)}')
+              p.write_text(s.replace(old,new,1))
+
+          replace_once('assets/js/sidebar.js',
+          "    const configuration=makeGroup('تنظیمات','configuration',['systemOptions'],'⚙');\n    if(settings)nav.appendChild(settings);\n    const groups=[task,email,people,vehicle,reports,configuration];",
+          "    const configuration=makeGroup('تنظیمات','configuration',['systemOptions'],'⚙');\n    const resources=makeGroup('منابع و دسترسی‌ها','resources',['documents','sitesAccess'],'▧');\n    if(settings)nav.appendChild(settings);\n    const groups=[task,email,people,vehicle,reports,configuration,resources];")
+
+          replace_once('assets/js/card-home.js',
+          "  ['conversations',['groupChat','directMessages','taskChats']]\n ];",
+          "  ['conversations',['groupChat','directMessages','taskChats']],\n  ['resources',['documents','sitesAccess']]\n ];")
+
+          replace_once('assets/js/interior-ui.js',
+          "const toolbarSelector='.task-toolbar,.vehicle-toolbar,.people-actions,.manager-toolbar,.workspace-actions,.workspace-report-tools,.suite-toolbar,.sticker-toolbar,.message-center-actions,.response-quick,.tt-switch,.desktop-template-fieldset,.bamco-management-toolbar';",
+          "const toolbarSelector='.task-toolbar,.vehicle-toolbar,.people-actions,.manager-toolbar,.workspace-actions,.workspace-report-tools,.suite-toolbar,.sticker-toolbar,.message-center-actions,.response-quick,.tt-switch,.desktop-template-fieldset,.feature-toolbar-actions,.bamco-management-toolbar';")
+
+          css=Path('assets/css/documents-sites.css')
+          extra='''\n/* Interior alignment: use the same command-row language as the rest of BAMCO. */\nhtml body.content-only #appView :is(#documentsView,#sitesAccessView)>.feature-toolbar{display:none!important}\nhtml body.content-only #appView :is(#documentsView,#sitesAccessView)>.feature-toolbar-actions.bamco-command-bar{position:sticky!important;top:0!important;z-index:24!important;display:flex!important;direction:rtl!important;align-items:center!important;justify-content:flex-start!important;gap:6px!important;flex-wrap:wrap!important;width:100%!important;margin:0!important;padding:5px 8px!important;border:0!important;border-bottom:1px solid #d8e4dc!important;border-radius:0!important;background:#f4f8f5!important;box-shadow:none!important}\nhtml body.content-only #appView :is(#documentsView,#sitesAccessView)>.feature-toolbar-actions.bamco-command-bar .content-back{order:-100!important}\nhtml body.content-only #appView :is(#documentsView,#sitesAccessView)>.feature-toolbar-actions.bamco-command-bar :is(button,input,select){min-height:34px!important;margin:0!important}\nhtml body.content-only #appView :is(#documentsView,#sitesAccessView)>.feature-toolbar-actions.bamco-command-bar input[type=search]{width:min(280px,32vw)!important;min-width:180px!important;flex:0 1 280px!important}\nhtml body.content-only #appView :is(#documentsView,#sitesAccessView)>.feature-toolbar-actions.bamco-command-bar select{width:auto!important;min-width:140px!important;flex:0 0 auto!important}\n@media(max-width:760px){html body.content-only #appView :is(#documentsView,#sitesAccessView)>.feature-toolbar-actions.bamco-command-bar{align-items:stretch!important}html body.content-only #appView :is(#documentsView,#sitesAccessView)>.feature-toolbar-actions.bamco-command-bar :is(button,input,select){flex:1 1 145px!important}html body.content-only #appView :is(#documentsView,#sitesAccessView)>.feature-toolbar-actions.bamco-command-bar .content-back{flex:0 0 auto!important}html body.content-only #appView :is(#documentsView,#sitesAccessView)>.feature-toolbar-actions.bamco-command-bar input[type=search]{width:auto!important;min-width:150px!important}}\n'''
+          s=css.read_text()
+          if 'Interior alignment: use the same command-row language' in s:
+              raise SystemExit('documents-sites.css: alignment block already exists')
+          css.write_text(s+extra)
+
+          test=Path('tests/documents-sites.test.cjs')
+          block='''\n\ntest('documents and sites join the standard home card and interior command bar',()=>{\n  const sidebar=fs.readFileSync(path.join(ROOT,'assets/js/sidebar.js'),'utf8');\n  const home=fs.readFileSync(path.join(ROOT,'assets/js/card-home.js'),'utf8');\n  const interior=fs.readFileSync(path.join(ROOT,'assets/js/interior-ui.js'),'utf8');\n  const css=fs.readFileSync(path.join(ROOT,'assets/css/documents-sites.css'),'utf8');\n  assert.match(sidebar,/makeGroup\\('منابع و دسترسی‌ها','resources',\\['documents','sitesAccess'\\]/);\n  assert.match(home,/\\['resources',\\['documents','sitesAccess'\\]\\]/);\n  assert.match(interior,/feature-toolbar-actions/);\n  assert.match(css,/#documentsView,#sitesAccessView/);\n  assert.match(css,/feature-toolbar-actions\\.bamco-command-bar/);\n  assert.match(css,/\\.content-back\\{order:-100/);\n});\n'''
+          s=test.read_text()
+          if "join the standard home card and interior command bar" in s:
+              raise SystemExit('test block already exists')
+          test.write_text(s+block)
+
+          Path('.github/workflows/documents-sites-ui-alignment.yml').unlink()
+          PY
+      - name: JavaScript syntax
+        run: |
+          node --check assets/js/sidebar.js
+          node --check assets/js/card-home.js
+          node --check assets/js/interior-ui.js
+          node --check assets/js/documents-sites.js
+      - name: Install dependencies
+        run: npm ci
+      - name: Focused feature tests
+        run: node --test tests/documents-sites.test.cjs
+      - name: Full regression suite
+        run: npm test
+      - name: Commit validated UI alignment
+        run: |
+          git config user.name "BAMCO UI Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "Align documents and sites with BAMCO card UI"
+          git push origin HEAD:documents-sites-ui-alignment-20260912
