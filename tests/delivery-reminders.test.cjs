@@ -1,0 +1,19 @@
+const {test}=require('node:test');const assert=require('node:assert/strict');const {JSDOM}=require('jsdom');const fs=require('node:fs');
+function fixture(channel='portal'){
+ const dom=new JSDOM('<div id="nav"><button data-view="templates"></button></div><div class="workspace"></div>',{runScripts:'outside-only',url:'https://example.test'}),w=dom.window,calls=[];
+ w.isManager=()=>true;w.jalaliDateTime=x=>x;w.toast=(...v)=>calls.push(['toast',...v]);w.fa=String;w.showView=()=>{};
+ w.HTMLDialogElement.prototype.showModal=function(){this.open=true};w.HTMLDialogElement.prototype.close=function(){this.open=false};
+ const rows=[{delivery_id:1,recipient_id:'a',recipient_name:'A',recipient_email:'a@example.test',response_status:'awaiting',delivery_status:'sent',subject:'Message A'},{delivery_id:2,recipient_id:'a',recipient_name:'A',response_status:'replied',delivery_status:'sent',subject:'Message B'}];
+ w.selectAll=async(table)=>table==='message_response_tracking'?rows:table==='message_snapshots'?[{recipient_name:'A',final_text:'Message A'}]:[{recipient_id:'a',channel,status:'sent'}];
+ w.rpc=async(name,args)=>{calls.push([name,args]);return 'test-batch'};
+ w.eval(fs.readFileSync('assets/js/phase3-response-tracking.js','utf8'));w.document.dispatchEvent(new w.Event('DOMContentLoaded'));
+ return {dom,w,calls,rows,async load(){w.document.querySelector('[data-response-refresh]').click();await new Promise(r=>setImmediate(r));},async click(selector){w.document.querySelector(selector).click();await new Promise(r=>setImmediate(r));}};
+}
+test('selection refuses replied rows; preview retains delivery ids; confirm queues exactly once',async()=>{
+ const f=fixture();try{await f.load();await f.click('[data-delivery="2"]');assert.equal(f.w.document.querySelector('#sendResponseReminder').disabled,true);await f.click('[data-delivery="1"]');assert.equal(f.w.document.querySelector('#sendResponseReminder').disabled,false);await f.click('#sendResponseReminder');
+ const prep=f.calls.find(x=>x[0]==='prepare_message_reminders');assert.deepEqual(Array.from(prep[1].p_delivery_ids),[1]);assert.equal(f.calls.some(x=>x[0]==='queue_message_batch'),false);
+ f.w.document.querySelector('#confirmReminderSend').click();f.w.document.querySelector('#confirmReminderSend').click();await new Promise(r=>setImmediate(r));assert.equal(f.calls.filter(x=>x[0]==='queue_message_batch').length,1);assert.equal(f.calls.some(x=>x[0]==='mark_message_reminders'),false);
+ }finally{f.dom.window.close()}
+});
+test('missing email stops before prepare',async()=>{const f=fixture();try{f.rows[0].recipient_email='';await f.load();f.w.document.querySelector('#reminderSendChannel').value='email';await f.click('[data-delivery="1"]');await f.click('#sendResponseReminder');assert.equal(f.calls.some(x=>x[0]==='prepare_message_reminders'),false);assert.ok(f.calls.find(x=>x[0]==='toast')[1].includes('ایمیل ثبت نشده'));}finally{f.dom.window.close()}});
+test('cancelled rows are not selectable',async()=>{const f=fixture();try{f.rows[0].delivery_status='cancelled';await f.load();assert.equal(f.w.document.querySelector('[data-delivery="1"]'),null);assert.equal(f.w.document.querySelector('#sendResponseReminder').disabled,true)}finally{f.dom.window.close()}});
