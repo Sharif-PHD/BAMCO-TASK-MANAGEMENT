@@ -135,3 +135,23 @@ test('documents and sites join the standard home card and interior command bar',
   assert.match(css,/feature-toolbar-actions\.bamco-command-bar/);
   assert.match(css,/\.content-back\{order:-100/);
 });
+
+
+test('PDF preview uses a signed Storage URL and bypasses blob delivery',()=>{
+  const src=fs.readFileSync(featurePath,'utf8');
+  const start=src.indexOf('async function previewDocument');
+  const end=src.indexOf('async function downloadDocument',start);
+  const preview=src.slice(start,end);
+  assert.match(src,/storage\/v1\/object\/sign\/\$\{DOC_BUCKET\}/);
+  assert.match(src,/expiresIn:300/);
+  assert.match(src,/storage\/v1\$\{raw\.startsWith/);
+  assert.match(preview,/doc\.mime_type==='application\/pdf'/);
+  assert.match(preview,/await signedDocumentUrl\(doc\.storage_path\)/);
+  assert(preview.indexOf("doc.mime_type==='application/pdf'") < preview.indexOf('const blob=await privateFile(doc.storage_path)'));
+});
+
+test('sites access buttons use the regular font face without synthetic bold',()=>{
+  const css=fs.readFileSync(path.join(ROOT,'assets/css/documents-sites.css'),'utf8');
+  assert.match(css,/#sitesAccessView button[^}]*font-weight:400!important/);
+  assert.match(css,/#sitesAccessView button[^}]*font-synthesis:none!important/);
+});

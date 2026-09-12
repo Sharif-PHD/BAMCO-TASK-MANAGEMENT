@@ -91,3 +91,17 @@ test('search polishing and cell cleanup stop writing once values are stable',()=
  context.polishSearchButtons();context.cleanTaskTable('kanbanView');assert.ok(writes>0);writes=0;
  context.polishSearchButtons();context.cleanTaskTable('kanbanView');assert.equal(writes,0);assert.equal(cells[0].textContent,'41');
 });
+
+
+test('automatic welcome exposes waiting work and routes it to the Kanban status filter',()=>{
+  const src=read('assets/js/card-home.js');
+  const css=read('assets/css/card-home.css');
+  assert.match(src,/data-welcome-waiting/);
+  assert.match(src,/امور منتظر پاسخ/);
+  assert.match(src,/bamcoOptions\?\.label\?\.\('status','waiting'\)/);
+  assert.match(src,/tableFilters\.kanban\[4\]=label/);
+  assert.match(src,/showView\('kanban'\)/);
+  assert.match(src,/task_status_view.*archived=eq\.false/);
+  assert.match(css,/#c8b0eb/);
+  assert.match(css,/#69459a/);
+});
