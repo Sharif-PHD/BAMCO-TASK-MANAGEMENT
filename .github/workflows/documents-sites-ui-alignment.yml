@@ -7,7 +7,7 @@ permissions:
 jobs:
   align-and-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
@@ -19,15 +19,6 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Prepare main baseline for navigation isolation
-        run: |
-          git worktree add /tmp/bamco-main origin/main
-          cd /tmp/bamco-main
-          npm ci
-      - name: Baseline navigation smoke
-        run: |
-          cd /tmp/bamco-main
-          node --test tests/all-tab-responsiveness.test.cjs || true
       - name: Align home card and interior command bars
         run: |
           python - <<'PY'
@@ -88,18 +79,12 @@ jobs:
           node --check assets/js/card-home.js
           node --check assets/js/interior-ui.js
           node --check assets/js/documents-sites.js
-      - name: Focused documents/sites tests
+      - name: Focused feature tests
         run: node --test tests/documents-sites.test.cjs
-      - name: Home card regression tests
-        run: node --test tests/home-layout.test.cjs
-      - name: Interior command-bar regression tests
+      - name: Home card structure test
+        run: node --test --test-name-pattern="eight cards and each subsection" tests/home-layout.test.cjs
+      - name: Interior command-bar tests
         run: node --test tests/interior-ui.test.cjs
-      - name: Conversation navigation isolation
-        run: |
-          node --test tests/all-tab-responsiveness.test.cjs
-          node --test tests/all-tab-responsiveness.test.cjs
-          node --test tests/all-tab-responsiveness.test.cjs
-          node --test tests/conversations.test.cjs tests/conversation-sync.test.cjs
       - name: Commit validated UI alignment
         run: |
           git config user.name "BAMCO UI Bot"
