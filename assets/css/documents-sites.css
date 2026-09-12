@@ -13,4 +13,4 @@ html body.content-only #appView :is(#documentsView,#sitesAccessView)>.feature-to
 @media(max-width:760px){html body.content-only #appView :is(#documentsView,#sitesAccessView)>.feature-toolbar-actions.bamco-command-bar{align-items:stretch!important}html body.content-only #appView :is(#documentsView,#sitesAccessView)>.feature-toolbar-actions.bamco-command-bar :is(button,input,select){flex:1 1 145px!important}html body.content-only #appView :is(#documentsView,#sitesAccessView)>.feature-toolbar-actions.bamco-command-bar .content-back{flex:0 0 auto!important}html body.content-only #appView :is(#documentsView,#sitesAccessView)>.feature-toolbar-actions.bamco-command-bar input[type=search]{width:auto!important;min-width:150px!important}}
 
 /* Sites actions follow the standard BAMCO non-bold button language. */
-#sitesAccessView button,#siteDialog button,#credentialDialog button,#credentialRevealDialog button{font-weight:400!important}
+#sitesAccessView button,#siteDialog button,#credentialDialog button,#credentialRevealDialog button{font-family:BamcoPersian,"B Nazanin",BNazanin,Tahoma,sans-serif!important;font-weight:400!important;font-synthesis:none!important}
