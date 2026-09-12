@@ -4,302 +4,2041 @@ UI toolbar cleanup source patch completed.
 === /tmp/ui-targeted.log ===
 TAP version 13
 # Subtest: dashboard performance dates auto-apply with no Apply button and Clear remains
-not ok 1 - dashboard performance dates auto-apply with no Apply button and Clear remains
+ok 1 - dashboard performance dates auto-apply with no Apply button and Clear remains
   ---
-  duration_ms: 10492.267945
+  duration_ms: 12486.280991
   type: 'test'
-  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/ui-toolbar-cleanup-20260912.test.cjs:5:1'
+  ...
+# Subtest: response report has no search and first-row buttons are regular weight
+ok 2 - response report has no search and first-row buttons are regular weight
+  ---
+  duration_ms: 9907.327906
+  type: 'test'
+  ...
+# Subtest: message center is one bounded row with no search and channel follows Refresh
+ok 3 - message center is one bounded row with no search and channel follows Refresh
+  ---
+  duration_ms: 8914.392558
+  type: 'test'
+  ...
+# Subtest: sent messages has no second controls row and first-row buttons are regular weight
+ok 4 - sent messages has no second controls row and first-row buttons are regular weight
+  ---
+  duration_ms: 8408.552561
+  type: 'test'
+  ...
+# Subtest: response tracking removes row-2 and row-3 buttons while preserving select filters
+ok 5 - response tracking removes row-2 and row-3 buttons while preserving select filters
+  ---
+  duration_ms: 9144.362719
+  type: 'test'
+  ...
+# Subtest: response tracking owns requested command order, current-month dates, selection and has no tracking id
+ok 6 - response tracking owns requested command order, current-month dates, selection and has no tracking id
+  ---
+  duration_ms: 12305.404398
+  type: 'test'
+  ...
+# Subtest: response report has requested command order, month defaults and filtered table source
+ok 7 - response report has requested command order, month defaults and filtered table source
+  ---
+  duration_ms: 10655.462331
+  type: 'test'
+  ...
+# Subtest: message center command row is home, excel, refresh, green send and local row selection enables send
+ok 8 - message center command row is home, excel, refresh, green send and local row selection enables send
+  ---
+  duration_ms: 9982.419172
+  type: 'test'
+  ...
+# Subtest: sent messages uses unified log, has no overview cards and requested controls
+ok 9 - sent messages uses unified log, has no overview cards and requested controls
+  ---
+  duration_ms: 9503.626738
+  type: 'test'
+  ...
+# Subtest: task history resolves deleted owner from task snapshot instead of UUID
+ok 10 - task history resolves deleted owner from task snapshot instead of UUID
+  ---
+  duration_ms: 8429.23131
+  type: 'test'
+  ...
+# Subtest: kanban delete has one authoritative rpc path and archive controls remain functional
+ok 11 - kanban delete has one authoritative rpc path and archive controls remain functional
+  ---
+  duration_ms: 11559.196345
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 63398.665489
+=== /tmp/ui-full.log ===
+
+> test
+> node --test tests/*.test.cjs
+
+TAP version 13
+# (node:2358) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: deployed people handler writes profiles as the authenticated manager and verifies a stored row
+ok 1 - deployed people handler writes profiles as the authenticated manager and verifies a stored row
+  ---
+  duration_ms: 40.414438
+  type: 'test'
+  ...
+# Subtest: changing corporate email preserves the independent login and existing password
+ok 2 - changing corporate email preserves the independent login and existing password
+  ---
+  duration_ms: 5.182711
+  type: 'test'
+  ...
+# Subtest: manager can inspect and edit login for an account with corporate email; current passwords are never returned
+ok 3 - manager can inspect and edit login for an account with corporate email; current passwords are never returned
+  ---
+  duration_ms: 5.624778
+  type: 'test'
+  ...
+# Subtest: duplicate username does not report success or leave an unperformed password reset gate
+ok 4 - duplicate username does not report success or leave an unperformed password reset gate
+  ---
+  duration_ms: 5.509804
+  type: 'test'
+  ...
+# Subtest: owners can only change their own username and cannot change another user or password with that action
+ok 5 - owners can only change their own username and cannot change another user or password with that action
+  ---
+  duration_ms: 12.620435
+  type: 'test'
+  ...
+# Subtest: new accounts use the same manager profile-write context
+ok 6 - new accounts use the same manager profile-write context
+  ---
+  duration_ms: 4.198065
+  type: 'test'
+  ...
+# Subtest: no-email users retain internal delivery and removing an email preserves their login
+ok 7 - no-email users retain internal delivery and removing an email preserves their login
+  ---
+  duration_ms: 8.348278
+  type: 'test'
+  ...
+# Subtest: an empty profile update or database rejection cannot report successful saving
+ok 8 - an empty profile update or database rejection cannot report successful saving
+  ---
+  duration_ms: 10.204049
+  type: 'test'
+  ...
+# Subtest: unauthenticated, inactive and nonmanager callers cannot reach privileged account writes
+ok 9 - unauthenticated, inactive and nonmanager callers cannot reach privileged account writes
+  ---
+  duration_ms: 7.687451
+  type: 'test'
+  ...
+# Subtest: delete uses the verified manager identity, server-only transaction and Storage API
+ok 10 - delete uses the verified manager identity, server-only transaction and Storage API
+  ---
+  duration_ms: 9.254025
+  type: 'test'
+  ...
+# Subtest: deletion rejects nonmanagers and self deletion before the privileged transaction
+ok 11 - deletion rejects nonmanagers and self deletion before the privileged transaction
+  ---
+  duration_ms: 11.618904
+  type: 'test'
+  ...
+# Subtest: deletion failures cannot report success and photo cleanup failures remain distinguishable
+ok 12 - deletion failures cannot report success and photo cleanup failures remain distinguishable
+  ---
+  duration_ms: 9.427247
+  type: 'test'
+  ...
+# Subtest: every shipped tab opens without blocking the event loop
+    # Subtest: people
+    ok 1 - people
+      ---
+      duration_ms: 2227.466234
+      type: 'test'
+      ...
+    # Subtest: loginActivity
+    ok 2 - loginActivity
+      ---
+      duration_ms: 1494.028465
+      type: 'test'
+      ...
+    # Subtest: activeSessions
+    ok 3 - activeSessions
+      ---
+      duration_ms: 1850.29702
+      type: 'test'
+      ...
+    # Subtest: messages
+    ok 4 - messages
+      ---
+      duration_ms: 866.475255
+      type: 'test'
+      ...
+    # Subtest: messageCenter
+    ok 5 - messageCenter
+      ---
+      duration_ms: 687.145028
+      type: 'test'
+      ...
+    # Subtest: sentMessages
+    ok 6 - sentMessages
+      ---
+      duration_ms: 1039.672342
+      type: 'test'
+      ...
+    # Subtest: responseTracking
+    ok 7 - responseTracking
+      ---
+      duration_ms: 763.749445
+      type: 'test'
+      ...
+    # Subtest: stickers
+    ok 8 - stickers
+      ---
+      duration_ms: 822.100733
+      type: 'test'
+      ...
+    # Subtest: dashboard
+    ok 9 - dashboard
+      ---
+      duration_ms: 1860.038753
+      type: 'test'
+      ...
+    # Subtest: performanceReport
+    ok 10 - performanceReport
+      ---
+      duration_ms: 2240.511604
+      type: 'test'
+      ...
+    # Subtest: responseReport
+    not ok 11 - responseReport
+      ---
+      duration_ms: 3213.095788
+      type: 'test'
+      location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/all-tab-responsiveness.test.cjs:9:37'
+      failureType: 'testCodeFailure'
+      error: 'responseReport took 3212ms to settle'
+      code: 'ERR_ASSERTION'
+      name: 'AssertionError'
+      expected: true
+      actual: false
+      operator: '=='
+      stack: |-
+        TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/all-tab-responsiveness.test.cjs:16:5)
+        runNextTicks (node:internal/process/task_queues:64:5)
+        process.processTimers (node:internal/timers:518:9)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/all-tab-responsiveness.test.cjs:9:29)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+      ...
+    # Subtest: systemOptions
+    ok 12 - systemOptions
+      ---
+      duration_ms: 2462.853328
+      type: 'test'
+      ...
+    # Subtest: settings
+    ok 13 - settings
+      ---
+      duration_ms: 1889.951499
+      type: 'test'
+      ...
+    # Subtest: kanban
+    ok 14 - kanban
+      ---
+      duration_ms: 1647.521689
+      type: 'test'
+      ...
+    # Subtest: archive
+    ok 15 - archive
+      ---
+      duration_ms: 2083.299223
+      type: 'test'
+      ...
+    # Subtest: taskTimeline
+    ok 16 - taskTimeline
+      ---
+      duration_ms: 1086.188782
+      type: 'test'
+      ...
+    # Subtest: approvals
+    ok 17 - approvals
+      ---
+      duration_ms: 1039.146945
+      type: 'test'
+      ...
+    # Subtest: requestHistory
+    ok 18 - requestHistory
+      ---
+      duration_ms: 1283.22003
+      type: 'test'
+      ...
+    # Subtest: approvalChains
+    ok 19 - approvalChains
+      ---
+      duration_ms: 1262.276801
+      type: 'test'
+      ...
+    # Subtest: vehiclePermanent
+    ok 20 - vehiclePermanent
+      ---
+      duration_ms: 1371.409875
+      type: 'test'
+      ...
+    # Subtest: vehicleTemporary
+    ok 21 - vehicleTemporary
+      ---
+      duration_ms: 1381.790612
+      type: 'test'
+      ...
+    # Subtest: groupChat
+    not ok 22 - groupChat
+      ---
+      duration_ms: 2584.76872
+      type: 'test'
+      location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/all-tab-responsiveness.test.cjs:9:37'
+      failureType: 'testCodeFailure'
+      error: 'groupChat took 2584ms to settle'
+      code: 'ERR_ASSERTION'
+      name: 'AssertionError'
+      expected: true
+      actual: false
+      operator: '=='
+      stack: |-
+        TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/all-tab-responsiveness.test.cjs:16:5)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/all-tab-responsiveness.test.cjs:9:29)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+      ...
+    # Subtest: directMessages
+    not ok 23 - directMessages
+      ---
+      duration_ms: 5194.951592
+      type: 'test'
+      location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/all-tab-responsiveness.test.cjs:9:37'
+      failureType: 'testCodeFailure'
+      error: 'directMessages took 5194ms to settle'
+      code: 'ERR_ASSERTION'
+      name: 'AssertionError'
+      expected: true
+      actual: false
+      operator: '=='
+      stack: |-
+        TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/all-tab-responsiveness.test.cjs:16:5)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/all-tab-responsiveness.test.cjs:9:29)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+      ...
+    # Subtest: taskChats
+    ok 24 - taskChats
+      ---
+      duration_ms: 2222.047442
+      type: 'test'
+      ...
+    1..24
+not ok 13 - every shipped tab opens without blocking the event loop
+  ---
+  duration_ms: 55095.937532
+  type: 'test'
+  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/all-tab-responsiveness.test.cjs:5:1'
+  failureType: 'subtestsFailed'
+  error: '3 subtests failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: concurrent requests refresh once, replace the bearer token, and retry 401 once
+ok 14 - concurrent requests refresh once, replace the bearer token, and retry 401 once
+  ---
+  duration_ms: 61.751756
+  type: 'test'
+  ...
+# Subtest: clearing a session during refresh cannot restore the signed-out user
+ok 15 - clearing a session during refresh cannot restore the signed-out user
+  ---
+  duration_ms: 1.916472
+  type: 'test'
+  ...
+# Subtest: logout still revokes native Auth when audit recording fails
+ok 16 - logout still revokes native Auth when audit recording fails
+  ---
+  duration_ms: 1.555858
+  type: 'test'
+  ...
+# Subtest: short and trivially weak replacement passwords never reach Auth
+ok 17 - short and trivially weak replacement passwords never reach Auth
+  ---
+  duration_ms: 1.767567
+  type: 'test'
+  ...
+# Subtest: conversation media separates images, documents and safe links
+ok 18 - conversation media separates images, documents and safe links
+  ---
+  duration_ms: 14178.098224
+  type: 'test'
+  ...
+# Subtest: owner tasks, Persian IDs, system sender identity and notification-to-thread navigation
+ok 19 - owner tasks, Persian IDs, system sender identity and notification-to-thread navigation
+  ---
+  duration_ms: 21650.741592
+  type: 'test'
+  ...
+# Subtest: conversation controls use the real UI: public attachment, reply, delete, group lifecycle, task recipient
+    # Subtest: Persian filenames upload using a safe storage key; metadata and downloads retain the name
+    ok 1 - Persian filenames upload using a safe storage key; metadata and downloads retain the name
+      ---
+      duration_ms: 1510.477844
+      type: 'test'
+      ...
+    # Subtest: reply, cancellation, failed send retry, delete and refresh
+    ok 2 - reply, cancellation, failed send retry, delete and refresh
+      ---
+      duration_ms: 4325.718554
+      type: 'test'
+      ...
+    # Subtest: group creation uses searchable member choices; manage, leave and delete are executable
+    ok 3 - group creation uses searchable member choices; manage, leave and delete are executable
+      ---
+      duration_ms: 18614.387821
+      type: 'test'
+      ...
+    # Subtest: task choice is not overwritten by a second renderer and uses the selected recipient
+    ok 4 - task choice is not overwritten by a second renderer and uses the selected recipient
+      ---
+      duration_ms: 4674.367317
+      type: 'test'
+      ...
+    1..4
+ok 20 - conversation controls use the real UI: public attachment, reply, delete, group lifecycle, task recipient
+  ---
+  duration_ms: 44352.226833
+  type: 'test'
+  ...
+# Subtest: owner portal: private conversation works while manager-only create and delete controls stay absent
+ok 21 - owner portal: private conversation works while manager-only create and delete controls stay absent
+  ---
+  duration_ms: 17045.984725
+  type: 'test'
+  ...
+# Subtest: group photo validates files, retries failed metadata without duplicating groups, paints and removes
+not ok 22 - group photo validates files, retries failed metadata without duplicating groups, paints and removes
+  ---
+  duration_ms: 23819.321048
+  type: 'test'
+  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/group-photos.test.cjs:4:1'
   failureType: 'testCodeFailure'
-  error: |-
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
-    
-    4 !== 0
-    
+  error: 'Timed out waiting for the actual UI handler'
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
-  expected: 0
-  actual: 4
-  operator: 'strictEqual'
+  operator: 'fail'
   stack: |-
-    TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/ui-toolbar-cleanup-20260912.test.cjs:12:10)
-    runNextTicks (node:internal/process/task_queues:64:5)
-    process.processTimers (node:internal/timers:518:9)
+    until (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/helpers/app-fixture.cjs:7:93)
+    async TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/group-photos.test.cjs:14:127)
     async Test.run (node:internal/test_runner/test:1054:7)
     async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
   ...
-# Subtest: response report has no search and first-row buttons are regular weight
-not ok 2 - response report has no search and first-row buttons are regular weight
+# Subtest: seven cards and each subsection follow the approved RTL reference
+ok 23 - seven cards and each subsection follow the approved RTL reference
   ---
-  duration_ms: 8075.686988
+  duration_ms: 8.621827
   type: 'test'
-  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/ui-toolbar-cleanup-20260912.test.cjs:15:1'
+  ...
+# Subtest: only duplicate shortcuts disappear; bound actions and unique routes survive
+ok 24 - only duplicate shortcuts disappear; bound actions and unique routes survive
+  ---
+  duration_ms: 2.122542
+  type: 'test'
+  ...
+# Subtest: reconciliation stabilizes without DOM writes and handles late-added shortcuts
+ok 25 - reconciliation stabilizes without DOM writes and handles late-added shortcuts
+  ---
+  duration_ms: 4.346618
+  type: 'test'
+  ...
+# Subtest: role-hidden routes stay hidden; visibility changes update their group
+ok 26 - role-hidden routes stay hidden; visibility changes update their group
+  ---
+  duration_ms: 2.329224
+  type: 'test'
+  ...
+# Subtest: home styles have one owner, loaded last; phase modules load once
+not ok 27 - home styles have one owner, loaded last; phase modules load once
+  ---
+  duration_ms: 1.745303
+  type: 'test'
+  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/home-layout.test.cjs:71:1'
   failureType: 'testCodeFailure'
   error: |-
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
+    The input did not match the regular expression /home-stable\.css/. Input:
     
-    4 !== 0
+    'assets/css/home-post-welcome-fix-20260911.css?v=20260911-2'
     
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
-  expected: 0
-  actual: 4
-  operator: 'strictEqual'
+  expected:
+  actual: 'assets/css/home-post-welcome-fix-20260911.css?v=20260911-2'
+  operator: 'match'
   stack: |-
-    TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/ui-toolbar-cleanup-20260912.test.cjs:21:10)
-    runNextTicks (node:internal/process/task_queues:64:5)
-    process.processTimers (node:internal/timers:518:9)
-    async Test.run (node:internal/test_runner/test:1054:7)
+    TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/home-layout.test.cjs:75:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
     async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
   ...
-# Subtest: message center is one bounded row with no search and channel follows Refresh
-not ok 3 - message center is one bounded row with no search and channel follows Refresh
+# Subtest: search polishing and cell cleanup stop writing once values are stable
+ok 28 - search polishing and cell cleanup stop writing once values are stable
   ---
-  duration_ms: 7249.731518
+  duration_ms: 1.701387
   type: 'test'
-  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/ui-toolbar-cleanup-20260912.test.cjs:24:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
-    
-    4 !== 0
-    
-  code: 'ERR_ASSERTION'
-  name: 'AssertionError'
-  expected: 0
-  actual: 4
-  operator: 'strictEqual'
-  stack: |-
-    TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/ui-toolbar-cleanup-20260912.test.cjs:35:10)
-    runNextTicks (node:internal/process/task_queues:64:5)
-    process.processTimers (node:internal/timers:518:9)
-    async Test.run (node:internal/test_runner/test:1054:7)
-    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
   ...
-# Subtest: sent messages has no second controls row and first-row buttons are regular weight
-not ok 4 - sent messages has no second controls row and first-row buttons are regular weight
+# Subtest: dismiss inbox copies persists across reload and synchronizes the bell without opening the conversation
+ok 29 - dismiss inbox copies persists across reload and synchronizes the bell without opening the conversation
   ---
-  duration_ms: 7489.945202
+  duration_ms: 14357.301339
   type: 'test'
-  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/ui-toolbar-cleanup-20260912.test.cjs:38:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
-    
-    4 !== 0
-    
-  code: 'ERR_ASSERTION'
-  name: 'AssertionError'
-  expected: 0
-  actual: 4
-  operator: 'strictEqual'
-  stack: |-
-    TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/ui-toolbar-cleanup-20260912.test.cjs:47:10)
-    runNextTicks (node:internal/process/task_queues:64:5)
-    process.processTimers (node:internal/timers:518:9)
-    async Test.run (node:internal/test_runner/test:1054:7)
-    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
   ...
-# Subtest: response tracking removes row-2 and row-3 buttons while preserving select filters
-not ok 5 - response tracking removes row-2 and row-3 buttons while preserving select filters
+# Subtest: failed dismiss keeps the card and unread count available for retry
+ok 30 - failed dismiss keeps the card and unread count available for retry
   ---
-  duration_ms: 7039.820888
+  duration_ms: 13555.463297
   type: 'test'
-  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/ui-toolbar-cleanup-20260912.test.cjs:50:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
-    
-    4 !== 0
-    
-  code: 'ERR_ASSERTION'
-  name: 'AssertionError'
-  expected: 0
-  actual: 4
-  operator: 'strictEqual'
-  stack: |-
-    TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/ui-toolbar-cleanup-20260912.test.cjs:61:10)
-    runNextTicks (node:internal/process/task_queues:64:5)
-    process.processTimers (node:internal/timers:518:9)
-    async Test.run (node:internal/test_runner/test:1054:7)
-    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
   ...
-# Subtest: response tracking owns requested command order, current-month dates, selection and has no tracking id
-not ok 6 - response tracking owns requested command order, current-month dates, selection and has no tracking id
+# Subtest: complete emoji groups are selectable without losing drafts; emoji sequences and image stickers keep shared sizing
+ok 31 - complete emoji groups are selectable without losing drafts; emoji sequences and image stickers keep shared sizing
   ---
-  duration_ms: 9823.51961
+  duration_ms: 19125.807342
   type: 'test'
-  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workflow-tabs-root-20260912.test.cjs:7:1'
+  ...
+# Subtest: interior reconciliation preserves home markup, form values and attached handlers
+ok 32 - interior reconciliation preserves home markup, form values and attached handlers
+  ---
+  duration_ms: 219.311731
+  type: 'test'
+  ...
+# Subtest: a late-rendered page restores one heading without deleting native action controls
+ok 33 - a late-rendered page restores one heading without deleting native action controls
+  ---
+  duration_ms: 50.646063
+  type: 'test'
+  ...
+# Subtest: the observer themes late dialogs and leaves the home welcome dialog alone
+ok 34 - the observer themes late dialogs and leaves the home welcome dialog alone
+  ---
+  duration_ms: 70.600533
+  type: 'test'
+  ...
+# Subtest: actual login module records one session, gates first entry, changes password, and revokes logout
+not ok 35 - actual login module records one session, gates first entry, changes password, and revokes logout
+  ---
+  duration_ms: 12960.056562
+  type: 'test'
+  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/login-lifecycle.test.cjs:4:1'
   failureType: 'testCodeFailure'
   error: |-
-    Expected values to be strictly equal:
+    The expression evaluated to a falsy value:
     
-    false !== true
+      assert(!f.calls.slice(start).some(c=>c.endpoint==='tasks'||c.endpoint==='task_status_view'))
     
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
   expected: true
   actual: false
-  operator: 'strictEqual'
+  operator: '=='
   stack: |-
-    TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workflow-tabs-root-20260912.test.cjs:14:199)
+    TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/login-lifecycle.test.cjs:11:2)
     runNextTicks (node:internal/process/task_queues:64:5)
     process.processTimers (node:internal/timers:518:9)
     async Test.run (node:internal/test_runner/test:1054:7)
     async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
   ...
-# Subtest: response report has requested command order, month defaults and filtered table source
-not ok 7 - response report has requested command order, month defaults and filtered table source
+# Subtest: home and welcome appear before slow data/stickers and late callbacks cannot replace the chosen page
+ok 36 - home and welcome appear before slow data/stickers and late callbacks cannot replace the chosen page
   ---
-  duration_ms: 8144.720167
+  duration_ms: 13351.943561
   type: 'test'
-  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workflow-tabs-root-20260912.test.cjs:18:1'
+  ...
+# Subtest: people credential action edits an emailed user and the Excel export contains only safe account state
+ok 37 - people credential action edits an emailed user and the Excel export contains only safe account state
+  ---
+  duration_ms: 15387.280143
+  type: 'test'
+  ...
+# Subtest: management pages: shipped click handlers, toolbars, Excel downloads and return navigation
+    # Subtest: people selection, add, edit, validation feedback, cancel and delete
+    ok 1 - people selection, add, edit, validation feedback, cancel and delete
+      ---
+      duration_ms: 4720.975655
+      type: 'test'
+      ...
+    # Subtest: one home button and a working full Excel export beside people actions
+    ok 2 - one home button and a working full Excel export beside people actions
+      ---
+      duration_ms: 1460.214174
+      type: 'test'
+      ...
+    # Subtest: loginActivity: no metric cards or filtered export; refresh, Excel and home share one toolbar
+    ok 3 - loginActivity: no metric cards or filtered export; refresh, Excel and home share one toolbar
+      ---
+      duration_ms: 4362.137526
+      type: 'test'
+      ...
+    # Subtest: activeSessions: no metric cards or filtered export; refresh, Excel and home share one toolbar
+    ok 4 - activeSessions: no metric cards or filtered export; refresh, Excel and home share one toolbar
+      ---
+      duration_ms: 5858.496876
+      type: 'test'
+      ...
+    # Subtest: account password entry opens the same form used for the mandatory first login
+    ok 5 - account password entry opens the same form used for the mandatory first login
+      ---
+      duration_ms: 1382.756703
+      type: 'test'
+      ...
+    1..5
+ok 38 - management pages: shipped click handlers, toolbars, Excel downloads and return navigation
+  ---
+  duration_ms: 29056.621128
+  type: 'test'
+  ...
+# Subtest: hidden people view wins over legacy active-nav CSS; account and password sizes are explicit
+ok 39 - hidden people view wins over legacy active-nav CSS; account and password sizes are explicit
+  ---
+  duration_ms: 569.933651
+  type: 'test'
+  ...
+# Subtest: workflow message renderer is compact, centered and warning/overdue colored
+ok 40 - workflow message renderer is compact, centered and warning/overdue colored
+  ---
+  duration_ms: 1.437889
+  type: 'test'
+  ...
+# Subtest: system message UI blocks generic table-suite controls and preserves inbox cards
+ok 41 - system message UI blocks generic table-suite controls and preserves inbox cards
+  ---
+  duration_ms: 0.410129
+  type: 'test'
+  ...
+# Subtest: database migration exposes only own system chain and creates self-system alerts
+ok 42 - database migration exposes only own system chain and creates self-system alerts
+  ---
+  duration_ms: 0.227113
+  type: 'test'
+  ...
+# Subtest: unknown or missing route leaves current screen visible
+ok 43 - unknown or missing route leaves current screen visible
+  ---
+  duration_ms: 3.219528
+  type: 'test'
+  ...
+# Subtest: delegated navigation handles a button added after initialization
+ok 44 - delegated navigation handles a button added after initialization
+  ---
+  duration_ms: 1.046278
+  type: 'test'
+  ...
+# Subtest: disabled navigation does not change screen
+ok 45 - disabled navigation does not change screen
+  ---
+  duration_ms: 0.855301
+  type: 'test'
+  ...
+# Subtest: password update succeeds before clearing mandatory change flag; form survives async event
+ok 46 - password update succeeds before clearing mandatory change flag; form survives async event
+  ---
+  duration_ms: 5.217353
+  type: 'test'
+  ...
+# Subtest: Auth failure cannot clear mandatory password change or close dialog
+ok 47 - Auth failure cannot clear mandatory password change or close dialog
+  ---
+  duration_ms: 1.427604
+  type: 'test'
+  ...
+# Subtest: profile failure preserves mandatory change state
+ok 48 - profile failure preserves mandatory change state
+  ---
+  duration_ms: 2.517188
+  type: 'test'
+  ...
+# Subtest: creation shows whole credential labels above separate fields and clears secrets on close
+ok 49 - creation shows whole credential labels above separate fields and clears secrets on close
+  ---
+  duration_ms: 14709.375801
+  type: 'test'
+  ...
+# Subtest: people Excel writes explicit borders for every cell for selected and complete exports
+not ok 50 - people Excel writes explicit borders for every cell for selected and complete exports
+  ---
+  duration_ms: 12820.230831
+  type: 'test'
+  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/people-tab-details.test.cjs:14:1'
   failureType: 'testCodeFailure'
   error: |-
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
+    Expected values to be strictly equal:
     
-    4 !== 0
+    16 !== 12
     
   code: 'ERR_ASSERTION'
   name: 'AssertionError'
-  expected: 0
-  actual: 4
+  expected: 12
+  actual: 16
   operator: 'strictEqual'
   stack: |-
-    TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workflow-tabs-root-20260912.test.cjs:27:9)
+    TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/people-tab-details.test.cjs:21:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: failed deletion is reported without removing the row or preventing another edit
+ok 51 - failed deletion is reported without removing the row or preventing another edit
+  ---
+  duration_ms: 12434.355633
+  type: 'test'
+  ...
+# Subtest: delete immediately opens Kanban and retains active/archive tasks for individual transfer
+not ok 52 - delete immediately opens Kanban and retains active/archive tasks for individual transfer
+  ---
+  duration_ms: 12935.531698
+  type: 'test'
+  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/people-tab-details.test.cjs:31:1'
+  failureType: 'testCodeFailure'
+  error: "Cannot read properties of null (reading 'elements')"
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/people-tab-details.test.cjs:35:331)
     runNextTicks (node:internal/process/task_queues:64:5)
     process.processTimers (node:internal/timers:518:9)
     async Test.run (node:internal/test_runner/test:1054:7)
     async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: deletion clears stale filters, shows only affected active tasks and transfers one task at a time
+not ok 53 - deletion clears stale filters, shows only affected active tasks and transfers one task at a time
+  ---
+  duration_ms: 14406.64428
+  type: 'test'
+  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/people-tab-details.test.cjs:39:1'
+  failureType: 'testCodeFailure'
+  error: 'navigation must not await unrelated refresh requests'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/people-tab-details.test.cjs:58:2)
+    runNextTicks (node:internal/process/task_queues:64:5)
+    process.processTimers (node:internal/timers:518:9)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: historical chat messages retain the deleted sender name and body without an account profile
+ok 54 - historical chat messages retain the deleted sender name and body without an account profile
+  ---
+  duration_ms: 12193.184984
+  type: 'test'
+  ...
+# Subtest: the surviving user can open a deleted contact conversation from the list, read history and cannot send
+not ok 55 - the surviving user can open a deleted contact conversation from the list, read history and cannot send
+  ---
+  duration_ms: 22200.723846
+  type: 'test'
+  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/people-tab-details.test.cjs:70:1'
+  failureType: 'testCodeFailure'
+  error: 'Timed out waiting for the actual UI handler'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'fail'
+  stack: |-
+    until (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/helpers/app-fixture.cjs:7:93)
+    async TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/people-tab-details.test.cjs:73:33)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: entry is lightweight and management gate precedes login
+ok 56 - entry is lightweight and management gate precedes login
+  ---
+  duration_ms: 1.972747
+  type: 'test'
+  ...
+# Subtest: permanent vehicle template upload is enabled without embedding the PDF
+ok 57 - permanent vehicle template upload is enabled without embedding the PDF
+  ---
+  duration_ms: 2.035411
+  type: 'test'
+  ...
+# Subtest: sticker manager is empty-safe and previews both sides together
+ok 58 - sticker manager is empty-safe and previews both sides together
+  ---
+  duration_ms: 0.43729
+  type: 'test'
+  ...
+# Subtest: welcome uses the active database sticker pair and home is deduplicated
+ok 59 - welcome uses the active database sticker pair and home is deduplicated
+  ---
+  duration_ms: 0.362857
+  type: 'test'
+  ...
+# Subtest: all data tables default to compact multi-selection behavior
+ok 60 - all data tables default to compact multi-selection behavior
+  ---
+  duration_ms: 0.583851
+  type: 'test'
+  ...
+# Subtest: people can omit email and never enter an initial password
+not ok 61 - people can omit email and never enter an initial password
+  ---
+  duration_ms: 2.215303
+  type: 'test'
+  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/release-fixes.test.cjs:51:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /ایمیل \(اختیاری\)/. Input:
+    
+    '/* module:shell:1 */\n' +
+      '(()=>{\n' +
+      "  'use strict';\n" +
+      `  const q=(s,root=document)=>root.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));\n` +
+      "  const nav=q('#nav'),workspace=q('.workspace');if(!nav||!workspace)return;\n" +
+      `  nav.insertAdjacentHTML('beforeend','<button data-view="people" class="manager-only"><b>♙</b><span>افراد و نقش‌ها</span></button><button data-view="templates" class="manager-only"><b>≡</b><span>متن پیام‌ها</span></button><button data-view="stickers" class="manager-only"><b>◇</b><span>مدیریت استیکرها</span></button><button data-view="settings"><b>⚙</b><span>تنظیمات</span></button>');\n` +
+      "  workspace.insertAdjacentHTML('beforeend',`\n" +
+      '  <section id="peopleView" class="view hidden manager-only"><div class="panel table-panel"><div class="panel-head"><div><h3>مدیریت افراد و نقش‌ها</h3><small>حساب کاربران، نام متولی در کانبان و سطح دسترسی</small></div><input id="peopleSearch" class="search" placeholder="جست‌وجو…"></div><div class="people-actions"><button id="addPersonBtn" class="primary">＋ افزودن فرد</button><button id="editPersonBtn" class="ghost">ویرایش</button><button id="deletePersonBtn" class="danger">حذف</button></div><div class="table-wrap"><table class="manager-table"><thead><tr><th>نام متولی</th><th>نقش</th><th>جنسیت</th><th>پست الکترونیک سازمانی</th><th>نام کاربری</th><th>رمز عبور</th><th>عنوان خطاب</th><th>فعال</th></tr></thead><tbody id="peopleBody"></tbody></table></div></div></section>\n' +
+      '  <section id="templatesView" class="view hidden manager-only"><div class="panel"><div class="panel-head"><div><h3>متن پیام‌ها</h3><small>متن پیام داخل سامانه بر اساس وضعیت متولی</small></div><div class="manager-toolbar"><select id="templateState"><option value="state1">وضعیت مطلوب</option><option value="state2">یادآوری</option><option value="state3">نیازمند توجه</option><option value="state4">پیگیری جدی</option><option value="state5">اقدام فوری</option><option value="followup">یادآوری مجدد</option></select><button id="saveTemplateBtn" class="primary">ذخیره متن</button></div></div><div class="manager-note">متغیرها: [عنوان مخاطب]، [تعداد هشدار]، [تعداد دیرکرد]، [جدول امور هشداری]، [جدول امور دیرکردی]، [استیکر] و [تاریخ گزارش]</div><textarea id="templateBody" class="template-editor"></textarea></div></section>\n' +
+      '  <section id="stickersView" class="view hidden manager-only"><div class="panel"><div class="panel-head"><div><h3>مدیریت استیکرها</h3><small>نسخه را تعریف کنید و ده تصویر آن را در پایگاه داده بارگذاری کنید.</small></div></div><div id="stickerGrid" hidden></div></div></section>\n' +
+      '  <section id="settingsView" class="view hidden"><div class="panel"><div class="panel-head"><div><h3>تنظیمات حساب کاربری</h3><small>نام نمایشی، تصویر پروفایل و امنیت حساب</small></div></div><div class="manager-form"><label>نام نمایشی<input id="profileDisplayName"></label><label>پست الکترونیک سازمانی<input id="profileEmail" class="english" dir="ltr" readonly></label><label>نام کاربری<input id="profileLoginName" class="english" dir="ltr" autocomplete="off" spellcheck="false"></label><div class="profile-photo-field"><div id="profileAvatarPreview" class="profile-avatar-preview">ب</div><div><b>تصویر پروفایل</b><p>PNG، JPG یا WebP تا ۸ مگابایت</p><button id="chooseAvatarBtn" type="button" class="ghost">انتخاب و تنظیم عکس</button><input id="profileAvatar" type="file" accept="image/png,image/jpeg,image/webp" hidden></div></div><div class="account-security-box"><div><h4>تغییر رمز عبور</h4><p>رمز حساب خود را از این بخش تغییر دهید.</p></div><button id="changePasswordBtn" type="button" class="primary">تغییر رمز عبور</button></div></div><div class="modal-actions"><button id="saveProfileBtn" class="primary">ذخیره تنظیمات حساب</button></div></div></section>\n' +
+      '  <dialog id="personDialog" class="modal manager-modal"><form id="personForm"><div class="modal-head"><div><h3 id="personDialogTitle">افزودن فرد</h3><p>اطلاعات فرد، سطح دسترسی و امکان دریافت پیام</p></div><button type="button" data-person-close>×</button></div><div class="manager-form"><label>نام متولی در کانبان<input name="full_name" required></label><label>نقش<select name="role"><option value="owner">متولی</option><option value="manager">مدیر</option></select></label><label>جنسیت<select name="gender"><option>آقا</option><option>خانم</option></select></label><label>پست الکترونیک سازمانی (اختیاری)<input name="email" class="english" dir="ltr" type="email" placeholder="name@bamco.ir"></label><label>عنوان خطاب<input name="salutation"></label><label class="person-message-channel">کانال پیش‌فرض پیام<select name="default_message_channel"><option value="portal">داخل سامانه</option><option value="email">ایمیل</option><option value="both">هر دو</option></select><small>بدون ایمیل، پیام فقط داخل سامانه ارسال می‌شود.</small></label><label>فعال<select name="active"><option value="true">بله</option><option value="false">خیر</option></select></label></div><div id="personLoginActions" class="modal-actions hidden"><button id="editPersonLoginBtn" class="ghost" type="button">نام کاربری و رمز موقت</button></div><p id="personError" class="form-error" role="alert"></p><div class="modal-actions"><button type="button" class="ghost" data-person-close>انصراف</button><button type="submit" class="primary">ذخیره</button></div></form></dialog>`);\n' +
+      "  document.body.append(q('#personDialog'));\n" +
+      '  let people=[],editing=null,selected=new Set();\n' +
+      '  function syncPersonSelection(){\n' +
+      '    selected=new Set([...selected].filter(id=>people.some(p=>p.id===id)));\n' +
+      "    document.querySelectorAll('#peopleBody tr[data-id]').forEach(row=>{const chosen=selected.has(row.dataset.id);row.classList.toggle('person-selected',chosen);row.setAttribute('aria-selected',String(chosen))});\n" +
+      "    q('#editPersonBtn').disabled=!people.length;q('#editPersonBtn').title=selected.size>1?'ویرایش فقط برای یک فرد مجاز است':'ویرایش فرد';q('#deletePersonBtn').disabled=!selected.size;\n" +
+      '  }\n' +
+      "  document.addEventListener('bamco-selection-change',e=>{if(e.target.closest('#peopleView')){selected=new Set(e.detail.ids);syncPersonSelection()}});\n" +
+      "  async function edge(body={},method='POST'){const result=await api('/functions/v1/admin-users',{method,body});if(!result?.ok)throw new Error(result?.error||'عملیات حساب کاربری تأیید نشد.');return result}\n" +
+      "  async function loadPeople(){people=await select('profiles','select=id,email,login_name,must_change_password,password_changed_at,full_name,display_name,role,gender,salutation,active,default_message_channel,messaging_enabled&order=full_name');state.profiles=people;renderPeople()}\n" +
+      '  function renderPeople(){const term=q(\'#peopleSearch\').value.trim().toLowerCase(),rows=people.filter(p=>!term||[p.full_name,p.email,p.login_name,p.role,p.salutation].some(v=>String(v||\'\').toLowerCase().includes(term)));q(\'#peopleBody\').innerHTML=rows.map(p=>`<tr data-id="${p.id}" class="${selected.has(p.id)?\'person-selected\':\'\'}"><td>${esc(p.full_name)}</td><td>${p.role===\'manager\'?\'مدیر\':\'متولی\'}</td><td>${esc(p.gender||\'—\')}</td><td class="english">${esc(p.email||\'—\')}</td><td class="english" dir="ltr">${esc(p.login_name||\'—\')}</td><td><button type="button" class="ghost" data-person-credentials="${esc(p.id)}" title="ویرایش نام کاربری و تعیین رمز موقت">${p.must_change_password?\'رمز موقت؛ نیازمند تغییر\':\'تعیین رمز جدید\'}</button>${p.password_changed_at?`<small class="credential-date">آخرین تغییر: ${esc(new Date(p.password_changed_at).toLocaleString(\'fa-IR\'))}</small>`:\'\'}</td><td>${esc(p.salutation||\'—\')}</td><td>${p.active!==false?\'بله\':\'خیر\'}</td></tr>`).join(\'\')||\'<tr><td colspan="8" class="empty">کاربری ثبت نشده است.</td></tr>\';syncPersonSelection()}\n' +
+      "  function syncMessageAvailability(){const f=q('#personForm'),hasEmail=!!f.elements.email.value.trim(),channel=f.elements.default_message_channel;channel.disabled=false;[...channel.options].forEach(o=>o.disabled=o.value!=='portal'&&!hasEmail);if(!hasEmail||!channel.value)channel.value='portal';q('#personLoginActions').classList.toggle('hidden',!editing)}\n" +
+      "  function openPerson(p=null){editing=p;const f=q('#personForm');f.reset();q('#personError').textContent='';f.elements.role.value='owner';f.elements.active.value='true';if(p)for(const k of ['full_name','role','gender','email','salutation','active','default_message_channel'])if(f.elements[k])f.elements[k].value=String(p[k]??'');q('#personDialogTitle').textContent=p?'ویرایش فرد':'افزودن فرد';syncMessageAvailability();q('#personDialog').showModal()}\n" +
+      '  function pickPersonToEdit(){\n' +
+      "    if(selected.size>1)return toast('برای ویرایش فقط یک فرد را انتخاب کنید. حذف چندتایی مجاز است.',true);\n" +
+      '    const person=people.find(p=>selected.has(p.id));if(person)return openPerson(person);\n' +
+      "    let dialog=q('#personPickerDialog');if(!dialog){dialog=document.createElement('dialog');dialog.id='personPickerDialog';dialog.className='modal small bamco-dialog';document.body.append(dialog)}\n" +
+      '    dialog.innerHTML=`<form><div class="modal-head"><h3>انتخاب فرد برای ویرایش</h3></div><label>فرد<select name="person" required><option value="">انتخاب کنید…</option>${people.map(p=>`<option value="${esc(p.id)}">${esc(p.full_name)} — ${p.role===\'manager\'?\'مدیر\':\'متولی\'}</option>`).join(\'\')}</select></label><div class="modal-actions"><button type="submit" class="primary">ویرایش</button><button type="button" class="ghost">انصراف</button></div></form>`;\n' +
+      "    q('button[type=button]',dialog).onclick=()=>dialog.close();q('form',dialog).onsubmit=e=>{e.preventDefault();const p=people.find(p=>p.id===e.currentTarget.elements.person.value);if(!p)return;window.bamcoSelection.set('#peopleBody',[p.id]);dialog.close();openPerson(p)};dialog.showModal();\n" +
+      '  }\n' +
+      '  async function savePerson(e){\n' +
+      `    e.preventDefault();const form=e.currentTarget,submit=form.querySelector('[type="submit"]');if(submit.disabled)return;\n` +
+      "    const data=Object.fromEntries(new FormData(form));data.active=data.active==='true';data.email=String(data.email||'').trim()||null;data.messaging_enabled=true;data.default_message_channel=data.email?(data.default_message_channel||'portal'):'portal';if(editi"... 25438 more characters
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: |-
+    /* module:shell:1 */
+    (()=>{
+      'use strict';
+      const q=(s,root=document)=>root.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      const nav=q('#nav'),workspace=q('.workspace');if(!nav||!workspace)return;
+      nav.insertAdjacentHTML('beforeend','<button data-view="people" class="manager-only"><b>♙</b><span>افراد و نقش‌ها</span></button><button data-view="templates" class="manager-only"><b>≡</b><span>متن پیام‌ها</span></button><button data-view="stickers" class="manager-only"><b>◇</b><span>مدیریت استیکرها</span></button><button data-view="settings"><b>⚙</b><span>تنظیمات</span></button>');
+      workspace.insertAdjacentHTML('beforeend',`
+      <section id="peopleView" class="view hidden manager-only"><div class="panel table-panel"><div class="panel-head"><div><h3>مدیریت افراد و نقش‌ها</h3><small>حساب کاربران، نام متولی در کانبان و سطح دسترسی</small></div><input id="peopleSearch" class="search" placeholder="جست‌وجو…"></div><div class="people-actions"><button id="addPersonBtn" class="primary">＋ افزودن فرد</button><button id="editPersonBtn" class="ghost">ویرایش</button><button id="deletePersonBtn" class="danger">حذف</button></div><div class="table-wrap"><table class="manager-table"><thead><tr><th>نام متولی</th><th>نقش</th><th>جنسیت</th><th>پست الکترونیک سازمانی</th><th>نام کاربری</th><th>رمز عبور</th><th>عنوان خطاب</th><th>فعال</th></tr></thead><tbody id="peopleBody"></tbody></table></div></div></section>
+      <section id="templatesView" class="view hidden manager-only"><div class="panel"><div class="panel-head"><div><h3>متن پیام‌ها</h3><small>متن پیام داخل سامانه بر اساس وضعیت متولی</small></div><div class="manager-toolbar"><select id="templateState"><option value="state1">وضعیت مطلوب</option><option value="state2">یادآوری</option><option value="state3">نیازمند توجه</option><option value="state4">پیگیری جدی</option><option value="state5">اقدام فوری</option><option value="followup">یادآوری مجدد</option></select><button id="saveTemplateBtn" class="primary">ذخیره متن</button></div></div><div class="manager-note">متغیرها: [عنوان مخاطب]، [تعداد هشدار]، [تعداد دیرکرد]، [جدول امور هشداری]، [جدول امور دیرکردی]، [استیکر] و [تاریخ گزارش]</div><textarea id="templateBody" class="template-editor"></textarea></div></section>
+      <section id="stickersView" class="view hidden manager-only"><div class="panel"><div class="panel-head"><div><h3>مدیریت استیکرها</h3><small>نسخه را تعریف کنید و ده تصویر آن را در پایگاه داده بارگذاری کنید.</small></div></div><div id="stickerGrid" hidden></div></div></section>
+      <section id="settingsView" class="view hidden"><div class="panel"><div class="panel-head"><div><h3>تنظیمات حساب کاربری</h3><small>نام نمایشی، تصویر پروفایل و امنیت حساب</small></div></div><div class="manager-form"><label>نام نمایشی<input id="profileDisplayName"></label><label>پست الکترونیک سازمانی<input id="profileEmail" class="english" dir="ltr" readonly></label><label>نام کاربری<input id="profileLoginName" class="english" dir="ltr" autocomplete="off" spellcheck="false"></label><div class="profile-photo-field"><div id="profileAvatarPreview" class="profile-avatar-preview">ب</div><div><b>تصویر پروفایل</b><p>PNG، JPG یا WebP تا ۸ مگابایت</p><button id="chooseAvatarBtn" type="button" class="ghost">انتخاب و تنظیم عکس</button><input id="profileAvatar" type="file" accept="image/png,image/jpeg,image/webp" hidden></div></div><div class="account-security-box"><div><h4>تغییر رمز عبور</h4><p>رمز حساب خود را از این بخش تغییر دهید.</p></div><button id="changePasswordBtn" type="button" class="primary">تغییر رمز عبور</button></div></div><div class="modal-actions"><button id="saveProfileBtn" class="primary">ذخیره تنظیمات حساب</button></div></div></section>
+      <dialog id="personDialog" class="modal manager-modal"><form id="personForm"><div class="modal-head"><div><h3 id="personDialogTitle">افزودن فرد</h3><p>اطلاعات فرد، سطح دسترسی و امکان دریافت پیام</p></div><button type="button" data-person-close>×</button></div><div class="manager-form"><label>نام متولی در کانبان<input name="full_name" required></label><label>نقش<select name="role"><option value="owner">متولی</option><option value="manager">مدیر</option></select></label><label>جنسیت<select name="gender"><option>آقا</option><option>خانم</option></select></label><label>پست الکترونیک سازمانی (اختیاری)<input name="email" class="english" dir="ltr" type="email" placeholder="name@bamco.ir"></label><label>عنوان خطاب<input name="salutation"></label><label class="person-message-channel">کانال پیش‌فرض پیام<select name="default_message_channel"><option value="portal">داخل سامانه</option><option value="email">ایمیل</option><option value="both">هر دو</option></select><small>بدون ایمیل، پیام فقط داخل سامانه ارسال می‌شود.</small></label><label>فعال<select name="active"><option value="true">بله</option><option value="false">خیر</option></select></label></div><div id="personLoginActions" class="modal-actions hidden"><button id="editPersonLoginBtn" class="ghost" type="button">نام کاربری و رمز موقت</button></div><p id="personError" class="form-error" role="alert"></p><div class="modal-actions"><button type="button" class="ghost" data-person-close>انصراف</button><button type="submit" class="primary">ذخیره</button></div></form></dialog>`);
+      document.body.append(q('#personDialog'));
+      let people=[],editing=null,selected=new Set();
+      function syncPersonSelection(){
+        selected=new Set([...selected].filter(id=>people.some(p=>p.id===id)));
+        document.querySelectorAll('#peopleBody tr[data-id]').forEach(row=>{const chosen=selected.has(row.dataset.id);row.classList.toggle('person-selected',chosen);row.setAttribute('aria-selected',String(chosen))});
+        q('#editPersonBtn').disabled=!people.length;q('#editPersonBtn').title=selected.size>1?'ویرایش فقط برای یک فرد مجاز است':'ویرایش فرد';q('#deletePersonBtn').disabled=!selected.size;
+      }
+      document.addEventListener('bamco-selection-change',e=>{if(e.target.closest('#peopleView')){selected=new Set(e.detail.ids);syncPersonSelection()}});
+      async function edge(body={},method='POST'){const result=await api('/functions/v1/admin-users',{method,body});if(!result?.ok)throw new Error(result?.error||'عملیات حساب کاربری تأیید نشد.');return result}
+      async function loadPeople(){people=await select('profiles','select=id,email,login_name,must_change_password,password_changed_at,full_name,display_name,role,gender,salutation,active,default_message_channel,messaging_enabled&order=full_name');state.profiles=people;renderPeople()}
+      function renderPeople(){const term=q('#peopleSearch').value.trim().toLowerCase(),rows=people.filter(p=>!term||[p.full_name,p.email,p.login_name,p.role,p.salutation].some(v=>String(v||'').toLowerCase().includes(term)));q('#peopleBody').innerHTML=rows.map(p=>`<tr data-id="${p.id}" class="${selected.has(p.id)?'person-selected':''}"><td>${esc(p.full_name)}</td><td>${p.role==='manager'?'مدیر':'متولی'}</td><td>${esc(p.gender||'—')}</td><td class="english">${esc(p.email||'—')}</td><td class="english" dir="ltr">${esc(p.login_name||'—')}</td><td><button type="button" class="ghost" data-person-credentials="${esc(p.id)}" title="ویرایش نام کاربری و تعیین رمز موقت">${p.must_change_password?'رمز موقت؛ نیازمند تغییر':'تعیین رمز جدید'}</button>${p.password_changed_at?`<small class="credential-date">آخرین تغییر: ${esc(new Date(p.password_changed_at).toLocaleString('fa-IR'))}</small>`:''}</td><td>${esc(p.salutation||'—')}</td><td>${p.active!==false?'بله':'خیر'}</td></tr>`).join('')||'<tr><td colspan="8" class="empty">کاربری ثبت نشده است.</td></tr>';syncPersonSelection()}
+      function syncMessageAvailability(){const f=q('#personForm'),hasEmail=!!f.elements.email.value.trim(),channel=f.elements.default_message_channel;channel.disabled=false;[...channel.options].forEach(o=>o.disabled=o.value!=='portal'&&!hasEmail);if(!hasEmail||!channel.value)channel.value='portal';q('#personLoginActions').classList.toggle('hidden',!editing)}
+      function openPerson(p=null){editing=p;const f=q('#personForm');f.reset();q('#personError').textContent='';f.elements.role.value='owner';f.elements.active.value='true';if(p)for(const k of ['full_name','role','gender','email','salutation','active','default_message_channel'])if(f.elements[k])f.elements[k].value=String(p[k]??'');q('#personDialogTitle').textContent=p?'ویرایش فرد':'افزودن فرد';syncMessageAvailability();q('#personDialog').showModal()}
+      function pickPersonToEdit(){
+        if(selected.size>1)return toast('برای ویرایش فقط یک فرد را انتخاب کنید. حذف چندتایی مجاز است.',true);
+        const person=people.find(p=>selected.has(p.id));if(person)return openPerson(person);
+        let dialog=q('#personPickerDialog');if(!dialog){dialog=document.createElement('dialog');dialog.id='personPickerDialog';dialog.className='modal small bamco-dialog';document.body.append(dialog)}
+        dialog.innerHTML=`<form><div class="modal-head"><h3>انتخاب فرد برای ویرایش</h3></div><label>فرد<select name="person" required><option value="">انتخاب کنید…</option>${people.map(p=>`<option value="${esc(p.id)}">${esc(p.full_name)} — ${p.role==='manager'?'مدیر':'متولی'}</option>`).join('')}</select></label><div class="modal-actions"><button type="submit" class="primary">ویرایش</button><button type="button" class="ghost">انصراف</button></div></form>`;
+        q('button[type=button]',dialog).onclick=()=>dialog.close();q('form',dialog).onsubmit=e=>{e.preventDefault();const p=people.find(p=>p.id===e.currentTarget.elements.person.value);if(!p)return;window.bamcoSelection.set('#peopleBody',[p.id]);dialog.close();openPerson(p)};dialog.showModal();
+      }
+      async function savePerson(e){
+        e.preventDefault();const form=e.currentTarget,submit=form.querySelector('[type="submit"]');if(submit.disabled)return;
+        const data=Object.fromEntries(new FormData(form));data.active=data.active==='true';data.email=String(data.email||'').trim()||null;data.messaging_enabled=true;data.default_message_channel=data.email?(data.default_message_channel||'portal'):'portal';if(editing)data.user_id=editing.id;
+        q('#personError').textContent='';submit.disabled=true;
+        try{const result=await edge(data);q('#personDialog').close();if(result.temporary_password)showInitialCredentials(result);await loadPeople();if(!result.temporary_password)toast('اطلاعات فرد ذخیره شد.')}
+        catch(err){q('#personError').textContent=err.message;toast(err.message,true)}
+        finally{submit.disabled=false}
+      }
+      function showInitialCredentials(result){
+        let dialog=q('#initialCredentials');if(!dialog){dialog=document.createElement('dialog');dialog.id='initialCredentials';dialog.className='modal bamco-dialog';dialog.setAttribute('aria-labelledby','initialCredentialsTitle');document.body.append(dialog)}
+        const editable=!!result.credential_editable,created=!!result.temporary_password;
+        dialog.innerHTML=`<form><div class="modal-head"><h3 id="initialCredentialsTitle">${created?'حساب ساخته شد':'اطلاعات ورود فرد'}</h3></div><p>${created?'رمز موقت فقط همین‌بار نمایش داده می‌شود. آن را امن به کاربر تحویل دهید؛ کاربر در اولین ورود رمز خود را تغییر می‌دهد.':'برای تعیین رمز موقت جدید، کادر رمز را تکمیل کنید. خالی بماند، رمز فعلی تغییر نمی‌کند.'}</p><div class="credentials-field"><label for="initialLoginName"><span>نام کاربری</span></label><input id="initialLoginName" name="login_name" class="english" dir="ltr" ${editable?'required':'readonly'} autocomplete="off" spellcheck="false" value="${esc(result.login_name)}"></div><div class="credentials-field"><label for="initialTemporaryPassword"><span>رمز عبور موقت</span></label><input id="initialTemporaryPassword" name="temporary_password" class="english" dir="ltr" ${editable?'minlength="12"':'readonly'} autocomplete="new-password" spellcheck="false" value="${esc(result.temporary_password||'')}"></div><p class="form-error" role="alert"></p><div class="modal-actions">${editable?'<button type="submit" class="primary">ذخیره اطلاعات ورود</button>':''}<button type="button" class="ghost">${created?'ثبت کردم؛ بستن':'بستن'}</button></div></form>`;
+        const form=q('form',dialog);let busy=false;
+        q('button[type="button"]',dialog).onclick=()=>{if(!busy)dialog.close()};
+        dialog.oncancel=event=>{if(busy)event.preventDefault()};
+        form.onsubmit=async event=>{
+          event.preventDefault();if(!editable||busy)return;busy=true;const buttons=[...form.querySelectorAll('button')];buttons.forEach(b=>b.disabled=true);q('.form-error',dialog).textContent='';
+          try{const saved=await edge({action:'save_credentials',user_id:result.id,login_name:form.elements.login_name.value,temporary_password:form.elements.temporary_password.value});form.elements.login_name.value=saved.login_name;q('#initialCredentialsTitle').textContent='اطلاعات ورود ذخیره شد';result.login_name=saved.login_name;await loadPeople();if(state.profile.id===result.id){state.profile.login_name=saved.login_name;state.user.email=saved.login_name.includes('@')?saved.login_name:saved.login_name+'@no-email.invalid'}void window.bamcoInbox?.load();}
+          catch(err){q('.form-error',dialog).textContent=err.message}
+          finally{busy=false;buttons.forEach(b=>b.disabled=false)}
+        };
+        dialog.addEventListener('close',()=>dialog.replaceChildren(),{once:true});dialog.showModal();
+      }
+      async function editPersonLogin(){
+        if(!editing)return;const personId=editing.id,button=q('#editPersonLoginBtn');button.disabled=true;
+        try{const result=await edge({action:'get_credentials',user_id:personId});if(editing?.id===personId&&q('#personDialog').open)showInitialCredentials(result)}catch(err){q('#personError').textContent=err.message}finally{button.disabled=false}
+      }
+      let deletingPeople=false;
+      async function removePerson(){
+        if(deletingPeople)return;const chosen=people.filter(p=>selected.has(p.id));if(!chosen.length)return toast('حداقل یک فرد را انتخاب کنید.',true);
+        deletingPeople=true;const button=q('#deletePersonBtn');button.disabled=true;
+        try{
+          if(!await window.bamcoConfirm(`حساب ${chosen.length.toLocaleString('fa-IR')} فرد انتخاب‌شده برای همیشه حذف شود؟\n${chosen.map(p=>p.full_name).join('، ')}\nحساب، نشست‌ها و دسترسی‌ها حذف می‌شوند. وظایف و تاریخ‌هایشان باقی می‌مانند؛ متولی جدید را در کانبان برای هر وظیفه جداگانه انتخاب کنید. سوابق و درخواست‌های باز برای بررسی باقی می‌مانند؛ پیام‌های در صف به این حساب متوقف می‌شوند.`))return;
+          let retained=0;const errors=[],failed=[],warnings=[],deleted=[],activeTasks=[];
+          for(const p of chosen){try{const result=await edge({user_id:p.id},'DELETE');deleted.push(p);retained+=Number(result.tasks_retained||0);if(Array.isArray(result.active_tasks))activeTasks.push(...result.active_tasks);if(result.cleanup_warning)warnings.push(result.cleanup_warning)}catch(err){failed.push(p.id);errors.push(p.full_name+': '+err.message)}}
+          const deletedIds=new Set(deleted.map(p=>p.id));people=people.filter(p=>!deletedIds.has(p.id));state.profiles=state.profiles.filter(p=>!deletedIds.has(p.id));renderPeople();window.bamcoSelection.set('#peopleBody',failed);
+          if(deleted.length)window.bamcoTaskTransfer.open(deleted,activeTasks,retained);
+          if(errors.length||warnings.length)toast(`${deleted.length.toLocaleString('fa-IR')} حساب حذف شد.\n`+[...errors,...warnings].join('\n'),true);
+        }catch(err){toast(err.message,true)}finally{deletingPeople=false;syncPersonSelection()}
+      }
+      let avatarUrl='',pendingBlob=null,pendingUrl='',cropImage=null,zoom=1,offX=0,offY=0,drag=false,last=null;
+      function paint(el,url=''){if(!el)return;el.textContent=(state.profile.display_name||state.profile.full_name||'ب').trim()[0];el.classList.toggle('has-image',!!url);el.style.backgroundImage=url?`url("${url}")`:''}
+      window.refreshProfileAvatar=async()=>{if(!state.profile)return;if(avatarUrl)URL.revokeObjectURL(avatarUrl);avatarUrl='';paint(q('#avatar'));paint(q('#profileAvatarPreview'));if(!state.profile.avatar_path)return;try{const path=state.profile.avatar_path.split('/').map(encodeURIComponent).join('/'),r=await fetch(`${SB_URL}/storage/v1/object/authenticated/avatars/${path}`,{headers:{apikey:SB_KEY,Authorization:`Bearer ${state.token}`},cache:'no-store'});if(!r.ok)throw new Error('دریافت عکس انجام نشد.');avatarUrl=URL.createObjectURL(await r.blob());paint(q('#avatar'),avatarUrl);paint(q('#profileAvatarPreview'),avatarUrl)}catch(err){toast(err.message,true)}};
+      function metrics(){const base=Math.max(360/cropImage.naturalWidth,360/cropImage.naturalHeight),scale=base*zoom,maxX=Math.max(0,(cropImage.naturalWidth*scale-360)/2),maxY=Math.max(0,(cropImage.naturalHeight*scale-360)/2);offX=Math.max(-maxX,Math.min(maxX,offX));offY=Math.max(-maxY,Math.min(maxY,offY));return{scale,x:(360-cropImage.naturalWidth*scale)/2+offX,y:(360-cropImage.naturalHeight*scale)/2+offY}}
+      function draw(){if(!cropImage)return;const c=q('#avatarCropCanvas'),ctx=c.getContext('2d'),m=metrics();ctx.clearRect(0,0,360,360);ctx.drawImage(cropImage,m.x,m.y,cropImage.naturalWidth*m.scale,cropImage.naturalHeight*m.scale);ctx.fillStyle='rgba(5,25,19,.55)';ctx.beginPath();ctx.rect(0,0,360,360);ctx.arc(180,180,164,0,Math.PI*2,true);ctx.fill('evenodd');ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(180,180,164,0,Math.PI*2);ctx.stroke()}
+      function openCrop(file){if(!file)return;if(file.size>8*1024*1024||!['image/png','image/jpeg','image/webp'].includes(file.type))return toast('فایل باید تصویر PNG، JPG یا WebP و حداکثر ۸ مگابایت باشد.',true);const url=URL.createObjectURL(file),img=new Image();img.onload=()=>{URL.revokeObjectURL(url);cropImage=img;zoom=1;offX=offY=0;q('#avatarCropZoom').value=1;draw();q('#avatarCropDialog').showModal()};img.onerror=()=>toast('تصویر قابل خواندن نیست.',true);img.src=url}
+      function point(e){const r=q('#avatarCropCanvas').getBoundingClientRect();return{x:(e.clientX-r.left)*360/r.width,y:(e.clientY-r.top)*360/r.height}}
+      function applyCrop(){if(!cropImage)return;const out=document.createElement('canvas'),m=metrics(),ctx=out.getContext('2d');out.width=out.height=512;ctx.save();ctx.beginPath();ctx.arc(256,256,256,0,Math.PI*2);ctx.clip();ctx.drawImage(cropImage,m.x*512/360,m.y*512/360,cropImage.naturalWidth*m.scale*512/360,cropImage.naturalHeight*m.scale*512/360);ctx.restore();out.toBlob(blob=>{pendingBlob=blob;if(pendingUrl)URL.revokeObjectURL(pendingUrl);pendingUrl=URL.createObjectURL(blob);paint(q('#profileAvatarPreview'),pendingUrl);q('#avatarCropDialog').close();toast('برش عکس آماده است؛ ذخیره تنظیمات حساب را بزنید.');},'image/png')}
+      async function saveProfile(){const button=q('#saveProfileBtn');if(button.disabled)return;button.disabled=true;try{const login=q('#profileLoginName').value.trim().toLowerCase();if(login!==(state.profile.login_name||state.user?.email||'')){const saved=await edge({action:'save_own_login',login_name:login});state.profile.login_name=saved.login_name;state.user.email=saved.login_name.includes('@')?saved.login_name:saved.login_name+'@no-email.invalid';void window.bamcoInbox?.load();}const display_name=q('#profileDisplayName').value.trim();let avatar_path=state.profile.avatar_path||null;if(pendingBlob){avatar_path=`${state.profile.id}/avatar.png`;const path=avatar_path.split('/').map(encodeURIComponent).join('/'),r=await fetch(`${SB_URL}/storage/v1/object/avatars/${path}`,{method:'POST',headers:{apikey:SB_KEY,Authorization:`Bearer ${state.token}`,'x-upsert':'true','Content-Type':'image/png'},body:pendingBlob});if(!r.ok)throw new Error((await r.json().catch(()=>({}))).message||'آپلود تصویر انجام نشد.')}const rows=await update('profiles',`id=eq.${state.profile.id}`,{display_name,avatar_path,updated_at:new Date().toISOString()});state.profile={...state.profile,...rows[0]};pendingBlob=null;q('#userName').textContent=display_name||state.profile.full_name;await window.refreshProfileAvatar();toast('تنظیمات حساب ذخیره شد.')}catch(err){toast(err.message,true)}finally{button.disabled=false}}
+      function loadSettings(){q('#profileDisplayName').value=state.profile.display_name||state.profile.full_name||'';q('#profileEmail').value=state.profile.email||'';q('#profileLoginName').value=state.profile.login_name||state.user?.email||'';window.refreshProfileAvatar()}
+      window.bamcoPeople={async open(id){if(!isManager())return;showView('people');await loadPeople();const person=people.find(p=>p.id===id);if(person){window.bamcoSelection.set('#peopleBody',[id]);openPerson(person)}}};
+      window.bamcoAccount={open(){showView('settings');loadSettings()}};
+      document.addEventListener('DOMContentLoaded',()=>{
+        q('#peopleBody').addEventListener('click',async e=>{const button=e.target.closest('[data-person-credentials]');if(!button)return;e.stopPropagation();if(selected.size>1)return toast('برای ویرایش اطلاعات ورود فقط یک فرد را انتخاب کنید.',true);button.disabled=true;try{showInitialCredentials(await edge({action:'get_credentials',user_id:button.dataset.personCredentials}))}catch(err){toast(err.message,true)}finally{button.disabled=false}});
+        syncPersonSelection();q('#peopleSearch').addEventListener('input',renderPeople);q('#peopleBody').addEventListener('dblclick',e=>{if(e.target.closest('button'))return;if(selected.size>1)return toast('برای ویرایش فقط یک فرد را انتخاب کنید.',true);const row=e.target.closest('[data-id]'),person=people.find(x=>x.id===row?.dataset.id);if(person){window.bamcoSelection.set('#peopleBody',[person.id]);openPerson(person)}});q('#addPersonBtn').addEventListener('click',()=>openPerson());q('#editPersonBtn').addEventListener('click',pickPersonToEdit);q('#deletePersonBtn').addEventListener('click',removePerson);q('#personForm').addEventListener('submit',savePerson);q('#editPersonLoginBtn').addEventListener('click',editPersonLogin);q('#personForm').elements.email.addEventListener('input',syncMessageAvailability);document.querySelectorAll('[data-person-close]').forEach(x=>x.addEventListener('click',()=>q('#personDialog').close()));
+        q('#chooseAvatarBtn').addEventListener('click',()=>q('#profileAvatar').click());q('#profileAvatar').addEventListener('change',e=>{openCrop(e.target.files[0]);e.target.value=''});q('#avatarCropZoom').addEventListener('input',e=>{zoom=Number(e.target.value);draw()});const canvas=q('#avatarCropCanvas');canvas.addEventListener('pointerdown',e=>{drag=true;last=point(e);canvas.setPointerCapture(e.pointerId)});canvas.addEventListener('pointermove',e=>{if(!drag)return;const p=point(e);offX+=p.x-last.x;offY+=p.y-last.y;last=p;draw()});canvas.addEventListener('pointerup',()=>drag=false);canvas.addEventListener('pointercancel',()=>drag=false);q('#applyAvatarCrop').addEventListener('click',applyCrop);q('#saveProfileBtn').addEventListener('click',saveProfile);q('#changePasswordBtn').addEventListener('click',()=>{q('#cancelPasswordBtn').classList.remove('hidden');q('#passwordForm').reset();q('#passwordDialog').showModal()});
+        q('#nav').addEventListener('click',e=>{const view=e.target.closest('button[data-view]')?.dataset.view;if(view==='people'&&isManager())loadPeople().catch(err=>toast(err.message,true));if(view==='settings')setTimeout(loadSettings)});
+      });
+    })();
+    
+    
+    
+    /* module:shell:2 */
+    (()=>{
+      'use strict';
+      if(window.__bamcoAvatarHardFix)return;
+      window.__bamcoAvatarHardFix='v5';
+      let currentObjectUrl='';
+    
+      // The release builder includes the profile layout in bamco-unified.css.
+    
+      const appState=()=>typeof state!=='undefined'?state:null;
+      function label(){
+        const p=appState()?.profile;
+        return String(p?.display_name||p?.full_name||'ب').trim().charAt(0)||'ب';
+      }
+      function render(el,url=''){
+        if(!el)return;
+        el.innerHTML='';
+        el.style.removeProperty('background-image');
+        if(url){
+          const img=document.createElement('img');
+          img.alt='تصویر پروفایل';img.src=url;
+          img.style.setProperty('width','100%','important');
+          img.style.setProperty('height','100%','important');
+          img.style.setProperty('object-fit','cover','important');
+          img.style.setProperty('display','block','important');
+          img.style.setProperty('border-radius','50%','important');
+          el.appendChild(img);el.classList.add('has-image');
+        }else{
+          el.textContent=label();el.classList.remove('has-image');
+        }
+      }
+    
+      async function refresh(){
+        const s=appState(),p=s?.profile;
+        if(!p||!s?.token)return;
+        if(currentObjectUrl){URL.revokeObjectURL(currentObjectUrl);currentObjectUrl='';}
+        render(document.querySelector('#avatar'));
+        render(document.querySelector('#profileAvatarPreview'));
+        if(!p.avatar_path)return;
+        try{
+          const path=String(p.avatar_path).split('/').map(encodeURIComponent).join('/');
+          const res=await fetch(`${SB_URL}/storage/v1/object/authenticated/avatars/${path}`,{
+            headers:{apikey:SB_KEY,Authorization:`Bearer ${s.token}`},cache:'no-store'
+          });
+          if(!res.ok)throw new Error('دریافت تصویر پروفایل انجام نشد.');
+          currentObjectUrl=URL.createObjectURL(await res.blob());
+          render(document.querySelector('#avatar'),currentObjectUrl);
+          render(document.querySelector('#profileAvatarPreview'),currentObjectUrl);
+        }catch(err){
+          console.error('avatar-display-hard-fix',err);
+        }
+      }
+    
+      window.refreshProfileAvatar=refresh;
+      const style=document.createElement('style');
+      style.id='avatarHardFixStyle';
+      style.textContent=`
+        #appView #avatar,#settingsView #profileAvatarPreview{border-radius:50%!important;overflow:hidden!important;background-image:none!important}
+        #appView #avatar>img,#settingsView #profileAvatarPreview>img{width:100%!important;height:100%!important;object-fit:cover!important;display:block!important;border-radius:50%!important}
+      `;
+      document.head.appendChild(style);
+      [0,250,800,1600].forEach(ms=>setTimeout(()=>{if(appState()?.profile)refresh()},ms));
+    })();
+    
+    
+    
+    /* Inbox displays the same immutable report used by the sender. Sending is owned by message-center. */
+    (()=>{
+     const q=s=>document.querySelector(s),nav=q('#nav'),workspace=q('.workspace');if(!nav||!workspace)return;let rows=[],alerts=[],epoch=0,lastAlertSignature='',threadNames=new Map();const pendingDismissals=new Set();const kinds={credentials_changed:'تغییر اطلاعات ورود',public_chat:'گفت‌وگوی عمومی',group_chat:'گروه',direct_chat:'شخصی',task_chat:'گفت‌وگوی وظیفه',daily:'گزارش وضعیت امور روزانه',reminder:'یادآور',manual:'پیام سامانه',system:'پیام سامانه',system_reply:'پاسخ به پیام سامانه'};
+     const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+     nav.insertAdjacentHTML('beforeend','<button data-view="messages"><b>✉</b><span>پیام‌ها</span><i id="messageBadge" class="message-badge"></i></button><button data-view="sentMessages" class="manager-only"><b>✓</b><span>پیام‌های ارسال‌شده</span></button>');
+     workspace.insertAdjacentHTML('beforeend','<section id="messagesView" class="view hidden"><div class="panel"><div class="panel-head"><h3>پیام‌های من</h3></div><div class="manager-toolbar"><button id="refreshMessages" class="ghost">تازه‌سازی</button></div><div id="messageList" class="message-list"></div></div></section><section id="sentMessagesView" class="view hidden manager-only"></section>');
+     async function load(){if(!state.profile||state.profile.must_change_password||pendingDismissals.size)return;const run=++epoch;try{const [received,deliveries,snapshots,notes]=await Promise.all([selectAll('portal_message_recipients',`recipient_id=eq.${state.profile.id}&dismissed_at=is.null&select=*,portal_messages(*)&order=message_id.desc`),selectAll('message_deliveries',`recipient_id=eq.${state.profile.id}&channel=eq.portal&select=portal_message_id,snapshot_id,chat_thread_id`),selectAll('message_snapshots',`recipient_id=eq.${state.profile.id}&select=*`),selectAll('notifications',`user_id=eq.${state.profile.id}&dismissed_at=is.null&select=*&order=created_at.desc`)]);if(run!==epoch||!state.profile)return;const changed=lastAlertSignature!==JSON.stringify(notes);alerts=notes,unreadChatNotes=alerts.filter(x=>!x.read_at&&x.entity_type==='chat_thread').length;window.bamcoConversations?.syncUnreadTotal?.(unreadChatNotes);if(changed){const threads=await rpc('chat_conversation_list',{});if(run!==epoch||!state.profile)return;window.bamcoConversations?.syncUnread?.(threads);window.bamcoConversations?.syncUnreadTotal?.(Math.max(unreadChatNotes,threads.reduce((sum,t)=>sum+(Number(t.unread_count)||0),0)));threadNames=new Map(threads.map(t=>[t.id,t.task_id?'وظیفه '+fa(t.task_id)+' · '+t.title:t.title]));lastAlertSignature=JSON.stringify(notes);document.dispatchEvent(new CustomEvent('bamco-inbox-updated'))}const linked=new Set(deliveries.filter(d=>d.chat_thread_id).map(d=>String(d.portal_message_id)));rows=received.filter(x=>!linked.has(String(x.message_id)));const snapById=new Map(snapshots.map(s=>[String(s.id),s])),byMessage=new Map(deliveries.map(d=>[String(d.portal_message_id),snapById.get(String(d.snapshot_id))]));q('#messageBadge').textContent=fa(rows.filter(x=>!x.read_at).length+alerts.filter(x=>!x.read_at).length).replace(/^۰$/,'');
+     q('#messageList').innerHTML=alerts.map(n=>`<article tabindex="0" role="button" class="message-card message-notification ${n.read_at?'':'unread'}" data-notification="${n.id}"><div class="message-meta"><span class="message-kind">${esc(kinds[n.notification_type]||'اعلان سامانه')}</span><time>${jalaliDateTime(n.created_at)}</time><button type="button" class="message-dismiss" data-dismiss-notification="${n.id}" aria-label="حذف اعلان از پیام‌های من" title="حذف اعلان">×</button></div><h4>${esc(kinds[n.notification_type]&&n.entity_type==='chat_thread'&&!['daily','reminder','manual','system'].includes(n.notification_type)?threadNames.get(n.entity_id)||n.title:n.title)}</h4><p>${esc(n.body||'')}</p><span class="message-open">باز کردن ${n.entity_type==='chat_thread'?'گفت‌وگو':'جزئیات'} ←</span></article>`).join('')+rows.map(x=>{const m=x.portal_messages||{},s=byMessage.get(String(x.message_id));return `<article class="message-card ${x.read_at?'':'unread'}" data-mid="${x.message_id}"><div class="message-meta"><b>${esc(m.subject)}</b><span>${jalaliDateTime(m.created_at)}</span><button type="button" class="message-dismiss" data-dismiss-message="${x.message_id}" aria-label="حذف پیام از پیام‌های من" title="حذف پیام">×</button></div><div class="message-report-body">${s?BamcoMessageRender.html(s):`<p style="white-space:pre-wrap">${esc(m.body)}</p>`}</div><div class="message-actions">${m.require_ack&&!x.acknowledged_at?'<button class="ghost ack-message">تأیید دریافت</button>':''}${m.allow_reply?`<button class="ghost reply-message">${x.replied_at?'ویرایش پاسخ':'پاسخ'}</button><div class="message-reply-box hidden"><textarea aria-label="پاسخ شما" placeholder="پاسخ شما…">${esc(x.reply_text||'')}</textarea><button class="primary save-reply">ثبت پاسخ</button></div>`:''}${x.replied_at?'<small>پاسخ شما ثبت شده است.</small>':''}</div></article>`}).join('')||'<div class="empty">پیامی برای شما ثبت نشده است.</div>';
+     await Promise.all(rows.map(async x=>{const s=byMessage.get(String(x.message_id));if(!s?.sticker_path)return;try{const src=await bamcoMedia.get('stickers',s.sticker_path);if(run===epoch){const host=q(`#messageList [data-mid="${x.message_id}"] .message-report-body`);if(host)host.innerHTML=BamcoMessageRender.html(s,{stickerUrl:src})}}catch{}}));
+     }catch(err){toast(err.message,true)}}
+     function updateBadge(){q('#messageBadge').textContent=fa(rows.filter(x=>!x.read_at).length+alerts.filter(x=>!x.read_at).length).replace(/^۰$/,'')}
+     async function dismiss(button){
+      const isNote=button.hasAttribute('data-dismiss-notification'),id=isNote?button.dataset.dismissNotification:button.dataset.dismissMessage,key=(isNote?'n:':'m:')+id,actor=state.profile?.id;
+      if(!actor||pendingDismissals.has(key))return;
+      pendingDismissals.add(key);++epoch;button.disabled=true;
+      try{
+       const row=isNote?alerts.find(x=>String(x.id)===id):rows.find(x=>String(x.message_id)===id),now=new Date().toISOString();
+       const saved=await update(isNote?'notifications':'portal_message_recipients',isNote?`id=eq.${id}&user_id=eq.${actor}`:`message_id=eq.${id}&recipient_id=eq.${actor}`,{dismissed_at:now,read_at:row?.read_at||now});
+       if(!Array.isArray(saved)||saved.length!==1||!saved[0].dismissed_at)throw Error('حذف تأیید نشد؛ دوباره تلاش کنید.');
+       if(state.profile?.id!==actor)return;
+       if(isNote)alerts=alerts.filter(x=>String(x.id)!==id);else rows=rows.filter(x=>String(x.message_id)!==id);
+       button.closest('.message-card')?.remove();updateBadge();
+       if(!q('#messageList .message-card'))q('#messageList').innerHTML='<div class="empty">پیامی برای شما ثبت نشده است.</div>';
+       document.dispatchEvent(new CustomEvent('bamco-inbox-updated'));
+      }catch(err){toast(err.message,true)}finally{pendingDismissals.delete(key);if(button.isConnected)button.disabled=false;if(!pendingDismissals.size&&state.profile?.id===actor)void load()}
+     }
+     document.addEventListener('DOMContentLoaded',()=>{
+     q('#nav [data-view="messages"]').onclick=()=>load();q('#refreshMessages').onclick=load;
+     q('#messageList').onclick=async e=>{const remove=e.target.closest('[data-dismiss-notification],[data-dismiss-message]');if(remove){e.preventDefault();e.stopPropagation();await dismiss(remove);return}const notice=e.target.closest('[data-notification]');if(notice){const n=alerts.find(x=>String(x.id)===notice.dataset.notification);if(!n)return;try{if(!n.read_at)await update('notifications',`id=eq.${n.id}&user_id=eq.${state.profile.id}`,{read_at:new Date().toISOString()});if(n.entity_type==='chat_thread')await window.bamcoConversations.open(n.entity_id);else if(n.entity_type==='profile'&&isManager())await window.bamcoPeople.open(n.entity_id);else if(n.entity_type==='profile')window.bamcoAccount.open();else showView(n.entity_type==='task'?'kanban':'messages');await load()}catch(err){toast(err.message,true)}return}const card=e.target.closest('[data-mid]');if(!card||e.target.closest('textarea'))return;const row=rows.find(x=>String(x.message_id)===card.dataset.mid),button=e.target.closest('button');if(!row||button?.disabled)return;
+     const body={read_at:new Date().toISOString()};if(button?.matches('.reply-message')){card.querySelector('.message-reply-box').classList.toggle('hidden');card.querySelector('textarea').focus();if(row.read_at)return}
+     else if(button?.matches('.save-reply')){body.reply_text=card.querySelector('textarea').value.trim();if(!body.reply_text)return toast('متن پاسخ را وارد کنید.',true);body.replied_at=new Date().toISOString()}
+     else if(button?.matches('.ack-message'))body.acknowledged_at=new Date().toISOString();else if(row.read_at)return;
+     if(button)button.disabled=true;try{await update('portal_message_recipients',`message_id=eq.${card.dataset.mid}&recipient_id=eq.${state.profile.id}`,body);Object.assign(row,body);card.classList.remove('unread');q('#messageBadge').textContent=fa(rows.filter(x=>!x.read_at).length+alerts.filter(x=>!x.read_at).length).replace(/^۰$/,'');if(body.replied_at||body.acknowledged_at){await load();if(body.replied_at)toast('پاسخ شما در سابقه همین پیام ثبت شد.')}}catch(err){toast(err.message,true)}finally{if(button?.isConnected)button.disabled=false}
+     };q('#messageList').onkeydown=e=>{if(['Enter',' '].includes(e.key)&&e.target.matches('[data-notification]')){e.preventDefault();e.target.click()}};setTimeout(load,1200);setInterval(()=>{if(state.token&&!document.hidden&&!q('#messageList').contains(document.activeElement))load()},8000);document.addEventListener('bamco-messages-changed',()=>{if(state.token)load()});document.addEventListener('visibilitychange',()=>{if(!document.hidden&&state.token)load()});
+     });
+     window.bamcoInbox={load};
+    })();
+    
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/release-fixes.test.cjs:54:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: gantt hides owner as a column while retaining owner filtering
+ok 62 - gantt hides owner as a column while retaining owner filtering
+  ---
+  duration_ms: 0.361175
+  type: 'test'
+  ...
+# Subtest: chat exposes requested messaging controls
+ok 63 - chat exposes requested messaging controls
+  ---
+  duration_ms: 1.776581
+  type: 'test'
+  ...
+# Subtest: dashboard and Excel formatting remain responsive and conditional
+ok 64 - dashboard and Excel formatting remain responsive and conditional
+  ---
+  duration_ms: 1.235774
+  type: 'test'
+  ...
+# Subtest: approval routing skips supervisor self-approval and exposes only the active stage
+ok 65 - approval routing skips supervisor self-approval and exposes only the active stage
+  ---
+  duration_ms: 0.68239
+  type: 'test'
+  ...
+# Subtest: task history omits field and path columns
+ok 66 - task history omits field and path columns
+  ---
+  duration_ms: 0.445993
+  type: 'test'
+  ...
+# Subtest: people toggle, Ctrl/Shift selection, single-edit warning, selected/all Excel and bulk delete
+ok 67 - people toggle, Ctrl/Shift selection, single-edit warning, selected/all Excel and bulk delete
+  ---
+  duration_ms: 14344.282946
+  type: 'test'
+  ...
+# Subtest: kanban and reports export the selection, then every record when cleared
+not ok 68 - kanban and reports export the selection, then every record when cleared
+  ---
+  duration_ms: 15582.947579
+  type: 'test'
+  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/selection-and-delivery.test.cjs:22:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    4 !== 2
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 2
+  actual: 4
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/selection-and-delivery.test.cjs:24:182)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: centered custom confirmations are cancellable and replace browser-origin dialogs
+ok 69 - centered custom confirmations are cancellable and replace browser-origin dialogs
+  ---
+  duration_ms: 13364.667613
+  type: 'test'
+  ...
+# Subtest: sessions start at sign-in and repeated DPR-2 redraws keep chart height stable
+not ok 70 - sessions start at sign-in and repeated DPR-2 redraws keep chart height stable
+  ---
+  duration_ms: 11287.263655
+  type: 'test'
+  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/selection-and-delivery.test.cjs:34:1'
+  failureType: 'testCodeFailure'
+  error: "Cannot read properties of null (reading 'click')"
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/selection-and-delivery.test.cjs:36:239)
+    runNextTicks (node:internal/process/task_queues:64:5)
+    process.processTimers (node:internal/timers:518:9)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: chat photos, search and own-message edit use real handlers without resending a message
+ok 71 - chat photos, search and own-message edit use real handlers without resending a message
+  ---
+  duration_ms: 18965.931162
+  type: 'test'
+  ...
+# Subtest: report rendering escapes content and supplies bright tables with independent Latin type
+not ok 72 - report rendering escapes content and supplies bright tables with independent Latin type
+  ---
+  duration_ms: 7.517554
+  type: 'test'
+  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/selection-and-delivery.test.cjs:46:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert(result.includes('#fff0c2'))
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/selection-and-delivery.test.cjs:47:482)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: email failures remain failed at retry limit and two workers claim a delivery only once
+ok 73 - email failures remain failed at retry limit and two workers claim a delivery only once
+  ---
+  duration_ms: 11.605572
+  type: 'test'
+  ...
+# Subtest: current Persian month completion and create-request counts use the agreed denominator
+not ok 74 - current Persian month completion and create-request counts use the agreed denominator
+  ---
+  duration_ms: 12568.060608
+  type: 'test'
+  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/selection-and-delivery.test.cjs:59:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    '۲' !== '۴'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: '۴'
+  actual: '۲'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/selection-and-delivery.test.cjs:65:113)
+    runNextTicks (node:internal/process/task_queues:64:5)
+    process.processTimers (node:internal/timers:518:9)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: chain editing uses one atomic request and populates saved stage rules
+ok 75 - chain editing uses one atomic request and populates saved stage rules
+  ---
+  duration_ms: 13359.956188
+  type: 'test'
+  ...
+# Subtest: sticker switching reuses simultaneous authenticated downloads
+ok 76 - sticker switching reuses simultaneous authenticated downloads
+  ---
+  duration_ms: 11934.321483
+  type: 'test'
+  ...
+# (node:2510) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: logout waits for pending start, closes that row and prevents a late ID from reappearing
+ok 77 - logout waits for pending start, closes that row and prevents a late ID from reappearing
+  ---
+  duration_ms: 4.173148
+  type: 'test'
+  ...
+# Subtest: failed session end retains the ID for retry; repeated start cannot create duplicate rows
+ok 78 - failed session end retains the ID for retry; repeated start cannot create duplicate rows
+  ---
+  duration_ms: 2.005006
+  type: 'test'
+  ...
+# Subtest: a stale heartbeat after logout cannot log a later user out
+ok 79 - a stale heartbeat after logout cannot log a later user out
+  ---
+  duration_ms: 1.374404
+  type: 'test'
+  ...
+# Subtest: closing the page uses keepalive while back-forward cache preserves its session
+ok 80 - closing the page uses keepalive while back-forward cache preserves its session
+  ---
+  duration_ms: 9.36336
+  type: 'test'
+  ...
+# Subtest: server start is idempotent, separates devices and never revives a logged-out row
+ok 81 - server start is idempotent, separates devices and never revives a logged-out row
+  ---
+  duration_ms: 61.850182
+  type: 'test'
+  ...
+# Subtest: server end verifies persistence and can recover a missing browser session ID
+ok 82 - server end verifies persistence and can recover a missing browser session ID
+  ---
+  duration_ms: 3.539511
+  type: 'test'
+  ...
+# Subtest: server detects a removed Auth session and refuses another device session ID
+ok 83 - server detects a removed Auth session and refuses another device session ID
+  ---
+  duration_ms: 6.05029
+  type: 'test'
+  ...
+# Subtest: active-session screen reconciles before reading and removes a remote logout on refresh
+ok 84 - active-session screen reconciles before reading and removes a remote logout on refresh
+  ---
+  duration_ms: 16499.637952
+  type: 'test'
+  ...
+# Subtest: a connected legacy client is linked only by its verified native session
+ok 85 - a connected legacy client is linked only by its verified native session
+  ---
+  duration_ms: 3.82346
+  type: 'test'
+  ...
+# Subtest: confirmed historical exits stay closed and are never adopted by a new login
+ok 86 - confirmed historical exits stay closed and are never adopted by a new login
+  ---
+  duration_ms: 2.191537
+  type: 'test'
+  ...
+# Subtest: recent activity alone cannot assert that an unlinked legacy record is active
+ok 87 - recent activity alone cannot assert that an unlinked legacy record is active
+  ---
+  duration_ms: 1.396728
+  type: 'test'
+  ...
+# Subtest: groupChat: asynchronous data errors render a visible error panel
+ok 88 - groupChat: asynchronous data errors render a visible error panel
+  ---
+  duration_ms: 3.467272
+  type: 'test'
+  ...
+# Subtest: directMessages: asynchronous data errors render a visible error panel
+ok 89 - directMessages: asynchronous data errors render a visible error panel
+  ---
+  duration_ms: 1.089524
+  type: 'test'
+  ...
+# Subtest: taskChats: asynchronous data errors render a visible error panel
+ok 90 - taskChats: asynchronous data errors render a visible error panel
+  ---
+  duration_ms: 3.211787
+  type: 'test'
+  ...
+# Subtest: loginActivity: asynchronous data errors render a visible error panel
+ok 91 - loginActivity: asynchronous data errors render a visible error panel
+  ---
+  duration_ms: 1.044106
+  type: 'test'
+  ...
+# Subtest: activeSessions: asynchronous data errors render a visible error panel
+ok 92 - activeSessions: asynchronous data errors render a visible error panel
+  ---
+  duration_ms: 1.151307
+  type: 'test'
+  ...
+# Subtest: performanceReport: asynchronous data errors render a visible error panel
+ok 93 - performanceReport: asynchronous data errors render a visible error panel
+  ---
+  duration_ms: 0.983334
+  type: 'test'
+  ...
+# Subtest: responseReport: asynchronous data errors render a visible error panel
+ok 94 - responseReport: asynchronous data errors render a visible error panel
+  ---
+  duration_ms: 1.028492
+  type: 'test'
+  ...
+# Subtest: systemOptions: asynchronous data errors render a visible error panel
+ok 95 - systemOptions: asynchronous data errors render a visible error panel
+  ---
+  duration_ms: 0.932057
+  type: 'test'
+  ...
+# Subtest: API timeout produces a recoverable error and clears its timer
+ok 96 - API timeout produces a recoverable error and clears its timer
+  ---
+  duration_ms: 2.56426
+  type: 'test'
+  ...
+# Subtest: an active manager view is not hidden by its access marker
+ok 97 - an active manager view is not hidden by its access marker
+  ---
+  duration_ms: 0.94729
+  type: 'test'
+  ...
+# Subtest: runtime can create a late navigation group before adding its route
+ok 98 - runtime can create a late navigation group before adding its route
+  ---
+  duration_ms: 0.304089
+  type: 'test'
+  ...
+# Subtest: removed alert and email settings have no route registrations
+ok 99 - removed alert and email settings have no route registrations
+  ---
+  duration_ms: 1.424599
+  type: 'test'
+  ...
+# Subtest: request report route is removed from production navigation
+ok 100 - request report route is removed from production navigation
+  ---
+  duration_ms: 0.232391
+  type: 'test'
+  ...
+# Subtest: task controls enforce status fields, save once and export a readable workbook
+not ok 101 - task controls enforce status fields, save once and export a readable workbook
+  ---
+  duration_ms: 13348.624387
+  type: 'test'
+  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/task-and-message-controls.test.cjs:5:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert(form.elements.owner_id.disabled)
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/task-and-message-controls.test.cjs:8:46)
+    runNextTicks (node:internal/process/task_queues:64:5)
+    process.processTimers (node:internal/timers:518:9)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: message selection, recipient channels, preview, queue and delivery work without editable message text
+not ok 102 - message selection, recipient channels, preview, queue and delivery work without editable message text
+  ---
+  duration_ms: 17611.600779
+  type: 'test'
+  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/task-and-message-controls.test.cjs:22:1'
+  failureType: 'testCodeFailure'
+  error: 'Timed out waiting for the actual UI handler'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'fail'
+  stack: |-
+    until (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/helpers/app-fixture.cjs:7:93)
+    async TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/task-and-message-controls.test.cjs:26:32)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: message text route, editor and custom text cannot be reintroduced into the app
+ok 103 - message text route, editor and custom text cannot be reintroduced into the app
+  ---
+  duration_ms: 14143.964239
+  type: 'test'
+  ...
+# Subtest: catalog edit stays visible when an old read or another page refresh fails
+ok 104 - catalog edit stays visible when an old read or another page refresh fails
+  ---
+  duration_ms: 17757.92373
+  type: 'test'
+  ...
+# Subtest: dashboard performance dates auto-apply with no Apply button and Clear remains
+ok 105 - dashboard performance dates auto-apply with no Apply button and Clear remains
+  ---
+  duration_ms: 14050.874581
+  type: 'test'
+  ...
+# Subtest: response report has no search and first-row buttons are regular weight
+ok 106 - response report has no search and first-row buttons are regular weight
+  ---
+  duration_ms: 14263.145941
+  type: 'test'
+  ...
+# Subtest: message center is one bounded row with no search and channel follows Refresh
+ok 107 - message center is one bounded row with no search and channel follows Refresh
+  ---
+  duration_ms: 12532.601233
+  type: 'test'
+  ...
+# Subtest: sent messages has no second controls row and first-row buttons are regular weight
+ok 108 - sent messages has no second controls row and first-row buttons are regular weight
+  ---
+  duration_ms: 14888.266847
+  type: 'test'
+  ...
+# Subtest: response tracking removes row-2 and row-3 buttons while preserving select filters
+ok 109 - response tracking removes row-2 and row-3 buttons while preserving select filters
+  ---
+  duration_ms: 14159.303627
+  type: 'test'
+  ...
+# Subtest: management gate owns the viewport until a department is selected
+ok 110 - management gate owns the viewport until a department is selected
+  ---
+  duration_ms: 7.796094
+  type: 'test'
+  ...
+# Subtest: task deletion and archive restore use one atomic batch resequence
+ok 111 - task deletion and archive restore use one atomic batch resequence
+  ---
+  duration_ms: 4.674309
+  type: 'test'
+  ...
+# Subtest: task filter dropdowns are populated before interaction and runtime tabs render immediately
+ok 112 - task filter dropdowns are populated before interaction and runtime tabs render immediately
+  ---
+  duration_ms: 1.39807
+  type: 'test'
+  ...
+# Subtest: every nonzero workload segment, including one, receives a label
+ok 113 - every nonzero workload segment, including one, receives a label
+  ---
+  duration_ms: 0.738825
+  type: 'test'
+  ...
+# Subtest: conversation navigation exposes red aggregate and route unread badges
+ok 114 - conversation navigation exposes red aggregate and route unread badges
+  ---
+  duration_ms: 4.063592
+  type: 'test'
+  ...
+# Subtest: message center is one send flow and uses one renderer for portal and email
+not ok 115 - message center is one send flow and uses one renderer for portal and email
+  ---
+  duration_ms: 2.444879
+  type: 'test'
+  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/user-request-regressions.test.cjs:53:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /qa\('\[data-mid\]',list\)\.forEach\(x=>x\.remove\(\)\)/. Input:
+    
+    "(()=>{'use strict';\n" +
+      'if(window.__bamcoMessagingHistoryRoot20260912V2)return;window.__bamcoMessagingHistoryRoot20260912V2=true;\n' +
+      `const q=(s,r=document)=>r?.querySelector?.(s)||null,qa=(s,r=document)=>[...(r?.querySelectorAll?.(s)||[])],esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),digits=v=>String(v??'').replace(/\\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);\n` +
+      "const fieldLabel={title:'عنوان فعالیت',description:'توضیحات',owner_id:'متولی',status:'وضعیت',priority:'اولویت',start_date:'تاریخ شروع',done_date:'تاریخ انجام',due_date:'تاریخ پایان',reminder_days:'یادآور',manager_notes:'توضیحات مدیر',archived:'وضعیت آرشیو',archived_at:'تاریخ آرشیو',former_owner_name:'نام متولی قبلی',owner_deleted_at:'تاریخ حذف متولی',created_by:'ثبت‌کننده',created_at:'تاریخ ایجاد',updated_at:'تاریخ ویرایش'};\n" +
+      "const sourceLabel={direct:'تغییر مستقیم',request:'درخواست تغییر',import:'ورود از اکسل',system:'سامانه',approval:'زنجیره تأیید'};\n" +
+      'const systemMessageCache=new Map();\n' +
+      "function installCss(){if(q('#bamcoMessagingHistoryRootCss'))return;const s=document.createElement('style');s.id='bamcoMessagingHistoryRootCss';s.textContent=`\n" +
+      '#messageCenterView .suite-table-options,#sentMessagesView .suite-table-options,#messagesView .suite-table-options,.conversation-panel .suite-table-options,.conversation-panel [data-management-export],.conversation-panel [data-export],.conversation-panel [data-action="export"]{display:none!important}\n' +
+      '#directMessagesView [data-management-export],#directMessagesView [data-export],#directMessagesView [data-action="export"],#directMessagesView [data-suite-export],#directMessagesView .suite-export,#directMessagesView .excel-export,#directMessagesView .export-excel{display:none!important}\n' +
+      '#messagesView .message-actions{display:none!important}.workflow-message .suite-filters,.workflow-message .column-filters,.workflow-message .suite-resize,.workflow-message .column-resize-handle{display:none!important}.workflow-message table{margin-left:auto!important;margin-right:auto!important;min-width:0!important}.workflow-message table th,.workflow-message table td{text-align:center!important}\n' +
+      '.conversation-unread,.conversation-route-count,.conversation-nav-count,#messageBadge.message-badge{min-width:18px!important;width:auto!important;height:18px!important;padding:0 5px!important;border-radius:999px!important;background:#d52f2f!important;color:#fff!important;display:inline-grid!important;place-items:center!important;font:700 10px Tahoma,sans-serif!important;line-height:18px!important;box-shadow:0 0 0 2px #fff!important;vertical-align:middle!important}.conversation-route-count:empty,.conversation-nav-count:empty,#messageBadge.message-badge:empty{display:none!important}\n' +
+      '.conversation-item[data-kind="system"]{position:relative;order:-100}.conversation-item[data-kind="system"]>span:nth-child(2)>strong::before{content:"📌";display:inline-block;margin-left:5px;font-size:12px;vertical-align:1px}.system-chain-clear{white-space:nowrap!important}\n' +
+      '.chat-bubble.bamco-system-message{max-width:min(560px,96%)!important;width:min(560px,96%)!important;background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important}.chat-bubble.bamco-system-message .chat-body{width:100%!important}.chat-bubble.bamco-system-message .message-delete{display:none!important}\n' +
+      '.system-message-open{display:block;width:100%;border:1px solid #bfd1c7;border-radius:14px;background:#fff;padding:14px 16px;text-align:right;direction:rtl;color:#17392e;font-family:"B Nazanin",BNazanin,Tahoma,sans-serif;cursor:pointer;box-shadow:0 5px 16px rgba(28,82,63,.08)}.system-message-open:hover{border-color:#72a993;box-shadow:0 8px 20px rgba(28,82,63,.13)}.system-message-open-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.system-message-open-title{font-size:18px;font-weight:700;color:#17644b}.system-message-open-date{font-size:12px;color:#72867d;white-space:nowrap}.system-message-open-meta{font-size:13px;color:#6a8076;margin-top:3px}.system-message-open-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.system-message-chip{border-radius:999px;padding:3px 9px;font-size:12px;background:#eef6f2;border:1px solid #d4e4dc}.system-message-chip.warning{background:#fff6d1;border-color:#efd071;color:#805e0b}.system-message-chip.overdue{background:#ffebe8;border-color:#eab0aa;color:#9b3932}.system-message-open-cta{display:flex;align-items:center;gap:6px;margin-top:10px;padding-top:8px;border-top:1px solid #e0e9e4;color:#17644b;font-weight:700;font-size:13px}\n' +
+      '#bamcoSystemMessageDialog{width:min(1080px,95vw);max-width:95vw;max-height:92vh;border:1px solid #bdd2c7;border-radius:18px;padding:0;overflow:hidden;background:#f8fbf9;color:#17392e;font-family:"B Nazanin",BNazanin,Tahoma,sans-serif}#bamcoSystemMessageDialog::backdrop{background:#244b3e80;backdrop-filter:blur(4px)}.bsm-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:16px 20px;border-bottom:1px solid #d4e2da;background:#fff;direction:rtl}.bsm-head h3{margin:0;color:#17644b;font-size:21px}.bsm-head p{margin:3px 0 0;color:#70857b;font-size:13px}.bsm-close{flex:none;width:42px;height:42px;border:1px solid #cadbd2;border-radius:11px;background:#fff;color:#17644b;font:26px/1 inherit;cursor:pointer}.bsm-body{padding:10px 12px 18px;overflow:auto;max-height:calc(92vh - 78px)}\n' +
+      '#bamcoTaskHistoryDialog{width:min(1000px,94vw);max-height:88vh;border:1px solid #bdd2c7;border-radius:19px;padding:0;overflow:hidden;background:#fff;color:#183f33;font-family:"B Nazanin",BNazanin,Tahoma,sans-serif}#bamcoTaskHistoryDialog::backdrop{background:#315e5260;backdrop-filter:blur(4px)}.bth-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:22px 25px 16px;border-bottom:1px solid #d4e1da}.bth-head h3{margin:0;color:#176149;font-size:24px}.bth-head p{margin:4px 0 0;color:#6c8379}.bth-close{width:44px;height:44px;border:1px solid #c9d9d1;border-radius:12px;background:#f8fbf9;color:#176149;font:26px inherit}.bth-list{padding:20px 32px 28px;overflow:auto;max-height:calc(88vh - 95px)}.bth-event{position:relative;padding:0 36px 25px 0;border-right:2px solid #cfe0d8;margin-right:10px}.bth-event:last-child{border-right-color:transparent}.bth-dot{position:absolute;right:-8px;top:2px;width:14px;height:14px;border:4px solid #dff1e9;background:#279e79;border-radius:50%}.bth-title{font-size:19px;font-weight:700;color:#193f34}.bth-meta{display:flex;gap:12px;flex-wrap:wrap;color:#73877e;font-size:14px;margin:4px 0 7px}.bth-change{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 10px;background:#f8fbf9;border:1px solid #dae6e0;border-radius:10px;padding:9px 11px;max-width:780px}.bth-change b{color:#557267}.bth-empty{padding:45px;text-align:center;color:#71867d}\n' +
+      '@media(max-width:700px){.bth-list{padding:15px 18px}.bth-event{padding-right:28px}.bth-change{grid-template-columns:1fr}.system-message-open-head{display:block}.system-message-open-date{display:block;margin-top:2px}.bsm-body{padding:7px}}\n' +
+      '`;document.head.append(s)}\n' +
+      'function profile(id){return(state.profiles||[]).find(x=>String(x.id)===String(id))||null}\n' +
+      "function person(id){const p=profile(id);return p?.display_name||p?.full_name||p?.excel_name||p?.email||''}\n" +
+      `function raw(value){if(value===null||value===undefined)return value;if(typeof value!=='string')return value;try{return JSON.parse(value)}catch{return value.replace(/^"|"$/g,'')}}\n` +
+      "function isDateField(field){return ['start_date','done_date','due_date','archived_at','owner_deleted_at','created_at','updated_at'].includes(field)}\n" +
+      "function simpleValue(field,value){value=raw(value);if(value===null||value===undefined||value==='')return'—';if(field==='created_by')return person(value)||'سامانه';if(isDateField(field)){if(String(value).includes('T'))return typeof jalaliDateTime==='function'?jalaliDateTime(String(value)):digits(value);return typeof jalaliText==='function'?jalaliText(String(value)):digits(value)}if(field==='reminder_days')return digits(value)+' روز';if(field==='archived')return value===true||String(value)==='true'?'بله':'خیر';if(typeof value==='object')return'—';return digits(value)}\n" +
+      "function ownerFallback(row,task){const before=raw(row.old_data)||{},after=raw(row.new_data)||{};return after.former_owner_name||before.former_owner_name||task?.former_owner_name||''}\n" +
+      "function ownerValue(row,side,task){const data=raw(side==='old'?row.old_data:row.new_data)||{},value=raw(side==='old'?row.old_value:row.new_value),id=value??data.owner_id;if(id){const found=person(id);if(found)return found}if(side==='new'&&(value===null||value===undefined||value==='')&&(data.owner_id===null||data.owner_id===undefined||data.owner_id===''))return'بدون متولی';const fallback=ownerFallback(row,task);if(fallback)return fallback;return id?'متولی حذف‌شده':'بدون متولی'}\n" +
+      "function currentOwner(row,task){const after=raw(row.new_data)||{},before=raw(row.old_data)||{},id=after.owner_id??before.owner_id??task?.owner_id;if(id){const found=person(id);if(found)return found}return ownerFallback(row,task)||'بدون متولی'}\n" +
+      "function historyValue(field,value,row,side,task){if(field==='owner_id')return ownerValue(row,side,task);return simpleValue(field,value)}\n" +
+      "function summary(data,row,side,task){data=raw(data);if(!data||typeof data!=='object')return simpleValue('',data);const order=['title','owner_id','status','priority','start_date','due_date','done_date','reminder_days','manager_notes','archived','archived_at','former_owner_name','owner_deleted_at'];return order.filter(k=>data[k]!==undefined&&data[k]!==null&&data[k]!=='').map(k=>`${fieldLabel[k]||'اطلاعات وظیفه'}: ${k==='owner_id'?ownerValue(row,side,task):simpleValue(k,data[k])}`).join(' | ')||'—'}\n" +
+      "function historySelectedTask(button){const view=button.closest('#archiveView,#kanbanView'),table=view?.querySelector('table');if(!view||!table)return null;const selected=window.bamcoSelection?.rows(table)||[],rows=selected.length?selected:qa('tbody tr.suite-selected,tbody tr.task-select"... 11935 more characters
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: |-
+    (()=>{'use strict';
+    if(window.__bamcoMessagingHistoryRoot20260912V2)return;window.__bamcoMessagingHistoryRoot20260912V2=true;
+    const q=(s,r=document)=>r?.querySelector?.(s)||null,qa=(s,r=document)=>[...(r?.querySelectorAll?.(s)||[])],esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),digits=v=>String(v??'').replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);
+    const fieldLabel={title:'عنوان فعالیت',description:'توضیحات',owner_id:'متولی',status:'وضعیت',priority:'اولویت',start_date:'تاریخ شروع',done_date:'تاریخ انجام',due_date:'تاریخ پایان',reminder_days:'یادآور',manager_notes:'توضیحات مدیر',archived:'وضعیت آرشیو',archived_at:'تاریخ آرشیو',former_owner_name:'نام متولی قبلی',owner_deleted_at:'تاریخ حذف متولی',created_by:'ثبت‌کننده',created_at:'تاریخ ایجاد',updated_at:'تاریخ ویرایش'};
+    const sourceLabel={direct:'تغییر مستقیم',request:'درخواست تغییر',import:'ورود از اکسل',system:'سامانه',approval:'زنجیره تأیید'};
+    const systemMessageCache=new Map();
+    function installCss(){if(q('#bamcoMessagingHistoryRootCss'))return;const s=document.createElement('style');s.id='bamcoMessagingHistoryRootCss';s.textContent=`
+    #messageCenterView .suite-table-options,#sentMessagesView .suite-table-options,#messagesView .suite-table-options,.conversation-panel .suite-table-options,.conversation-panel [data-management-export],.conversation-panel [data-export],.conversation-panel [data-action="export"]{display:none!important}
+    #directMessagesView [data-management-export],#directMessagesView [data-export],#directMessagesView [data-action="export"],#directMessagesView [data-suite-export],#directMessagesView .suite-export,#directMessagesView .excel-export,#directMessagesView .export-excel{display:none!important}
+    #messagesView .message-actions{display:none!important}.workflow-message .suite-filters,.workflow-message .column-filters,.workflow-message .suite-resize,.workflow-message .column-resize-handle{display:none!important}.workflow-message table{margin-left:auto!important;margin-right:auto!important;min-width:0!important}.workflow-message table th,.workflow-message table td{text-align:center!important}
+    .conversation-unread,.conversation-route-count,.conversation-nav-count,#messageBadge.message-badge{min-width:18px!important;width:auto!important;height:18px!important;padding:0 5px!important;border-radius:999px!important;background:#d52f2f!important;color:#fff!important;display:inline-grid!important;place-items:center!important;font:700 10px Tahoma,sans-serif!important;line-height:18px!important;box-shadow:0 0 0 2px #fff!important;vertical-align:middle!important}.conversation-route-count:empty,.conversation-nav-count:empty,#messageBadge.message-badge:empty{display:none!important}
+    .conversation-item[data-kind="system"]{position:relative;order:-100}.conversation-item[data-kind="system"]>span:nth-child(2)>strong::before{content:"📌";display:inline-block;margin-left:5px;font-size:12px;vertical-align:1px}.system-chain-clear{white-space:nowrap!important}
+    .chat-bubble.bamco-system-message{max-width:min(560px,96%)!important;width:min(560px,96%)!important;background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important}.chat-bubble.bamco-system-message .chat-body{width:100%!important}.chat-bubble.bamco-system-message .message-delete{display:none!important}
+    .system-message-open{display:block;width:100%;border:1px solid #bfd1c7;border-radius:14px;background:#fff;padding:14px 16px;text-align:right;direction:rtl;color:#17392e;font-family:"B Nazanin",BNazanin,Tahoma,sans-serif;cursor:pointer;box-shadow:0 5px 16px rgba(28,82,63,.08)}.system-message-open:hover{border-color:#72a993;box-shadow:0 8px 20px rgba(28,82,63,.13)}.system-message-open-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.system-message-open-title{font-size:18px;font-weight:700;color:#17644b}.system-message-open-date{font-size:12px;color:#72867d;white-space:nowrap}.system-message-open-meta{font-size:13px;color:#6a8076;margin-top:3px}.system-message-open-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.system-message-chip{border-radius:999px;padding:3px 9px;font-size:12px;background:#eef6f2;border:1px solid #d4e4dc}.system-message-chip.warning{background:#fff6d1;border-color:#efd071;color:#805e0b}.system-message-chip.overdue{background:#ffebe8;border-color:#eab0aa;color:#9b3932}.system-message-open-cta{display:flex;align-items:center;gap:6px;margin-top:10px;padding-top:8px;border-top:1px solid #e0e9e4;color:#17644b;font-weight:700;font-size:13px}
+    #bamcoSystemMessageDialog{width:min(1080px,95vw);max-width:95vw;max-height:92vh;border:1px solid #bdd2c7;border-radius:18px;padding:0;overflow:hidden;background:#f8fbf9;color:#17392e;font-family:"B Nazanin",BNazanin,Tahoma,sans-serif}#bamcoSystemMessageDialog::backdrop{background:#244b3e80;backdrop-filter:blur(4px)}.bsm-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:16px 20px;border-bottom:1px solid #d4e2da;background:#fff;direction:rtl}.bsm-head h3{margin:0;color:#17644b;font-size:21px}.bsm-head p{margin:3px 0 0;color:#70857b;font-size:13px}.bsm-close{flex:none;width:42px;height:42px;border:1px solid #cadbd2;border-radius:11px;background:#fff;color:#17644b;font:26px/1 inherit;cursor:pointer}.bsm-body{padding:10px 12px 18px;overflow:auto;max-height:calc(92vh - 78px)}
+    #bamcoTaskHistoryDialog{width:min(1000px,94vw);max-height:88vh;border:1px solid #bdd2c7;border-radius:19px;padding:0;overflow:hidden;background:#fff;color:#183f33;font-family:"B Nazanin",BNazanin,Tahoma,sans-serif}#bamcoTaskHistoryDialog::backdrop{background:#315e5260;backdrop-filter:blur(4px)}.bth-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:22px 25px 16px;border-bottom:1px solid #d4e1da}.bth-head h3{margin:0;color:#176149;font-size:24px}.bth-head p{margin:4px 0 0;color:#6c8379}.bth-close{width:44px;height:44px;border:1px solid #c9d9d1;border-radius:12px;background:#f8fbf9;color:#176149;font:26px inherit}.bth-list{padding:20px 32px 28px;overflow:auto;max-height:calc(88vh - 95px)}.bth-event{position:relative;padding:0 36px 25px 0;border-right:2px solid #cfe0d8;margin-right:10px}.bth-event:last-child{border-right-color:transparent}.bth-dot{position:absolute;right:-8px;top:2px;width:14px;height:14px;border:4px solid #dff1e9;background:#279e79;border-radius:50%}.bth-title{font-size:19px;font-weight:700;color:#193f34}.bth-meta{display:flex;gap:12px;flex-wrap:wrap;color:#73877e;font-size:14px;margin:4px 0 7px}.bth-change{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 10px;background:#f8fbf9;border:1px solid #dae6e0;border-radius:10px;padding:9px 11px;max-width:780px}.bth-change b{color:#557267}.bth-empty{padding:45px;text-align:center;color:#71867d}
+    @media(max-width:700px){.bth-list{padding:15px 18px}.bth-event{padding-right:28px}.bth-change{grid-template-columns:1fr}.system-message-open-head{display:block}.system-message-open-date{display:block;margin-top:2px}.bsm-body{padding:7px}}
+    `;document.head.append(s)}
+    function profile(id){return(state.profiles||[]).find(x=>String(x.id)===String(id))||null}
+    function person(id){const p=profile(id);return p?.display_name||p?.full_name||p?.excel_name||p?.email||''}
+    function raw(value){if(value===null||value===undefined)return value;if(typeof value!=='string')return value;try{return JSON.parse(value)}catch{return value.replace(/^"|"$/g,'')}}
+    function isDateField(field){return ['start_date','done_date','due_date','archived_at','owner_deleted_at','created_at','updated_at'].includes(field)}
+    function simpleValue(field,value){value=raw(value);if(value===null||value===undefined||value==='')return'—';if(field==='created_by')return person(value)||'سامانه';if(isDateField(field)){if(String(value).includes('T'))return typeof jalaliDateTime==='function'?jalaliDateTime(String(value)):digits(value);return typeof jalaliText==='function'?jalaliText(String(value)):digits(value)}if(field==='reminder_days')return digits(value)+' روز';if(field==='archived')return value===true||String(value)==='true'?'بله':'خیر';if(typeof value==='object')return'—';return digits(value)}
+    function ownerFallback(row,task){const before=raw(row.old_data)||{},after=raw(row.new_data)||{};return after.former_owner_name||before.former_owner_name||task?.former_owner_name||''}
+    function ownerValue(row,side,task){const data=raw(side==='old'?row.old_data:row.new_data)||{},value=raw(side==='old'?row.old_value:row.new_value),id=value??data.owner_id;if(id){const found=person(id);if(found)return found}if(side==='new'&&(value===null||value===undefined||value==='')&&(data.owner_id===null||data.owner_id===undefined||data.owner_id===''))return'بدون متولی';const fallback=ownerFallback(row,task);if(fallback)return fallback;return id?'متولی حذف‌شده':'بدون متولی'}
+    function currentOwner(row,task){const after=raw(row.new_data)||{},before=raw(row.old_data)||{},id=after.owner_id??before.owner_id??task?.owner_id;if(id){const found=person(id);if(found)return found}return ownerFallback(row,task)||'بدون متولی'}
+    function historyValue(field,value,row,side,task){if(field==='owner_id')return ownerValue(row,side,task);return simpleValue(field,value)}
+    function summary(data,row,side,task){data=raw(data);if(!data||typeof data!=='object')return simpleValue('',data);const order=['title','owner_id','status','priority','start_date','due_date','done_date','reminder_days','manager_notes','archived','archived_at','former_owner_name','owner_deleted_at'];return order.filter(k=>data[k]!==undefined&&data[k]!==null&&data[k]!=='').map(k=>`${fieldLabel[k]||'اطلاعات وظیفه'}: ${k==='owner_id'?ownerValue(row,side,task):simpleValue(k,data[k])}`).join(' | ')||'—'}
+    function historySelectedTask(button){const view=button.closest('#archiveView,#kanbanView'),table=view?.querySelector('table');if(!view||!table)return null;const selected=window.bamcoSelection?.rows(table)||[],rows=selected.length?selected:qa('tbody tr.suite-selected,tbody tr.task-selected',table);if(rows.length!==1)return null;const id=rows[0].dataset.taskId;return(state.tasks||[]).find(t=>String(t.id)===String(id))||null}
+    function eventTitle(row){if(row.action==='created')return'وظیفه ایجاد شد';if(row.action==='deleted')return'وظیفه حذف شد';if(row.action==='restored')return'وظیفه به کانبان بازگردانده شد';if(row.action==='archived')return'وظیفه آرشیو شد';return`${fieldLabel[row.field_name]||'اطلاعات وظیفه'} تغییر کرد`}
+    async function openHistory(task){const all=await selectAll('task_history',`select=*&task_id=eq.${encodeURIComponent(task.id)}&order=created_at.desc`),rows=all.filter(x=>x.field_name!=='legacy_id');let d=q('#bamcoTaskHistoryDialog');if(!d){d=document.createElement('dialog');d.id='bamcoTaskHistoryDialog';document.body.append(d)}const render=x=>{const field=x.field_name,actor=x.actor_name_snapshot||person(x.actor_id)||'سامانه',owner=currentOwner(x,task),oldV=field?historyValue(field,x.old_value,x,'old',task):summary(x.old_data,x,'old',task),newV=field?historyValue(field,x.new_value,x,'new',task):summary(x.new_data,x,'new',task),source=sourceLabel[x.source_path]||'سامانه',reason=x.reason?digits(x.reason):'';return `<article class="bth-event"><i class="bth-dot"></i><div class="bth-title">${esc(eventTitle(x))}</div><div class="bth-meta"><span>${esc(jalaliDateTime(x.created_at))}</span><span>انجام‌دهنده: ${esc(actor)}</span><span>متولی: ${esc(owner)}</span><span>مسیر ثبت: ${esc(source)}</span>${x.request_id?`<span>شماره درخواست: ${digits(x.request_id)}</span>`:''}</div>${x.action==='created'?`<div class="bth-change"><b>اطلاعات ثبت‌شده</b><span>${esc(newV)}</span></div>`:x.action==='deleted'?`<div class="bth-change"><b>آخرین وضعیت</b><span>${esc(oldV)}</span></div>`:`<div class="bth-change"><b>قبل</b><span>${esc(oldV)}</span><b>بعد</b><span>${esc(newV)}</span>${reason?`<b>علت تغییر</b><span>${esc(reason)}</span>`:''}</div>`}</article>`};d.innerHTML=`<div class="bth-head"><div><h3>تاریخچه وظیفه ${digits(task.legacy_id||task.id)}</h3><p>همه رویدادها، متولی‌ها و تغییرات این وظیفه</p></div><button class="bth-close" type="button" aria-label="بستن">×</button></div><div class="bth-list">${rows.length?rows.map(render).join(''):'<div class="bth-empty">سابقه‌ای برای این وظیفه ثبت نشده است.</div>'}</div>`;q('.bth-close',d).onclick=()=>d.close();d.showModal()}
+    function removePrivateExports(){const view=q('#directMessagesView');if(!view)return;qa('[data-management-export],[data-export],[data-action="export"],[data-suite-export],.suite-export,.excel-export,.export-excel',view).forEach(x=>x.remove());qa('button,a',view).filter(x=>/(خروجی\s*اکسل|اکسل|excel)/i.test([x.textContent,x.title,x.getAttribute('aria-label')].filter(Boolean).join(' '))).forEach(x=>x.remove())}
+    function cleanMessageUi(){qa('#messageCenterView .suite-table-options,#sentMessagesView .suite-table-options,#messagesView .suite-table-options').forEach(x=>x.remove());qa('#messagesView .message-actions').forEach(x=>x.remove());removePrivateExports()}
+    async function loadSystemMessage(messageId){const key=String(messageId);if(systemMessageCache.has(key))return systemMessageCache.get(key);const payload=await rpc('chat_system_message_payload',{p_message_id:Number(messageId)}),snap=payload.snapshot||{body_template:payload.body,final_text:payload.body,tasks:[],warning_task_ids:[],overdue_task_ids:[],subject:payload.subject,created_at:payload.created_at};let stickerUrl='';if(snap.sticker_path)try{stickerUrl=await bamcoMedia.get('stickers',snap.sticker_path)}catch{}const data={payload,snap,stickerUrl,html:BamcoMessageRender.html(snap,{stickerUrl,subject:payload.subject,reportDate:payload.created_at,senderName:payload.sender_name})};systemMessageCache.set(key,data);return data}
+    function systemPreview(data,messageId){const {payload,snap}=data,warning=(snap.warning_task_ids||[]).length,overdue=(snap.overdue_task_ids||[]).length,when=typeof jalaliDateTime==='function'?jalaliDateTime(payload.created_at):String(payload.created_at||''),sender=payload.sender_name||'سامانه';return `<button type="button" class="system-message-open" data-system-message-open="${esc(messageId)}"><span class="system-message-open-head"><span class="system-message-open-title">${esc(payload.subject||snap.subject||'پیام خودکار سامانه')}</span><span class="system-message-open-date">${esc(when)}</span></span><span class="system-message-open-meta">فرستنده: ${esc(sender)}</span><span class="system-message-open-chips">${warning?`<span class="system-message-chip warning">هشدار: ${digits(warning)}</span>`:''}${overdue?`<span class="system-message-chip overdue">دیرکرد: ${digits(overdue)}</span>`:''}${!warning&&!overdue?'<span class="system-message-chip">پیام خودکار سامانه</span>':''}</span><span class="system-message-open-cta">مشاهده محتوای کامل <span aria-hidden="true">←</span></span></button>`}
+    function ensureSystemDialog(){let d=q('#bamcoSystemMessageDialog');if(d)return d;d=document.createElement('dialog');d.id='bamcoSystemMessageDialog';d.addEventListener('click',e=>{if(e.target===d)d.close()});document.body.append(d);return d}
+    async function openSystemMessage(messageId){const d=ensureSystemDialog();d.innerHTML='<div class="bsm-head"><div><h3>پیام خودکار سامانه</h3><p>در حال دریافت محتوا…</p></div><button type="button" class="bsm-close" aria-label="بستن">×</button></div><div class="bsm-body"><div class="conversation-empty">در حال دریافت…</div></div>';q('.bsm-close',d).onclick=()=>d.close();if(!d.open)d.showModal();try{const data=await loadSystemMessage(messageId),when=typeof jalaliDateTime==='function'?jalaliDateTime(data.payload.created_at):String(data.payload.created_at||'');d.innerHTML=`<div class="bsm-head"><div><h3>${esc(data.payload.subject||data.snap.subject||'پیام خودکار سامانه')}</h3><p>${esc(data.payload.sender_name||'سامانه')} · ${esc(when)}</p></div><button type="button" class="bsm-close" aria-label="بستن">×</button></div><div class="bsm-body">${data.html}</div>`;q('.bsm-close',d).onclick=()=>d.close()}catch(err){q('.bsm-body',d).innerHTML=`<div class="workspace-error">${esc(err.message||'نمایش پیام انجام نشد.')}</div>`}}
+    async function hydrateSystemMessages(){for(const body of qa('.chat-bubble[data-message-id] .chat-body')){const bubble=body.closest('.chat-bubble'),text=body.textContent.trim();if(!text.startsWith('BAMCO_PORTAL_MESSAGE_V1:')||body.dataset.systemHydrated||body.dataset.systemHydrating)continue;body.dataset.systemHydrating='1';try{const messageId=Number(bubble.dataset.messageId),data=await loadSystemMessage(messageId);body.innerHTML=systemPreview(data,messageId);body.dataset.systemHydrated='1';bubble.classList.add('bamco-system-message');bubble.querySelector('.message-delete')?.remove()}catch(err){body.textContent='نمایش پیام سامانه انجام نشد: '+err.message}finally{delete body.dataset.systemHydrating}}}
+    function goTask(id){const task=(state.tasks||[]).find(t=>String(t.id)===String(id));if(!task)return toast('این وظیفه در کانبان فعلی پیدا نشد.',true);q('#nav [data-view="kanban"]')?.click();const search=q('#kanbanSearch');if(search){search.value='';search.dispatchEvent(new Event('input',{bubbles:true}))}try{if(typeof chooseTask==='function')chooseTask('kanban',task.id)}catch{}requestAnimationFrame(()=>requestAnimationFrame(()=>{window.bamcoRevealTask?.(task.id);const row=q(`#kanbanBody tr[data-task-id="${task.id}"]`);row?.scrollIntoView?.({block:'center',behavior:'smooth'});row?.focus?.({preventScroll:true})}))}
+    function purgeSystemClientState(view,threadId){systemMessageCache.clear();const dialog=q('#bamcoSystemMessageDialog');if(dialog?.open)dialog.close();dialog?.remove();window.bamcoChat?.close?.();qa('.conversation-item[data-thread]',view).filter(x=>x.dataset.thread===threadId).forEach(x=>x.remove());const stage=q('.conversation-stage',view);if(stage)stage.innerHTML='<div class="conversation-empty">زنجیره پیام‌های خودکار حذف شد. پیام خودکار بعدی در یک زنجیره تازه نمایش داده می‌شود.</div>';document.dispatchEvent(new CustomEvent('bamco-system-thread-cleared',{detail:{threadId}}))}
+    function installSystemClear(){const view=q('#directMessagesView');if(!view||view.classList.contains('hidden'))return;const active=q('.conversation-item.active[data-kind="system"]',view),controls=q('.messenger-head-actions',view);if(!active||!controls){q('.system-chain-clear',view)?.remove();return}let btn=q('.system-chain-clear',view);if(btn){btn.dataset.thread=active.dataset.thread;if(btn.parentElement!==controls)controls.append(btn);return}btn=document.createElement('button');btn.type='button';btn.className='danger system-chain-clear';btn.textContent='پاک کردن زنجیره';btn.dataset.thread=active.dataset.thread;btn.onclick=async()=>{const id=btn.dataset.thread;if(!id)return;if(!await window.bamcoConfirm('این زنجیره و تمام سابقه گفت‌وگوی خودکار حذف شود؟ پیام خودکار بعدی در یک زنجیره تازه و بدون سابقه قبلی نمایش داده می‌شود.'))return;btn.disabled=true;try{await rpc('chat_clear_system_thread',{p_thread_id:id});purgeSystemClientState(view,id);await window.bamcoInbox?.load?.();await window.bamcoConversations?.render?.('directMessages');toast('زنجیره و سابقه گفت‌وگوی خودکار کاملاً حذف شد.')}catch(err){toast(err.message,true)}finally{if(btn.isConnected)btn.disabled=false}};controls.append(btn)}
+    function dedupeLogos(){for(const sel of ['#departmentEntry>header>img','#loginView .brand-lockup>img','#appView>.card-topbar>img']){const items=qa(sel);items.slice(1).forEach(x=>x.remove())}const bars=qa('#appView>.card-topbar');bars.slice(1).forEach(x=>x.remove())}
+    function installLogoGuards(){dedupeLogos();const entry=q('#departmentEntry'),app=q('#appView');if(entry)new MutationObserver(dedupeLogos).observe(entry,{childList:true});if(app)new MutationObserver(dedupeLogos).observe(app,{childList:true})}
+    function deepLink(){const id=new URLSearchParams(location.search).get('task');if(!id)return;let tries=0,t=setInterval(()=>{if(typeof state!=='undefined'&&state.token&&(state.tasks||[]).length){clearInterval(t);goTask(id);const u=new URL(location.href);u.searchParams.delete('task');history.replaceState({},'',u.pathname+u.search+u.hash)}else if(++tries>300)clearInterval(t)},100)}
+    function boot(){installCss();cleanMessageUi();installLogoGuards();deepLink();void hydrateSystemMessages();const direct=q('#directMessagesView');if(direct){let frame=0;new MutationObserver(()=>{if(frame)return;frame=requestAnimationFrame(()=>{frame=0;cleanMessageUi();void hydrateSystemMessages();installSystemClear()})}).observe(direct,{childList:true,subtree:true})}document.addEventListener('bamco-messages-changed',()=>{cleanMessageUi();void hydrateSystemMessages();installSystemClear()});document.addEventListener('bamco-inbox-updated',cleanMessageUi);document.addEventListener('bamco-system-thread-cleared',()=>{systemMessageCache.clear();const d=q('#bamcoSystemMessageDialog');if(d?.open)d.close();d?.remove()});document.addEventListener('click',e=>{const systemOpen=e.target.closest('[data-system-message-open]');if(systemOpen){e.preventDefault();e.stopImmediatePropagation();openSystemMessage(systemOpen.dataset.systemMessageOpen);return}const task=e.target.closest('[data-bamco-task-id]');if(task){e.preventDefault();e.stopImmediatePropagation();goTask(task.dataset.bamcoTaskId);return}const history=e.target.closest('[data-task-history]');if(history){e.preventDefault();e.stopImmediatePropagation();const taskRow=historySelectedTask(history);if(!taskRow)return toast('برای مشاهده تاریخچه، دقیقاً یک وظیفه را انتخاب کنید.',true);openHistory(taskRow).catch(err=>toast(err.message,true));return}if(e.target.closest('#nav [data-view="directMessages"],#directMessagesView [data-thread]'))setTimeout(()=>{cleanMessageUi();void hydrateSystemMessages();installSystemClear()},120)},true);setTimeout(()=>{cleanMessageUi();installSystemClear();void hydrateSystemMessages()},500);window.bamcoTaskHistory={open:openHistory,ownerValue}}
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+    })();
+    
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/user-request-regressions.test.cjs:64:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: task history is Persian and resolves owner names
+not ok 116 - task history is Persian and resolves owner names
+  ---
+  duration_ms: 3.161456
+  type: 'test'
+  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/user-request-regressions.test.cjs:76:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /ایجاد وظیفه/. Input:
+    
+    "(()=>{'use strict';\n" +
+      'if(window.__bamcoMessagingHistoryRoot20260912V2)return;window.__bamcoMessagingHistoryRoot20260912V2=true;\n' +
+      `const q=(s,r=document)=>r?.querySelector?.(s)||null,qa=(s,r=document)=>[...(r?.querySelectorAll?.(s)||[])],esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),digits=v=>String(v??'').replace(/\\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);\n` +
+      "const fieldLabel={title:'عنوان فعالیت',description:'توضیحات',owner_id:'متولی',status:'وضعیت',priority:'اولویت',start_date:'تاریخ شروع',done_date:'تاریخ انجام',due_date:'تاریخ پایان',reminder_days:'یادآور',manager_notes:'توضیحات مدیر',archived:'وضعیت آرشیو',archived_at:'تاریخ آرشیو',former_owner_name:'نام متولی قبلی',owner_deleted_at:'تاریخ حذف متولی',created_by:'ثبت‌کننده',created_at:'تاریخ ایجاد',updated_at:'تاریخ ویرایش'};\n" +
+      "const sourceLabel={direct:'تغییر مستقیم',request:'درخواست تغییر',import:'ورود از اکسل',system:'سامانه',approval:'زنجیره تأیید'};\n" +
+      'const systemMessageCache=new Map();\n' +
+      "function installCss(){if(q('#bamcoMessagingHistoryRootCss'))return;const s=document.createElement('style');s.id='bamcoMessagingHistoryRootCss';s.textContent=`\n" +
+      '#messageCenterView .suite-table-options,#sentMessagesView .suite-table-options,#messagesView .suite-table-options,.conversation-panel .suite-table-options,.conversation-panel [data-management-export],.conversation-panel [data-export],.conversation-panel [data-action="export"]{display:none!important}\n' +
+      '#directMessagesView [data-management-export],#directMessagesView [data-export],#directMessagesView [data-action="export"],#directMessagesView [data-suite-export],#directMessagesView .suite-export,#directMessagesView .excel-export,#directMessagesView .export-excel{display:none!important}\n' +
+      '#messagesView .message-actions{display:none!important}.workflow-message .suite-filters,.workflow-message .column-filters,.workflow-message .suite-resize,.workflow-message .column-resize-handle{display:none!important}.workflow-message table{margin-left:auto!important;margin-right:auto!important;min-width:0!important}.workflow-message table th,.workflow-message table td{text-align:center!important}\n' +
+      '.conversation-unread,.conversation-route-count,.conversation-nav-count,#messageBadge.message-badge{min-width:18px!important;width:auto!important;height:18px!important;padding:0 5px!important;border-radius:999px!important;background:#d52f2f!important;color:#fff!important;display:inline-grid!important;place-items:center!important;font:700 10px Tahoma,sans-serif!important;line-height:18px!important;box-shadow:0 0 0 2px #fff!important;vertical-align:middle!important}.conversation-route-count:empty,.conversation-nav-count:empty,#messageBadge.message-badge:empty{display:none!important}\n' +
+      '.conversation-item[data-kind="system"]{position:relative;order:-100}.conversation-item[data-kind="system"]>span:nth-child(2)>strong::before{content:"📌";display:inline-block;margin-left:5px;font-size:12px;vertical-align:1px}.system-chain-clear{white-space:nowrap!important}\n' +
+      '.chat-bubble.bamco-system-message{max-width:min(560px,96%)!important;width:min(560px,96%)!important;background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important}.chat-bubble.bamco-system-message .chat-body{width:100%!important}.chat-bubble.bamco-system-message .message-delete{display:none!important}\n' +
+      '.system-message-open{display:block;width:100%;border:1px solid #bfd1c7;border-radius:14px;background:#fff;padding:14px 16px;text-align:right;direction:rtl;color:#17392e;font-family:"B Nazanin",BNazanin,Tahoma,sans-serif;cursor:pointer;box-shadow:0 5px 16px rgba(28,82,63,.08)}.system-message-open:hover{border-color:#72a993;box-shadow:0 8px 20px rgba(28,82,63,.13)}.system-message-open-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.system-message-open-title{font-size:18px;font-weight:700;color:#17644b}.system-message-open-date{font-size:12px;color:#72867d;white-space:nowrap}.system-message-open-meta{font-size:13px;color:#6a8076;margin-top:3px}.system-message-open-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.system-message-chip{border-radius:999px;padding:3px 9px;font-size:12px;background:#eef6f2;border:1px solid #d4e4dc}.system-message-chip.warning{background:#fff6d1;border-color:#efd071;color:#805e0b}.system-message-chip.overdue{background:#ffebe8;border-color:#eab0aa;color:#9b3932}.system-message-open-cta{display:flex;align-items:center;gap:6px;margin-top:10px;padding-top:8px;border-top:1px solid #e0e9e4;color:#17644b;font-weight:700;font-size:13px}\n' +
+      '#bamcoSystemMessageDialog{width:min(1080px,95vw);max-width:95vw;max-height:92vh;border:1px solid #bdd2c7;border-radius:18px;padding:0;overflow:hidden;background:#f8fbf9;color:#17392e;font-family:"B Nazanin",BNazanin,Tahoma,sans-serif}#bamcoSystemMessageDialog::backdrop{background:#244b3e80;backdrop-filter:blur(4px)}.bsm-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:16px 20px;border-bottom:1px solid #d4e2da;background:#fff;direction:rtl}.bsm-head h3{margin:0;color:#17644b;font-size:21px}.bsm-head p{margin:3px 0 0;color:#70857b;font-size:13px}.bsm-close{flex:none;width:42px;height:42px;border:1px solid #cadbd2;border-radius:11px;background:#fff;color:#17644b;font:26px/1 inherit;cursor:pointer}.bsm-body{padding:10px 12px 18px;overflow:auto;max-height:calc(92vh - 78px)}\n' +
+      '#bamcoTaskHistoryDialog{width:min(1000px,94vw);max-height:88vh;border:1px solid #bdd2c7;border-radius:19px;padding:0;overflow:hidden;background:#fff;color:#183f33;font-family:"B Nazanin",BNazanin,Tahoma,sans-serif}#bamcoTaskHistoryDialog::backdrop{background:#315e5260;backdrop-filter:blur(4px)}.bth-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:22px 25px 16px;border-bottom:1px solid #d4e1da}.bth-head h3{margin:0;color:#176149;font-size:24px}.bth-head p{margin:4px 0 0;color:#6c8379}.bth-close{width:44px;height:44px;border:1px solid #c9d9d1;border-radius:12px;background:#f8fbf9;color:#176149;font:26px inherit}.bth-list{padding:20px 32px 28px;overflow:auto;max-height:calc(88vh - 95px)}.bth-event{position:relative;padding:0 36px 25px 0;border-right:2px solid #cfe0d8;margin-right:10px}.bth-event:last-child{border-right-color:transparent}.bth-dot{position:absolute;right:-8px;top:2px;width:14px;height:14px;border:4px solid #dff1e9;background:#279e79;border-radius:50%}.bth-title{font-size:19px;font-weight:700;color:#193f34}.bth-meta{display:flex;gap:12px;flex-wrap:wrap;color:#73877e;font-size:14px;margin:4px 0 7px}.bth-change{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 10px;background:#f8fbf9;border:1px solid #dae6e0;border-radius:10px;padding:9px 11px;max-width:780px}.bth-change b{color:#557267}.bth-empty{padding:45px;text-align:center;color:#71867d}\n' +
+      '@media(max-width:700px){.bth-list{padding:15px 18px}.bth-event{padding-right:28px}.bth-change{grid-template-columns:1fr}.system-message-open-head{display:block}.system-message-open-date{display:block;margin-top:2px}.bsm-body{padding:7px}}\n' +
+      '`;document.head.append(s)}\n' +
+      'function profile(id){return(state.profiles||[]).find(x=>String(x.id)===String(id))||null}\n' +
+      "function person(id){const p=profile(id);return p?.display_name||p?.full_name||p?.excel_name||p?.email||''}\n" +
+      `function raw(value){if(value===null||value===undefined)return value;if(typeof value!=='string')return value;try{return JSON.parse(value)}catch{return value.replace(/^"|"$/g,'')}}\n` +
+      "function isDateField(field){return ['start_date','done_date','due_date','archived_at','owner_deleted_at','created_at','updated_at'].includes(field)}\n" +
+      "function simpleValue(field,value){value=raw(value);if(value===null||value===undefined||value==='')return'—';if(field==='created_by')return person(value)||'سامانه';if(isDateField(field)){if(String(value).includes('T'))return typeof jalaliDateTime==='function'?jalaliDateTime(String(value)):digits(value);return typeof jalaliText==='function'?jalaliText(String(value)):digits(value)}if(field==='reminder_days')return digits(value)+' روز';if(field==='archived')return value===true||String(value)==='true'?'بله':'خیر';if(typeof value==='object')return'—';return digits(value)}\n" +
+      "function ownerFallback(row,task){const before=raw(row.old_data)||{},after=raw(row.new_data)||{};return after.former_owner_name||before.former_owner_name||task?.former_owner_name||''}\n" +
+      "function ownerValue(row,side,task){const data=raw(side==='old'?row.old_data:row.new_data)||{},value=raw(side==='old'?row.old_value:row.new_value),id=value??data.owner_id;if(id){const found=person(id);if(found)return found}if(side==='new'&&(value===null||value===undefined||value==='')&&(data.owner_id===null||data.owner_id===undefined||data.owner_id===''))return'بدون متولی';const fallback=ownerFallback(row,task);if(fallback)return fallback;return id?'متولی حذف‌شده':'بدون متولی'}\n" +
+      "function currentOwner(row,task){const after=raw(row.new_data)||{},before=raw(row.old_data)||{},id=after.owner_id??before.owner_id??task?.owner_id;if(id){const found=person(id);if(found)return found}return ownerFallback(row,task)||'بدون متولی'}\n" +
+      "function historyValue(field,value,row,side,task){if(field==='owner_id')return ownerValue(row,side,task);return simpleValue(field,value)}\n" +
+      "function summary(data,row,side,task){data=raw(data);if(!data||typeof data!=='object')return simpleValue('',data);const order=['title','owner_id','status','priority','start_date','due_date','done_date','reminder_days','manager_notes','archived','archived_at','former_owner_name','owner_deleted_at'];return order.filter(k=>data[k]!==undefined&&data[k]!==null&&data[k]!=='').map(k=>`${fieldLabel[k]||'اطلاعات وظیفه'}: ${k==='owner_id'?ownerValue(row,side,task):simpleValue(k,data[k])}`).join(' | ')||'—'}\n" +
+      "function historySelectedTask(button){const view=button.closest('#archiveView,#kanbanView'),table=view?.querySelector('table');if(!view||!table)return null;const selected=window.bamcoSelection?.rows(table)||[],rows=selected.length?selected:qa('tbody tr.suite-selected,tbody tr.task-select"... 11935 more characters
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: |-
+    (()=>{'use strict';
+    if(window.__bamcoMessagingHistoryRoot20260912V2)return;window.__bamcoMessagingHistoryRoot20260912V2=true;
+    const q=(s,r=document)=>r?.querySelector?.(s)||null,qa=(s,r=document)=>[...(r?.querySelectorAll?.(s)||[])],esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),digits=v=>String(v??'').replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);
+    const fieldLabel={title:'عنوان فعالیت',description:'توضیحات',owner_id:'متولی',status:'وضعیت',priority:'اولویت',start_date:'تاریخ شروع',done_date:'تاریخ انجام',due_date:'تاریخ پایان',reminder_days:'یادآور',manager_notes:'توضیحات مدیر',archived:'وضعیت آرشیو',archived_at:'تاریخ آرشیو',former_owner_name:'نام متولی قبلی',owner_deleted_at:'تاریخ حذف متولی',created_by:'ثبت‌کننده',created_at:'تاریخ ایجاد',updated_at:'تاریخ ویرایش'};
+    const sourceLabel={direct:'تغییر مستقیم',request:'درخواست تغییر',import:'ورود از اکسل',system:'سامانه',approval:'زنجیره تأیید'};
+    const systemMessageCache=new Map();
+    function installCss(){if(q('#bamcoMessagingHistoryRootCss'))return;const s=document.createElement('style');s.id='bamcoMessagingHistoryRootCss';s.textContent=`
+    #messageCenterView .suite-table-options,#sentMessagesView .suite-table-options,#messagesView .suite-table-options,.conversation-panel .suite-table-options,.conversation-panel [data-management-export],.conversation-panel [data-export],.conversation-panel [data-action="export"]{display:none!important}
+    #directMessagesView [data-management-export],#directMessagesView [data-export],#directMessagesView [data-action="export"],#directMessagesView [data-suite-export],#directMessagesView .suite-export,#directMessagesView .excel-export,#directMessagesView .export-excel{display:none!important}
+    #messagesView .message-actions{display:none!important}.workflow-message .suite-filters,.workflow-message .column-filters,.workflow-message .suite-resize,.workflow-message .column-resize-handle{display:none!important}.workflow-message table{margin-left:auto!important;margin-right:auto!important;min-width:0!important}.workflow-message table th,.workflow-message table td{text-align:center!important}
+    .conversation-unread,.conversation-route-count,.conversation-nav-count,#messageBadge.message-badge{min-width:18px!important;width:auto!important;height:18px!important;padding:0 5px!important;border-radius:999px!important;background:#d52f2f!important;color:#fff!important;display:inline-grid!important;place-items:center!important;font:700 10px Tahoma,sans-serif!important;line-height:18px!important;box-shadow:0 0 0 2px #fff!important;vertical-align:middle!important}.conversation-route-count:empty,.conversation-nav-count:empty,#messageBadge.message-badge:empty{display:none!important}
+    .conversation-item[data-kind="system"]{position:relative;order:-100}.conversation-item[data-kind="system"]>span:nth-child(2)>strong::before{content:"📌";display:inline-block;margin-left:5px;font-size:12px;vertical-align:1px}.system-chain-clear{white-space:nowrap!important}
+    .chat-bubble.bamco-system-message{max-width:min(560px,96%)!important;width:min(560px,96%)!important;background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important}.chat-bubble.bamco-system-message .chat-body{width:100%!important}.chat-bubble.bamco-system-message .message-delete{display:none!important}
+    .system-message-open{display:block;width:100%;border:1px solid #bfd1c7;border-radius:14px;background:#fff;padding:14px 16px;text-align:right;direction:rtl;color:#17392e;font-family:"B Nazanin",BNazanin,Tahoma,sans-serif;cursor:pointer;box-shadow:0 5px 16px rgba(28,82,63,.08)}.system-message-open:hover{border-color:#72a993;box-shadow:0 8px 20px rgba(28,82,63,.13)}.system-message-open-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.system-message-open-title{font-size:18px;font-weight:700;color:#17644b}.system-message-open-date{font-size:12px;color:#72867d;white-space:nowrap}.system-message-open-meta{font-size:13px;color:#6a8076;margin-top:3px}.system-message-open-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.system-message-chip{border-radius:999px;padding:3px 9px;font-size:12px;background:#eef6f2;border:1px solid #d4e4dc}.system-message-chip.warning{background:#fff6d1;border-color:#efd071;color:#805e0b}.system-message-chip.overdue{background:#ffebe8;border-color:#eab0aa;color:#9b3932}.system-message-open-cta{display:flex;align-items:center;gap:6px;margin-top:10px;padding-top:8px;border-top:1px solid #e0e9e4;color:#17644b;font-weight:700;font-size:13px}
+    #bamcoSystemMessageDialog{width:min(1080px,95vw);max-width:95vw;max-height:92vh;border:1px solid #bdd2c7;border-radius:18px;padding:0;overflow:hidden;background:#f8fbf9;color:#17392e;font-family:"B Nazanin",BNazanin,Tahoma,sans-serif}#bamcoSystemMessageDialog::backdrop{background:#244b3e80;backdrop-filter:blur(4px)}.bsm-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:16px 20px;border-bottom:1px solid #d4e2da;background:#fff;direction:rtl}.bsm-head h3{margin:0;color:#17644b;font-size:21px}.bsm-head p{margin:3px 0 0;color:#70857b;font-size:13px}.bsm-close{flex:none;width:42px;height:42px;border:1px solid #cadbd2;border-radius:11px;background:#fff;color:#17644b;font:26px/1 inherit;cursor:pointer}.bsm-body{padding:10px 12px 18px;overflow:auto;max-height:calc(92vh - 78px)}
+    #bamcoTaskHistoryDialog{width:min(1000px,94vw);max-height:88vh;border:1px solid #bdd2c7;border-radius:19px;padding:0;overflow:hidden;background:#fff;color:#183f33;font-family:"B Nazanin",BNazanin,Tahoma,sans-serif}#bamcoTaskHistoryDialog::backdrop{background:#315e5260;backdrop-filter:blur(4px)}.bth-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:22px 25px 16px;border-bottom:1px solid #d4e1da}.bth-head h3{margin:0;color:#176149;font-size:24px}.bth-head p{margin:4px 0 0;color:#6c8379}.bth-close{width:44px;height:44px;border:1px solid #c9d9d1;border-radius:12px;background:#f8fbf9;color:#176149;font:26px inherit}.bth-list{padding:20px 32px 28px;overflow:auto;max-height:calc(88vh - 95px)}.bth-event{position:relative;padding:0 36px 25px 0;border-right:2px solid #cfe0d8;margin-right:10px}.bth-event:last-child{border-right-color:transparent}.bth-dot{position:absolute;right:-8px;top:2px;width:14px;height:14px;border:4px solid #dff1e9;background:#279e79;border-radius:50%}.bth-title{font-size:19px;font-weight:700;color:#193f34}.bth-meta{display:flex;gap:12px;flex-wrap:wrap;color:#73877e;font-size:14px;margin:4px 0 7px}.bth-change{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 10px;background:#f8fbf9;border:1px solid #dae6e0;border-radius:10px;padding:9px 11px;max-width:780px}.bth-change b{color:#557267}.bth-empty{padding:45px;text-align:center;color:#71867d}
+    @media(max-width:700px){.bth-list{padding:15px 18px}.bth-event{padding-right:28px}.bth-change{grid-template-columns:1fr}.system-message-open-head{display:block}.system-message-open-date{display:block;margin-top:2px}.bsm-body{padding:7px}}
+    `;document.head.append(s)}
+    function profile(id){return(state.profiles||[]).find(x=>String(x.id)===String(id))||null}
+    function person(id){const p=profile(id);return p?.display_name||p?.full_name||p?.excel_name||p?.email||''}
+    function raw(value){if(value===null||value===undefined)return value;if(typeof value!=='string')return value;try{return JSON.parse(value)}catch{return value.replace(/^"|"$/g,'')}}
+    function isDateField(field){return ['start_date','done_date','due_date','archived_at','owner_deleted_at','created_at','updated_at'].includes(field)}
+    function simpleValue(field,value){value=raw(value);if(value===null||value===undefined||value==='')return'—';if(field==='created_by')return person(value)||'سامانه';if(isDateField(field)){if(String(value).includes('T'))return typeof jalaliDateTime==='function'?jalaliDateTime(String(value)):digits(value);return typeof jalaliText==='function'?jalaliText(String(value)):digits(value)}if(field==='reminder_days')return digits(value)+' روز';if(field==='archived')return value===true||String(value)==='true'?'بله':'خیر';if(typeof value==='object')return'—';return digits(value)}
+    function ownerFallback(row,task){const before=raw(row.old_data)||{},after=raw(row.new_data)||{};return after.former_owner_name||before.former_owner_name||task?.former_owner_name||''}
+    function ownerValue(row,side,task){const data=raw(side==='old'?row.old_data:row.new_data)||{},value=raw(side==='old'?row.old_value:row.new_value),id=value??data.owner_id;if(id){const found=person(id);if(found)return found}if(side==='new'&&(value===null||value===undefined||value==='')&&(data.owner_id===null||data.owner_id===undefined||data.owner_id===''))return'بدون متولی';const fallback=ownerFallback(row,task);if(fallback)return fallback;return id?'متولی حذف‌شده':'بدون متولی'}
+    function currentOwner(row,task){const after=raw(row.new_data)||{},before=raw(row.old_data)||{},id=after.owner_id??before.owner_id??task?.owner_id;if(id){const found=person(id);if(found)return found}return ownerFallback(row,task)||'بدون متولی'}
+    function historyValue(field,value,row,side,task){if(field==='owner_id')return ownerValue(row,side,task);return simpleValue(field,value)}
+    function summary(data,row,side,task){data=raw(data);if(!data||typeof data!=='object')return simpleValue('',data);const order=['title','owner_id','status','priority','start_date','due_date','done_date','reminder_days','manager_notes','archived','archived_at','former_owner_name','owner_deleted_at'];return order.filter(k=>data[k]!==undefined&&data[k]!==null&&data[k]!=='').map(k=>`${fieldLabel[k]||'اطلاعات وظیفه'}: ${k==='owner_id'?ownerValue(row,side,task):simpleValue(k,data[k])}`).join(' | ')||'—'}
+    function historySelectedTask(button){const view=button.closest('#archiveView,#kanbanView'),table=view?.querySelector('table');if(!view||!table)return null;const selected=window.bamcoSelection?.rows(table)||[],rows=selected.length?selected:qa('tbody tr.suite-selected,tbody tr.task-selected',table);if(rows.length!==1)return null;const id=rows[0].dataset.taskId;return(state.tasks||[]).find(t=>String(t.id)===String(id))||null}
+    function eventTitle(row){if(row.action==='created')return'وظیفه ایجاد شد';if(row.action==='deleted')return'وظیفه حذف شد';if(row.action==='restored')return'وظیفه به کانبان بازگردانده شد';if(row.action==='archived')return'وظیفه آرشیو شد';return`${fieldLabel[row.field_name]||'اطلاعات وظیفه'} تغییر کرد`}
+    async function openHistory(task){const all=await selectAll('task_history',`select=*&task_id=eq.${encodeURIComponent(task.id)}&order=created_at.desc`),rows=all.filter(x=>x.field_name!=='legacy_id');let d=q('#bamcoTaskHistoryDialog');if(!d){d=document.createElement('dialog');d.id='bamcoTaskHistoryDialog';document.body.append(d)}const render=x=>{const field=x.field_name,actor=x.actor_name_snapshot||person(x.actor_id)||'سامانه',owner=currentOwner(x,task),oldV=field?historyValue(field,x.old_value,x,'old',task):summary(x.old_data,x,'old',task),newV=field?historyValue(field,x.new_value,x,'new',task):summary(x.new_data,x,'new',task),source=sourceLabel[x.source_path]||'سامانه',reason=x.reason?digits(x.reason):'';return `<article class="bth-event"><i class="bth-dot"></i><div class="bth-title">${esc(eventTitle(x))}</div><div class="bth-meta"><span>${esc(jalaliDateTime(x.created_at))}</span><span>انجام‌دهنده: ${esc(actor)}</span><span>متولی: ${esc(owner)}</span><span>مسیر ثبت: ${esc(source)}</span>${x.request_id?`<span>شماره درخواست: ${digits(x.request_id)}</span>`:''}</div>${x.action==='created'?`<div class="bth-change"><b>اطلاعات ثبت‌شده</b><span>${esc(newV)}</span></div>`:x.action==='deleted'?`<div class="bth-change"><b>آخرین وضعیت</b><span>${esc(oldV)}</span></div>`:`<div class="bth-change"><b>قبل</b><span>${esc(oldV)}</span><b>بعد</b><span>${esc(newV)}</span>${reason?`<b>علت تغییر</b><span>${esc(reason)}</span>`:''}</div>`}</article>`};d.innerHTML=`<div class="bth-head"><div><h3>تاریخچه وظیفه ${digits(task.legacy_id||task.id)}</h3><p>همه رویدادها، متولی‌ها و تغییرات این وظیفه</p></div><button class="bth-close" type="button" aria-label="بستن">×</button></div><div class="bth-list">${rows.length?rows.map(render).join(''):'<div class="bth-empty">سابقه‌ای برای این وظیفه ثبت نشده است.</div>'}</div>`;q('.bth-close',d).onclick=()=>d.close();d.showModal()}
+    function removePrivateExports(){const view=q('#directMessagesView');if(!view)return;qa('[data-management-export],[data-export],[data-action="export"],[data-suite-export],.suite-export,.excel-export,.export-excel',view).forEach(x=>x.remove());qa('button,a',view).filter(x=>/(خروجی\s*اکسل|اکسل|excel)/i.test([x.textContent,x.title,x.getAttribute('aria-label')].filter(Boolean).join(' '))).forEach(x=>x.remove())}
+    function cleanMessageUi(){qa('#messageCenterView .suite-table-options,#sentMessagesView .suite-table-options,#messagesView .suite-table-options').forEach(x=>x.remove());qa('#messagesView .message-actions').forEach(x=>x.remove());removePrivateExports()}
+    async function loadSystemMessage(messageId){const key=String(messageId);if(systemMessageCache.has(key))return systemMessageCache.get(key);const payload=await rpc('chat_system_message_payload',{p_message_id:Number(messageId)}),snap=payload.snapshot||{body_template:payload.body,final_text:payload.body,tasks:[],warning_task_ids:[],overdue_task_ids:[],subject:payload.subject,created_at:payload.created_at};let stickerUrl='';if(snap.sticker_path)try{stickerUrl=await bamcoMedia.get('stickers',snap.sticker_path)}catch{}const data={payload,snap,stickerUrl,html:BamcoMessageRender.html(snap,{stickerUrl,subject:payload.subject,reportDate:payload.created_at,senderName:payload.sender_name})};systemMessageCache.set(key,data);return data}
+    function systemPreview(data,messageId){const {payload,snap}=data,warning=(snap.warning_task_ids||[]).length,overdue=(snap.overdue_task_ids||[]).length,when=typeof jalaliDateTime==='function'?jalaliDateTime(payload.created_at):String(payload.created_at||''),sender=payload.sender_name||'سامانه';return `<button type="button" class="system-message-open" data-system-message-open="${esc(messageId)}"><span class="system-message-open-head"><span class="system-message-open-title">${esc(payload.subject||snap.subject||'پیام خودکار سامانه')}</span><span class="system-message-open-date">${esc(when)}</span></span><span class="system-message-open-meta">فرستنده: ${esc(sender)}</span><span class="system-message-open-chips">${warning?`<span class="system-message-chip warning">هشدار: ${digits(warning)}</span>`:''}${overdue?`<span class="system-message-chip overdue">دیرکرد: ${digits(overdue)}</span>`:''}${!warning&&!overdue?'<span class="system-message-chip">پیام خودکار سامانه</span>':''}</span><span class="system-message-open-cta">مشاهده محتوای کامل <span aria-hidden="true">←</span></span></button>`}
+    function ensureSystemDialog(){let d=q('#bamcoSystemMessageDialog');if(d)return d;d=document.createElement('dialog');d.id='bamcoSystemMessageDialog';d.addEventListener('click',e=>{if(e.target===d)d.close()});document.body.append(d);return d}
+    async function openSystemMessage(messageId){const d=ensureSystemDialog();d.innerHTML='<div class="bsm-head"><div><h3>پیام خودکار سامانه</h3><p>در حال دریافت محتوا…</p></div><button type="button" class="bsm-close" aria-label="بستن">×</button></div><div class="bsm-body"><div class="conversation-empty">در حال دریافت…</div></div>';q('.bsm-close',d).onclick=()=>d.close();if(!d.open)d.showModal();try{const data=await loadSystemMessage(messageId),when=typeof jalaliDateTime==='function'?jalaliDateTime(data.payload.created_at):String(data.payload.created_at||'');d.innerHTML=`<div class="bsm-head"><div><h3>${esc(data.payload.subject||data.snap.subject||'پیام خودکار سامانه')}</h3><p>${esc(data.payload.sender_name||'سامانه')} · ${esc(when)}</p></div><button type="button" class="bsm-close" aria-label="بستن">×</button></div><div class="bsm-body">${data.html}</div>`;q('.bsm-close',d).onclick=()=>d.close()}catch(err){q('.bsm-body',d).innerHTML=`<div class="workspace-error">${esc(err.message||'نمایش پیام انجام نشد.')}</div>`}}
+    async function hydrateSystemMessages(){for(const body of qa('.chat-bubble[data-message-id] .chat-body')){const bubble=body.closest('.chat-bubble'),text=body.textContent.trim();if(!text.startsWith('BAMCO_PORTAL_MESSAGE_V1:')||body.dataset.systemHydrated||body.dataset.systemHydrating)continue;body.dataset.systemHydrating='1';try{const messageId=Number(bubble.dataset.messageId),data=await loadSystemMessage(messageId);body.innerHTML=systemPreview(data,messageId);body.dataset.systemHydrated='1';bubble.classList.add('bamco-system-message');bubble.querySelector('.message-delete')?.remove()}catch(err){body.textContent='نمایش پیام سامانه انجام نشد: '+err.message}finally{delete body.dataset.systemHydrating}}}
+    function goTask(id){const task=(state.tasks||[]).find(t=>String(t.id)===String(id));if(!task)return toast('این وظیفه در کانبان فعلی پیدا نشد.',true);q('#nav [data-view="kanban"]')?.click();const search=q('#kanbanSearch');if(search){search.value='';search.dispatchEvent(new Event('input',{bubbles:true}))}try{if(typeof chooseTask==='function')chooseTask('kanban',task.id)}catch{}requestAnimationFrame(()=>requestAnimationFrame(()=>{window.bamcoRevealTask?.(task.id);const row=q(`#kanbanBody tr[data-task-id="${task.id}"]`);row?.scrollIntoView?.({block:'center',behavior:'smooth'});row?.focus?.({preventScroll:true})}))}
+    function purgeSystemClientState(view,threadId){systemMessageCache.clear();const dialog=q('#bamcoSystemMessageDialog');if(dialog?.open)dialog.close();dialog?.remove();window.bamcoChat?.close?.();qa('.conversation-item[data-thread]',view).filter(x=>x.dataset.thread===threadId).forEach(x=>x.remove());const stage=q('.conversation-stage',view);if(stage)stage.innerHTML='<div class="conversation-empty">زنجیره پیام‌های خودکار حذف شد. پیام خودکار بعدی در یک زنجیره تازه نمایش داده می‌شود.</div>';document.dispatchEvent(new CustomEvent('bamco-system-thread-cleared',{detail:{threadId}}))}
+    function installSystemClear(){const view=q('#directMessagesView');if(!view||view.classList.contains('hidden'))return;const active=q('.conversation-item.active[data-kind="system"]',view),controls=q('.messenger-head-actions',view);if(!active||!controls){q('.system-chain-clear',view)?.remove();return}let btn=q('.system-chain-clear',view);if(btn){btn.dataset.thread=active.dataset.thread;if(btn.parentElement!==controls)controls.append(btn);return}btn=document.createElement('button');btn.type='button';btn.className='danger system-chain-clear';btn.textContent='پاک کردن زنجیره';btn.dataset.thread=active.dataset.thread;btn.onclick=async()=>{const id=btn.dataset.thread;if(!id)return;if(!await window.bamcoConfirm('این زنجیره و تمام سابقه گفت‌وگوی خودکار حذف شود؟ پیام خودکار بعدی در یک زنجیره تازه و بدون سابقه قبلی نمایش داده می‌شود.'))return;btn.disabled=true;try{await rpc('chat_clear_system_thread',{p_thread_id:id});purgeSystemClientState(view,id);await window.bamcoInbox?.load?.();await window.bamcoConversations?.render?.('directMessages');toast('زنجیره و سابقه گفت‌وگوی خودکار کاملاً حذف شد.')}catch(err){toast(err.message,true)}finally{if(btn.isConnected)btn.disabled=false}};controls.append(btn)}
+    function dedupeLogos(){for(const sel of ['#departmentEntry>header>img','#loginView .brand-lockup>img','#appView>.card-topbar>img']){const items=qa(sel);items.slice(1).forEach(x=>x.remove())}const bars=qa('#appView>.card-topbar');bars.slice(1).forEach(x=>x.remove())}
+    function installLogoGuards(){dedupeLogos();const entry=q('#departmentEntry'),app=q('#appView');if(entry)new MutationObserver(dedupeLogos).observe(entry,{childList:true});if(app)new MutationObserver(dedupeLogos).observe(app,{childList:true})}
+    function deepLink(){const id=new URLSearchParams(location.search).get('task');if(!id)return;let tries=0,t=setInterval(()=>{if(typeof state!=='undefined'&&state.token&&(state.tasks||[]).length){clearInterval(t);goTask(id);const u=new URL(location.href);u.searchParams.delete('task');history.replaceState({},'',u.pathname+u.search+u.hash)}else if(++tries>300)clearInterval(t)},100)}
+    function boot(){installCss();cleanMessageUi();installLogoGuards();deepLink();void hydrateSystemMessages();const direct=q('#directMessagesView');if(direct){let frame=0;new MutationObserver(()=>{if(frame)return;frame=requestAnimationFrame(()=>{frame=0;cleanMessageUi();void hydrateSystemMessages();installSystemClear()})}).observe(direct,{childList:true,subtree:true})}document.addEventListener('bamco-messages-changed',()=>{cleanMessageUi();void hydrateSystemMessages();installSystemClear()});document.addEventListener('bamco-inbox-updated',cleanMessageUi);document.addEventListener('bamco-system-thread-cleared',()=>{systemMessageCache.clear();const d=q('#bamcoSystemMessageDialog');if(d?.open)d.close();d?.remove()});document.addEventListener('click',e=>{const systemOpen=e.target.closest('[data-system-message-open]');if(systemOpen){e.preventDefault();e.stopImmediatePropagation();openSystemMessage(systemOpen.dataset.systemMessageOpen);return}const task=e.target.closest('[data-bamco-task-id]');if(task){e.preventDefault();e.stopImmediatePropagation();goTask(task.dataset.bamcoTaskId);return}const history=e.target.closest('[data-task-history]');if(history){e.preventDefault();e.stopImmediatePropagation();const taskRow=historySelectedTask(history);if(!taskRow)return toast('برای مشاهده تاریخچه، دقیقاً یک وظیفه را انتخاب کنید.',true);openHistory(taskRow).catch(err=>toast(err.message,true));return}if(e.target.closest('#nav [data-view="directMessages"],#directMessagesView [data-thread]'))setTimeout(()=>{cleanMessageUi();void hydrateSystemMessages();installSystemClear()},120)},true);setTimeout(()=>{cleanMessageUi();installSystemClear();void hydrateSystemMessages()},500);window.bamcoTaskHistory={open:openHistory,ownerValue}}
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+    })();
+    
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/user-request-regressions.test.cjs:80:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: template editor has one owner and verifies the saved server value
+not ok 117 - template editor has one owner and verifies the saved server value
+  ---
+  duration_ms: 0.353814
+  type: 'test'
+  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/user-request-regressions.test.cjs:85:1'
+  failureType: 'testCodeFailure'
+  error: "ENOENT: no such file or directory, open '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/assets/js/templates.js'"
+  code: 'ENOENT'
+  stack: |-
+    Object.readFileSync (node:fs:440:20)
+    read (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/user-request-regressions.test.cjs:6:21)
+    TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/user-request-regressions.test.cjs:86:16)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: response tracking owns requested command order, current-month dates, selection and has no tracking id
+ok 118 - response tracking owns requested command order, current-month dates, selection and has no tracking id
+  ---
+  duration_ms: 14721.095711
+  type: 'test'
+  ...
+# Subtest: response report has requested command order, month defaults and filtered table source
+ok 119 - response report has requested command order, month defaults and filtered table source
+  ---
+  duration_ms: 14684.93219
+  type: 'test'
   ...
 # Subtest: message center command row is home, excel, refresh, green send and local row selection enables send
-not ok 8 - message center command row is home, excel, refresh, green send and local row selection enables send
+ok 120 - message center command row is home, excel, refresh, green send and local row selection enables send
   ---
-  duration_ms: 7684.172815
+  duration_ms: 8987.996728
   type: 'test'
-  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workflow-tabs-root-20260912.test.cjs:30:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
-    
-    4 !== 0
-    
-  code: 'ERR_ASSERTION'
-  name: 'AssertionError'
-  expected: 0
-  actual: 4
-  operator: 'strictEqual'
-  stack: |-
-    TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workflow-tabs-root-20260912.test.cjs:37:9)
-    async Test.run (node:internal/test_runner/test:1054:7)
-    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
   ...
 # Subtest: sent messages uses unified log, has no overview cards and requested controls
-not ok 9 - sent messages uses unified log, has no overview cards and requested controls
+ok 121 - sent messages uses unified log, has no overview cards and requested controls
   ---
-  duration_ms: 7484.178544
+  duration_ms: 12625.020691
   type: 'test'
-  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workflow-tabs-root-20260912.test.cjs:40:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
-    
-    4 !== 0
-    
-  code: 'ERR_ASSERTION'
-  name: 'AssertionError'
-  expected: 0
-  actual: 4
-  operator: 'strictEqual'
-  stack: |-
-    TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workflow-tabs-root-20260912.test.cjs:47:9)
-    runNextTicks (node:internal/process/task_queues:64:5)
-    process.processTimers (node:internal/timers:518:9)
-    async Test.run (node:internal/test_runner/test:1054:7)
-    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
   ...
 # Subtest: task history resolves deleted owner from task snapshot instead of UUID
-not ok 10 - task history resolves deleted owner from task snapshot instead of UUID
+ok 122 - task history resolves deleted owner from task snapshot instead of UUID
   ---
-  duration_ms: 6063.736465
+  duration_ms: 12843.105858
   type: 'test'
-  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workflow-tabs-root-20260912.test.cjs:50:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
-    
-    4 !== 0
-    
-  code: 'ERR_ASSERTION'
-  name: 'AssertionError'
-  expected: 0
-  actual: 4
-  operator: 'strictEqual'
-  stack: |-
-    TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workflow-tabs-root-20260912.test.cjs:55:9)
-    runNextTicks (node:internal/process/task_queues:64:5)
-    listOnTimeout (node:internal/timers:547:9)
-    process.processTimers (node:internal/timers:521:7)
-    async Test.run (node:internal/test_runner/test:1054:7)
-    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
   ...
 # Subtest: kanban delete has one authoritative rpc path and archive controls remain functional
-not ok 11 - kanban delete has one authoritative rpc path and archive controls remain functional
+ok 123 - kanban delete has one authoritative rpc path and archive controls remain functional
   ---
-  duration_ms: 8857.446284
+  duration_ms: 14372.62464
   type: 'test'
-  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workflow-tabs-root-20260912.test.cjs:58:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
-    Not implemented: Window's scrollTo() method
-    
-    4 !== 0
-    
-  code: 'ERR_ASSERTION'
-  name: 'AssertionError'
-  expected: 0
-  actual: 4
-  operator: 'strictEqual'
-  stack: |-
-    TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workflow-tabs-root-20260912.test.cjs:64:9)
-    async Test.run (node:internal/test_runner/test:1054:7)
-    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
   ...
-1..11
-# tests 11
+# Subtest: every navigation destination has one consistent toolbar return and releases the visible view
+    # Subtest: people
+    ok 1 - people
+      ---
+      duration_ms: 3201.331052
+      type: 'test'
+      ...
+    # Subtest: loginActivity
+    ok 2 - loginActivity
+      ---
+      duration_ms: 2951.188091
+      type: 'test'
+      ...
+    # Subtest: activeSessions
+    ok 3 - activeSessions
+      ---
+      duration_ms: 2315.173172
+      type: 'test'
+      ...
+    # Subtest: messages
+    ok 4 - messages
+      ---
+      duration_ms: 1688.306281
+      type: 'test'
+      ...
+    # Subtest: messageCenter
+    not ok 5 - messageCenter
+      ---
+      duration_ms: 1193.029206
+      type: 'test'
+      location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workspace-audit.test.cjs:15:11'
+      failureType: 'testCodeFailure'
+      error: |-
+        messageCenter duplicate return
+        
+        0 !== 1
+        
+      code: 'ERR_ASSERTION'
+      name: 'AssertionError'
+      expected: 1
+      actual: 0
+      operator: 'strictEqual'
+      stack: |-
+        TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workspace-audit.test.cjs:17:80)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workspace-audit.test.cjs:15:3)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+      ...
+    # Subtest: sentMessages
+    not ok 6 - sentMessages
+      ---
+      duration_ms: 1769.561722
+      type: 'test'
+      location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workspace-audit.test.cjs:15:11'
+      failureType: 'testCodeFailure'
+      error: |-
+        Expected values to be strictly equal:
+        
+        '0' !== '-100'
+        
+      code: 'ERR_ASSERTION'
+      name: 'AssertionError'
+      expected: '-100'
+      actual: '0'
+      operator: 'strictEqual'
+      stack: |-
+        TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workspace-audit.test.cjs:22:78)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workspace-audit.test.cjs:15:3)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+      ...
+    # Subtest: responseTracking
+    not ok 7 - responseTracking
+      ---
+      duration_ms: 1216.769156
+      type: 'test'
+      location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workspace-audit.test.cjs:15:11'
+      failureType: 'testCodeFailure'
+      error: |-
+        responseTracking duplicate return
+        
+        0 !== 1
+        
+      code: 'ERR_ASSERTION'
+      name: 'AssertionError'
+      expected: 1
+      actual: 0
+      operator: 'strictEqual'
+      stack: |-
+        TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workspace-audit.test.cjs:17:80)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workspace-audit.test.cjs:15:3)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+      ...
+    # Subtest: stickers
+    ok 8 - stickers
+      ---
+      duration_ms: 1516.922997
+      type: 'test'
+      ...
+    # Subtest: dashboard
+    ok 9 - dashboard
+      ---
+      duration_ms: 2890.984543
+      type: 'test'
+      ...
+    # Subtest: performanceReport
+    ok 10 - performanceReport
+      ---
+      duration_ms: 3399.072087
+      type: 'test'
+      ...
+    # Subtest: responseReport
+    not ok 11 - responseReport
+      ---
+      duration_ms: 2952.196902
+      type: 'test'
+      location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workspace-audit.test.cjs:15:11'
+      failureType: 'testCodeFailure'
+      error: |-
+        responseReport duplicate return
+        
+        0 !== 1
+        
+      code: 'ERR_ASSERTION'
+      name: 'AssertionError'
+      expected: 1
+      actual: 0
+      operator: 'strictEqual'
+      stack: |-
+        TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workspace-audit.test.cjs:17:80)
+        runNextTicks (node:internal/process/task_queues:64:5)
+        process.processTimers (node:internal/timers:518:9)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workspace-audit.test.cjs:15:3)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+      ...
+    # Subtest: systemOptions
+    ok 12 - systemOptions
+      ---
+      duration_ms: 2829.936948
+      type: 'test'
+      ...
+    # Subtest: settings
+    ok 13 - settings
+      ---
+      duration_ms: 2317.584919
+      type: 'test'
+      ...
+    # Subtest: kanban
+    ok 14 - kanban
+      ---
+      duration_ms: 2062.339209
+      type: 'test'
+      ...
+    # Subtest: archive
+    ok 15 - archive
+      ---
+      duration_ms: 2105.045311
+      type: 'test'
+      ...
+    # Subtest: taskTimeline
+    ok 16 - taskTimeline
+      ---
+      duration_ms: 2216.857181
+      type: 'test'
+      ...
+    # Subtest: approvals
+    ok 17 - approvals
+      ---
+      duration_ms: 1584.082065
+      type: 'test'
+      ...
+    # Subtest: requestHistory
+    ok 18 - requestHistory
+      ---
+      duration_ms: 1531.269972
+      type: 'test'
+      ...
+    # Subtest: approvalChains
+    ok 19 - approvalChains
+      ---
+      duration_ms: 2077.609407
+      type: 'test'
+      ...
+    # Subtest: vehiclePermanent
+    ok 20 - vehiclePermanent
+      ---
+      duration_ms: 1770.473395
+      type: 'test'
+      ...
+    # Subtest: vehicleTemporary
+    ok 21 - vehicleTemporary
+      ---
+      duration_ms: 1964.106745
+      type: 'test'
+      ...
+    # Subtest: groupChat
+    ok 22 - groupChat
+      ---
+      duration_ms: 3136.025665
+      type: 'test'
+      ...
+    # Subtest: directMessages
+    ok 23 - directMessages
+      ---
+      duration_ms: 4234.382492
+      type: 'test'
+      ...
+    # Subtest: taskChats
+    ok 24 - taskChats
+      ---
+      duration_ms: 2617.423819
+      type: 'test'
+      ...
+    1..24
+not ok 124 - every navigation destination has one consistent toolbar return and releases the visible view
+  ---
+  duration_ms: 68840.584256
+  type: 'test'
+  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workspace-audit.test.cjs:10:1'
+  failureType: 'subtestsFailed'
+  error: '4 subtests failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: dashboard date controls, templates, sticker picker, chain form and Gantt actions
+    # Subtest: dashboard calendar applies dates and clears the final-chart range
+    not ok 1 - dashboard calendar applies dates and clears the final-chart range
+      ---
+      duration_ms: 1650.481668
+      type: 'test'
+      location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workspace-audit.test.cjs:31:10'
+      failureType: 'testCodeFailure'
+      error: "Cannot read properties of null (reading 'click')"
+      code: 'ERR_TEST_FAILURE'
+      name: 'TypeError'
+      stack: |-
+        TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workspace-audit.test.cjs:36:32)
+        runNextTicks (node:internal/process/task_queues:64:5)
+        process.processTimers (node:internal/timers:518:9)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workspace-audit.test.cjs:31:2)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+      ...
+    # Subtest: template editor saves and re-reads fresh server data when reopened
+    not ok 2 - template editor saves and re-reads fresh server data when reopened
+      ---
+      duration_ms: 4.509013
+      type: 'test'
+      location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workspace-audit.test.cjs:39:10'
+      failureType: 'testCodeFailure'
+      error: "Cannot read properties of null (reading 'click')"
+      code: 'ERR_TEST_FAILURE'
+      name: 'TypeError'
+      stack: |-
+        Object.open (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/helpers/app-fixture.cjs:87:62)
+        TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workspace-audit.test.cjs:40:11)
+        Test.runInAsyncScope (node:async_hooks:214:14)
+        Test.run (node:internal/test_runner/test:1047:25)
+        Test.start (node:internal/test_runner/test:944:17)
+        TestContext.test (node:internal/test_runner/test:373:20)
+        TestContext.<anonymous> (/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workspace-audit.test.cjs:39:10)
+        runNextTicks (node:internal/process/task_queues:64:5)
+        process.processTimers (node:internal/timers:518:9)
+        async Test.run (node:internal/test_runner/test:1054:7)
+      ...
+    # Subtest: sticker controls open the upload form and preserve each selectable image slot
+    ok 3 - sticker controls open the upload form and preserve each selectable image slot
+      ---
+      duration_ms: 988.102324
+      type: 'test'
+      ...
+    # Subtest: chain creation submits member and both approval stages, then toggles its status
+    ok 4 - chain creation submits member and both approval stages, then toggles its status
+      ---
+      duration_ms: 1189.282399
+      type: 'test'
+      ...
+    # Subtest: calendar/Gantt, month navigation and unscheduled panel remain bound after toolbar movement
+    ok 5 - calendar/Gantt, month navigation and unscheduled panel remain bound after toolbar movement
+      ---
+      duration_ms: 850.925167
+      type: 'test'
+      ...
+    1..5
+not ok 125 - dashboard date controls, templates, sticker picker, chain form and Gantt actions
+  ---
+  duration_ms: 12062.980723
+  type: 'test'
+  location: '/home/runner/work/BAMCO-TASK-MANAGEMENT/BAMCO-TASK-MANAGEMENT/tests/workspace-audit.test.cjs:29:1'
+  failureType: 'subtestsFailed'
+  error: '2 subtests failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: a new release clears app data caches and preserves sticker/sign-in state
+ok 126 - a new release clears app data caches and preserves sticker/sign-in state
+  ---
+  duration_ms: 7671.730141
+  type: 'test'
+  ...
+1..126
+# tests 188
 # suites 0
-# pass 0
-# fail 11
+# pass 159
+# fail 29
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 48831.829563
+# duration_ms 306067.218884
