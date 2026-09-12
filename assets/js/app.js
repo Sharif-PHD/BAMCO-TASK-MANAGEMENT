@@ -62,6 +62,20 @@ const insert=(table,body)=>api(`/rest/v1/${table}`,{method:'POST',body,prefer:'r
 const update=(table,filter,body)=>api(`/rest/v1/${table}?${filter}`,{method:'PATCH',body,prefer:'return=representation'});
 const rpc=(name,body)=>api(`/rest/v1/rpc/${name}`,{method:'POST',body});
 const isManager=()=>state.profile?.role==='manager';
+window.bamcoLoadRequestWorkflow=async function(){
+  try{
+    const snapshot=await rpc('request_workflow_snapshot',{});
+    if(!snapshot||typeof snapshot!=='object'||Array.isArray(snapshot)||!Array.isArray(snapshot.current_requests)||!Array.isArray(snapshot.history_requests)||!Array.isArray(snapshot.routes))throw new Error('workflow snapshot unavailable');
+    return{requests:snapshot.current_requests,history:snapshot.history_requests,routes:snapshot.routes};
+  }catch(error){
+    const actor=state.user?.id,manager=isManager();
+    const requestFilter=manager?'select=*&request_status=in.(pending,in_review,needs_revision)&order=created_at.asc':`select=*&requested_by=eq.${actor}&request_status=in.(pending,in_review,needs_revision)&order=created_at.asc`;
+    const historyFilter=manager?'select=*&request_status=in.(approved,rejected,cancelled)&order=created_at.desc':`select=*&requested_by=eq.${actor}&request_status=in.(approved,rejected,cancelled)&order=created_at.desc`;
+    const [all,routes,history]=await Promise.all([selectAll('change_requests',requestFilter),rpc('request_routing_status',{}).catch(()=>[]),selectAll('change_requests',historyFilter)]);
+    const routeById=new Map((routes||[]).map(x=>[String(x.request_id),x]));
+    return{requests:manager?all.filter(r=>routeById.get(String(r.id))?.actionable):all,history,routes:routes||[]};
+  }
+};
 function toast(message,error=false){return window.bamcoNotice(message,{error})}
 function safe(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 function displayId(t){return t.legacy_id||t.id}
@@ -140,9 +154,8 @@ async function refresh(){
   try{
     state.profiles=isManager()?await select('profiles','select=id,email,login_name,must_change_password,password_changed_at,full_name,display_name,gender,excel_name,role,active,default_message_channel,messaging_enabled&order=full_name'):[state.profile];
     state.tasks=await selectAll('task_status_view','select=*&order=id.desc');
-    state.requests=await select('change_requests',isManager()?'select=*&request_status=in.(pending,in_review,needs_revision)&order=created_at.asc':'select=*&request_status=in.(pending,in_review,needs_revision)&order=created_at.asc');
-    state.requestHistory=await select('change_requests','select=*&request_status=in.(approved,rejected,cancelled)&order=created_at.desc');
-    state.requestRoutes=await rpc('request_routing_status',{}).catch(()=>[]);
+    const workflow=await window.bamcoLoadRequestWorkflow();
+    state.requests=workflow.requests;state.requestHistory=workflow.history;state.requestRoutes=workflow.routes;
     renderAll();
   }catch(err){toast(err.message,true);throw err}
 }
