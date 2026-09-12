@@ -1,14 +1,14 @@
-# Delivery reminder repair — pending live verification
+# Delivery reminder repair — Portal verified
 
-Status: draft; not deployed or complete. No real email was sent in this session.
+Status: deployed; live Portal delivery, recipient inbox and tracking refresh verified. Real email remains deferred while the provider is unavailable.
 
 ## Confirmed root causes
 
 - `phase3-response-tracking.js` discarded selected delivery identities and passed only deduplicated recipient IDs to `prepare_workflow_messages`.
-- The deployed preparation RPC queried current tasks and the recipient's latest send date. It did not retain the selected original deliveries or their original subjects/snapshots.
+- The previous preparation RPC queried current tasks and the recipient's latest send date. It did not retain the selected original deliveries or their original subjects/snapshots.
 - `mark_message_reminders` incremented every supplied delivery unconditionally. It had no success evidence, response eligibility check, or idempotency record. The frontend invoked it only after the entire email request succeeded, so partial batches were not reconciled individually.
 - Replied rows could be visually selected, although the send path filtered them.
-- Existing deployed queue code does query reminder emails (no kind exclusion), personalizes from joined snapshots and claims rows atomically. No evidence yet establishes a live SMTP/provider failure: the database currently contains only two reminder portal deliveries (one sent and one cancelled), no reminder email deliveries.
+- Existing deployed queue code does query reminder emails (no kind exclusion), personalizes from joined snapshots and claims rows atomically. No evidence yet establishes a live SMTP/provider failure: the initial inspection contained only two reminder portal deliveries (one sent and one cancelled), no reminder email deliveries.
 
 ## Changes
 
