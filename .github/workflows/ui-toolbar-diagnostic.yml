@@ -1,0 +1,26 @@
+name: UI toolbar diagnostic
+
+on:
+  push:
+    branches: [ui-toolbar-cleanup-20260912]
+    paths:
+      - '.github/workflows/ui-toolbar-diagnostic.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Locate toolbar implementations
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '=== sent-command-row ==='
+          grep -R -n -C 3 'sent-command-row' assets/js assets/css || true
+          echo '=== applyPerf / perfFrom / perfTo ==='
+          grep -R -n -C 3 -E 'applyPerf|perfFrom|perfTo' assets/js index.html || true
+          echo '=== responseTracking rows ==='
+          grep -R -n -C 2 -E 'response-filters|response-quick|response-command-row' assets/js/phase3-response-tracking.js || true
